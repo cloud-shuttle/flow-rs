@@ -272,7 +272,7 @@ canvas.add_event_listener_with_callback(
 )?;
 
 canvas.add_event_listener_with_callback(
-    "mousemove", 
+    "mousemove",
     mouse_move_handler.as_ref().unchecked_ref(),
 )?;
 
@@ -308,7 +308,7 @@ fn custom_mouse_down(
     event: &MouseEvent,
 ) -> Result<(), JsValue> {
     let mouse_pos = interaction_handler.get_mouse_position(event);
-    
+
     // Check for node click
     if let Some(node_id) = interaction_handler.get_node_at_position(mouse_pos) {
         if event.ctrl_key() {
@@ -324,7 +324,7 @@ fn custom_mouse_down(
         interaction_handler.state.is_panning = true;
         interaction_handler.state.last_mouse_pos = Some(mouse_pos);
     }
-    
+
     Ok(())
 }
 ```
@@ -482,7 +482,7 @@ impl RenderState {
     fn should_render(&self, current_time: f64) -> bool {
         self.needs_redraw || (current_time - self.last_render_time) > 16.0 // 60 FPS
     }
-    
+
     fn mark_rendered(&mut self, current_time: f64) {
         self.needs_redraw = false;
         self.last_render_time = current_time;
@@ -497,16 +497,16 @@ let mut render_state = RenderState {
 
 let render_loop = Closure::wrap(Box::new(move || {
     let current_time = web_sys::js_sys::Date::now();
-    
+
     if render_state.should_render(current_time) {
         renderer.clear(Some("#ffffff"))?;
         renderer.render_background(&bg_config, &viewport)?;
         renderer.render_graph(&graph, &viewport)?;
         renderer.present()?;
-        
+
         render_state.mark_rendered(current_time);
     }
-    
+
     web_sys::window().unwrap().request_animation_frame(render_loop.as_ref().unchecked_ref()).unwrap();
 }) as Box<dyn FnMut()>);
 ```
@@ -555,7 +555,7 @@ impl<'a> TemporaryRenderer<'a> {
             _marker: std::marker::PhantomData,
         }
     }
-    
+
     fn render(&mut self, graph: &Graph<(), ()>, viewport: &Viewport) -> Result<(), RendererError> {
         self.renderer.render_graph(graph, viewport)
     }
@@ -591,7 +591,7 @@ pub fn create_flow_diagram(canvas_id: &str) -> Result<(), JsValue> {
 
     // Create graph
     let mut graph = Graph::new();
-    
+
     // Add nodes with custom styling
     let nodes = vec![
         ("start", Position::new(100.0, 100.0), "#10b981"),
@@ -632,7 +632,7 @@ pub fn create_flow_diagram(canvas_id: &str) -> Result<(), JsValue> {
 
     // Render
     renderer.clear(Some("#ffffff"))?;
-    
+
     let bg_config = BackgroundConfig {
         color: "#f8fafc".to_string(),
         pattern_color: "#e2e8f0".to_string(),

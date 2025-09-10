@@ -121,7 +121,7 @@ impl WasmViewport {
     pub fn zoom_at(&mut self, factor: f64, point_x: f64, point_y: f64) {
         let old_zoom = self.viewport.zoom;
         let new_zoom = old_zoom * factor;
-        
+
         // Adjust offset to zoom at the given point
         let zoom_ratio = new_zoom / old_zoom - 1.0;
         self.viewport.offset.x -= point_x * zoom_ratio / old_zoom;

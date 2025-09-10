@@ -51,7 +51,7 @@ impl Canvas2DRenderer {
 
     fn create_capabilities(canvas: &HtmlCanvasElement) -> RendererCapabilities {
         let max_size = 8192u32; // Reasonable limit for Canvas2D
-        
+
         RendererCapabilities {
             name: "Canvas2D".to_string(),
             max_texture_size: max_size,
@@ -75,7 +75,7 @@ impl Canvas2DRenderer {
         if let Some(border_color) = &style.border_color {
             self.context.set_stroke_style(&border_color.clone().into());
         }
-        
+
         if let Some(border_width) = style.border_width {
             self.context.set_line_width(border_width);
         }
@@ -93,7 +93,7 @@ impl Canvas2DRenderer {
         if let Some(stroke_color) = &style.stroke_color {
             self.context.set_stroke_style(&stroke_color.clone().into());
         }
-        
+
         if let Some(stroke_width) = style.stroke_width {
             self.context.set_line_width(stroke_width);
         }
@@ -104,7 +104,7 @@ impl Canvas2DRenderer {
                 .split(',')
                 .filter_map(|s| s.trim().parse().ok())
                 .collect();
-            
+
             if !dashes.is_empty() {
                 let js_array = js_sys::Array::new();
                 for dash in dashes {
@@ -137,7 +137,7 @@ impl Canvas2DRenderer {
         }
 
         let r = radius.min(width / 2.0).min(height / 2.0);
-        
+
         self.context.begin_path();
         self.context.move_to(x + r, y);
         self.context.line_to(x + width - r, y);
@@ -187,7 +187,7 @@ impl Canvas2DRenderer {
         let dx = end.x - control.x;
         let dy = end.y - control.y;
         let angle = dy.atan2(dx);
-        
+
         let arrow_length = 10.0;
         let arrow_angle = std::f64::consts::FRAC_PI_6; // 30 degrees
 
@@ -333,7 +333,7 @@ impl Renderer for Canvas2DRenderer {
     fn new(canvas: &HtmlCanvasElement) -> Result<Self> {
         let context = Self::get_context(canvas)?;
         let capabilities = Self::create_capabilities(canvas);
-        
+
         let width = canvas.width();
         let height = canvas.height();
 
@@ -366,10 +366,10 @@ impl Renderer for Canvas2DRenderer {
         let color = color.unwrap_or("#ffffff");
         self.context.set_fill_style(&color.into());
         self.context.fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
-        
+
         // Reset stats
         self.stats = RenderStats::default();
-        
+
         Ok(())
     }
 
@@ -400,7 +400,7 @@ impl Renderer for Canvas2DRenderer {
             if let (Some(source), Some(target)) = (graph.get_node(&edge.source), graph.get_node(&edge.target)) {
                 let source_pos = source.position;
                 let target_pos = target.position;
-                
+
                 // Simple visibility check
                 let edge_bounds = Rect::from_points(source_pos, target_pos);
                 if viewport.intersects_rect(edge_bounds) {
@@ -433,9 +433,9 @@ impl Renderer for Canvas2DRenderer {
             .and_then(|w| w.performance())
             .map(|p| p.now())
             .unwrap_or(0.0);
-        
+
         self.stats.frame_time_ms = end_time - start_time;
-        
+
         Ok(self.stats.clone())
     }
 
@@ -468,16 +468,16 @@ impl Renderer for Canvas2DRenderer {
 
     fn render_selection(&mut self, selected_bounds: &[Rect], style: &SelectionStyle) -> Result<()> {
         self.context.save();
-        
+
         self.context.set_stroke_style(&style.color.clone().into());
         self.context.set_line_width(style.width);
-        
+
         if let Some(dasharray) = &style.dasharray {
             let dashes: Vec<f64> = dasharray
                 .split(',')
                 .filter_map(|s| s.trim().parse().ok())
                 .collect();
-            
+
             if !dashes.is_empty() {
                 let js_array = js_sys::Array::new();
                 for dash in dashes {
@@ -489,7 +489,7 @@ impl Renderer for Canvas2DRenderer {
 
         for bounds in selected_bounds {
             self.context.stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
-            
+
             // Add glow effect if specified
             if let (Some(glow_color), Some(glow_blur)) = (&style.glow_color, style.glow_blur) {
                 self.context.save();
@@ -499,7 +499,7 @@ impl Renderer for Canvas2DRenderer {
                 self.context.restore();
             }
         }
-        
+
         self.context.restore();
         Ok(())
     }
@@ -550,7 +550,7 @@ impl CustomNodeRenderer for Canvas2DRenderer {
         }
 
         // Draw shadow if specified
-        if let (Some(shadow_color), Some(shadow_offset), Some(shadow_blur)) = 
+        if let (Some(shadow_color), Some(shadow_offset), Some(shadow_blur)) =
             (&style.shadow_color, &style.shadow_offset, style.shadow_blur) {
             self.context.save();
             self.context.set_shadow_color(shadow_color);
@@ -565,7 +565,7 @@ impl CustomNodeRenderer for Canvas2DRenderer {
         self.context.restore();
         self.stats.draw_calls += 1;
         self.stats.triangles += 2; // Approximate for a rectangle
-        
+
         Ok(())
     }
 }
@@ -681,7 +681,7 @@ mod tests {
         let canvas = create_test_canvas();
         let renderer = Canvas2DRenderer::new(&canvas).unwrap();
         let caps = renderer.capabilities();
-        
+
         assert_eq!(caps.name, "Canvas2D");
         assert_eq!(caps.supports_msaa, true);
         assert_eq!(caps.supports_compute_shaders, false);
@@ -691,7 +691,7 @@ mod tests {
     fn test_clear() {
         let canvas = create_test_canvas();
         let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
-        
+
         assert!(renderer.clear(Some("#ff0000")).is_ok());
         assert!(renderer.clear(None).is_ok());
     }
@@ -700,7 +700,7 @@ mod tests {
     fn test_resize() {
         let canvas = create_test_canvas();
         let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
-        
+
         assert!(renderer.resize(800, 600).is_ok());
         assert_eq!(renderer.width, 800);
         assert_eq!(renderer.height, 600);

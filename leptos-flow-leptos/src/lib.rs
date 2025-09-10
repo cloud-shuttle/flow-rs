@@ -18,14 +18,14 @@ pub mod prelude {
     pub use crate::hooks::*;
     pub use crate::signals::*;
     pub use crate::events::*;
-    
+
     // Re-export commonly used Leptos types
     pub use leptos::{
         component, create_signal, create_memo, create_effect, create_resource,
         Signal, ReadSignal, WriteSignal, RwSignal, Memo,
         IntoView, ComponentProps, Children, ChildrenFn,
     };
-    
+
     // Re-export core types
     pub use crate::core::prelude::*;
     pub use crate::renderer::{Renderer, RendererType};

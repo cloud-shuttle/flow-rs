@@ -145,7 +145,7 @@ impl ViewportState {
     pub fn zoom_at(&mut self, factor: f64, point: Position) {
         let old_zoom = self.viewport.zoom;
         let new_zoom = (old_zoom * factor).clamp(self.min_zoom, self.max_zoom);
-        
+
         if (new_zoom - old_zoom).abs() < f64::EPSILON {
             return; // No zoom change
         }
@@ -297,13 +297,13 @@ mod tests {
     fn test_flow_state_selection() {
         let mut state = FlowState::new();
         let node_id = NodeId::new("test-node");
-        
+
         assert!(!state.is_node_selected(&node_id));
-        
+
         state.select_node(node_id.clone());
         assert!(state.is_node_selected(&node_id));
         assert_eq!(state.selected_nodes.len(), 1);
-        
+
         state.clear_selection();
         assert!(!state.is_node_selected(&node_id));
         assert_eq!(state.selected_nodes.len(), 0);
@@ -312,18 +312,18 @@ mod tests {
     #[test]
     fn test_viewport_operations() {
         let mut viewport = ViewportState::new();
-        
+
         // Test pan
         viewport.pan(Position::new(10.0, 20.0));
         assert_eq!(viewport.viewport.offset.x, 10.0);
         assert_eq!(viewport.viewport.offset.y, 20.0);
-        
+
         // Test zoom
         let center = Position::new(100.0, 100.0);
         let initial_zoom = viewport.viewport.zoom;
         viewport.zoom_in(center);
         assert!(viewport.viewport.zoom > initial_zoom);
-        
+
         // Test reset
         viewport.reset();
         assert_eq!(viewport.viewport.offset.x, 0.0);
@@ -336,18 +336,18 @@ mod tests {
         let mut state = FlowState::new();
         let start_pos = Position::new(10.0, 20.0);
         let current_pos = Position::new(30.0, 50.0);
-        
+
         assert!(!state.is_dragging);
-        
+
         state.start_drag(start_pos);
         assert!(state.is_dragging);
         assert_eq!(state.drag_start, Some(start_pos));
-        
+
         state.update_drag(current_pos);
         let delta = state.drag_delta().unwrap();
         assert_eq!(delta.x, 20.0);
         assert_eq!(delta.y, 30.0);
-        
+
         state.end_drag();
         assert!(!state.is_dragging);
         assert!(state.drag_start.is_none());

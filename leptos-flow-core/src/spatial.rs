@@ -1,5 +1,5 @@
 //! Simple spatial indexing for efficient queries
-//! 
+//!
 //! This implementation uses a simple grid-based spatial partitioning scheme
 //! for efficient viewport and proximity queries.
 
@@ -75,7 +75,7 @@ impl SpatialIndex {
 
         let bounds = node.bounds();
         let grid_cells = self.get_grid_cells_for_bounds(&bounds);
-        
+
         let entry = SpatialEntry {
             node_id: node.id.clone(),
             bounds,
@@ -196,10 +196,10 @@ impl SpatialIndex {
 
         // Start with a small search radius and expand if needed
         let mut search_radius = self.cell_size;
-        
+
         while search_radius <= 1000.0 && nearest_id.is_none() {
             let candidates = self.query_radius(point, search_radius);
-            
+
             for node_id in candidates {
                 if let Some(entry) = self.entries.get(&node_id) {
                     let node_center = Position::new(
@@ -207,18 +207,18 @@ impl SpatialIndex {
                         entry.bounds.y + entry.bounds.height / 2.0,
                     );
                     let distance = point.distance_to(node_center);
-                    
+
                     if distance < nearest_distance {
                         nearest_distance = distance;
                         nearest_id = Some(node_id);
                     }
                 }
             }
-            
+
             if nearest_id.is_some() {
                 break;
             }
-            
+
             search_radius *= 2.0;
         }
 
@@ -246,7 +246,7 @@ impl SpatialIndex {
         T: Clone,
     {
         self.clear();
-        
+
         for node in nodes {
             self.insert(node)?;
         }
@@ -366,7 +366,7 @@ mod tests {
     #[test]
     fn test_insert_and_query() {
         let mut index = SpatialIndex::new();
-        
+
         let node = NodeBuilder::new("test-node")
             .position(Position::new(10.0, 10.0))
             .size(Size::new(50.0, 30.0))
@@ -390,7 +390,7 @@ mod tests {
     #[test]
     fn test_radius_query() {
         let mut index = SpatialIndex::new();
-        
+
         let node = NodeBuilder::new("test-node")
             .position(Position::new(10.0, 10.0))
             .size(Size::new(20.0, 20.0))
@@ -410,12 +410,12 @@ mod tests {
     #[test]
     fn test_nearest_neighbor() {
         let mut index = SpatialIndex::new();
-        
+
         let node1 = NodeBuilder::new("node1")
             .position(Position::new(10.0, 10.0))
             .size(Size::new(20.0, 20.0))
             .build();
-            
+
         let node2 = NodeBuilder::new("node2")
             .position(Position::new(50.0, 50.0))
             .size(Size::new(20.0, 20.0))
@@ -436,7 +436,7 @@ mod tests {
     #[test]
     fn test_update_node() {
         let mut index = SpatialIndex::new();
-        
+
         let mut node = NodeBuilder::new("test-node")
             .position(Position::new(10.0, 10.0))
             .size(Size::new(20.0, 20.0))
@@ -462,7 +462,7 @@ mod tests {
     #[test]
     fn test_bulk_load() {
         let mut index = SpatialIndex::new();
-        
+
         let nodes = vec![
             NodeBuilder::new("node1")
                 .position(Position::new(10.0, 10.0))
@@ -490,7 +490,7 @@ mod tests {
     #[test]
     fn test_spatial_query_builder() {
         let mut index = SpatialIndex::new();
-        
+
         let nodes = vec![
             NodeBuilder::new("node1")
                 .position(Position::new(10.0, 10.0))
@@ -513,27 +513,27 @@ mod tests {
             .bounds(Rect::new(0.0, 0.0, 120.0, 120.0))
             .limit(2)
             .execute();
-        
+
         assert_eq!(results.len(), 2);
 
         // Query with radius
         let results = SpatialQuery::new(&index)
             .radius(Position::new(60.0, 60.0), 30.0)
             .execute();
-        
+
         assert!(!results.is_empty());
     }
 
     #[test]
     fn test_grid_cells() {
         let index = SpatialIndex::with_cell_size(50.0);
-        
+
         // Test single cell
         let bounds = Rect::new(10.0, 10.0, 20.0, 20.0);
         let cells = index.get_grid_cells_for_bounds(&bounds);
         assert_eq!(cells.len(), 1);
         assert_eq!(cells[0], GridCell::new(0, 0));
-        
+
         // Test spanning multiple cells
         let bounds = Rect::new(25.0, 25.0, 50.0, 50.0);
         let cells = index.get_grid_cells_for_bounds(&bounds);

@@ -57,12 +57,12 @@ impl PerformanceMonitor {
     pub fn end_frame(&mut self) {
         let current_time = web_sys::js_sys::Date::now();
         let frame_time = current_time - self.last_frame_time;
-        
+
         self.frame_times.push(frame_time);
         if self.frame_times.len() > self.max_frame_samples {
             self.frame_times.remove(0);
         }
-        
+
         self.render_stats.frame_time_ms = frame_time;
     }
 
@@ -70,7 +70,7 @@ impl PerformanceMonitor {
         if self.frame_times.is_empty() {
             return 0.0;
         }
-        
+
         let sum: f64 = self.frame_times.iter().sum();
         sum / self.frame_times.len() as f64
     }
@@ -119,10 +119,10 @@ impl SpatialIndex {
         let index = self.node_positions.len();
         self.node_positions.push(position);
         self.node_sizes.push(size);
-        
+
         let cell_x = (position.x / self.cell_size).floor() as i32;
         let cell_y = (position.y / self.cell_size).floor() as i32;
-        
+
         self.cells.entry((cell_x, cell_y)).or_insert_with(Vec::new).push(index);
         index
     }
@@ -135,18 +135,18 @@ impl SpatialIndex {
         let old_position = self.node_positions[index];
         let old_cell_x = (old_position.x / self.cell_size).floor() as i32;
         let old_cell_y = (old_position.y / self.cell_size).floor() as i32;
-        
+
         let new_cell_x = (position.x / self.cell_size).floor() as i32;
         let new_cell_y = (position.y / self.cell_size).floor() as i32;
-        
+
         // Remove from old cell
         if let Some(cell) = self.cells.get_mut(&(old_cell_x, old_cell_y)) {
             cell.retain(|&i| i != index);
         }
-        
+
         // Add to new cell
         self.cells.entry((new_cell_x, new_cell_y)).or_insert_with(Vec::new).push(index);
-        
+
         // Update position and size
         self.node_positions[index] = position;
         self.node_sizes[index] = size;
@@ -160,16 +160,16 @@ impl SpatialIndex {
         let position = self.node_positions[index];
         let cell_x = (position.x / self.cell_size).floor() as i32;
         let cell_y = (position.y / self.cell_size).floor() as i32;
-        
+
         // Remove from cell
         if let Some(cell) = self.cells.get_mut(&(cell_x, cell_y)) {
             cell.retain(|&i| i != index);
         }
-        
+
         // Remove from arrays
         self.node_positions.remove(index);
         self.node_sizes.remove(index);
-        
+
         // Update indices in all cells
         for cell in self.cells.values_mut() {
             for i in cell.iter_mut() {
@@ -182,12 +182,12 @@ impl SpatialIndex {
 
     pub fn query_rect(&self, rect: Rect) -> Vec<usize> {
         let mut result = Vec::new();
-        
+
         let min_cell_x = (rect.x / self.cell_size).floor() as i32;
         let min_cell_y = (rect.y / self.cell_size).floor() as i32;
         let max_cell_x = ((rect.x + rect.width) / self.cell_size).ceil() as i32;
         let max_cell_y = ((rect.y + rect.height) / self.cell_size).ceil() as i32;
-        
+
         for cell_x in min_cell_x..=max_cell_x {
             for cell_y in min_cell_y..=max_cell_y {
                 if let Some(cell) = self.cells.get(&(cell_x, cell_y)) {
@@ -195,7 +195,7 @@ impl SpatialIndex {
                         if index < self.node_positions.len() {
                             let pos = self.node_positions[index];
                             let size = self.node_sizes[index];
-                            
+
                             // Check if node actually intersects with query rect
                             if rect.intersects(&Rect::new(pos.x, pos.y, size.0, size.1)) {
                                 result.push(index);
@@ -205,7 +205,7 @@ impl SpatialIndex {
                 }
             }
         }
-        
+
         result
     }
 
@@ -313,12 +313,12 @@ impl<T: Default> MemoryPool<T> {
     pub fn new(initial_capacity: usize) -> Self {
         let mut pool = Vec::with_capacity(initial_capacity);
         let mut available = Vec::with_capacity(initial_capacity);
-        
+
         for i in 0..initial_capacity {
             pool.push(T::default());
             available.push(i);
         }
-        
+
         Self {
             pool,
             available,
@@ -456,7 +456,7 @@ impl PerformanceManager {
         // Viewport culling
         let node_rect = Rect::new(position.x, position.y, size.0, size.1);
         let viewport_rect = viewport.bounds().expand(self.settings.cull_margin);
-        
+
         if !viewport_rect.intersects(&node_rect) {
             return false;
         }
@@ -479,7 +479,7 @@ impl PerformanceManager {
         // Viewport culling
         let edge_rect = Rect::from_points(source_pos, target_pos);
         let viewport_rect = viewport.bounds().expand(self.settings.cull_margin);
-        
+
         if !viewport_rect.intersects(&edge_rect) {
             return false;
         }

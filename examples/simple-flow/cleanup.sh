@@ -144,7 +144,7 @@ Generated: $(date)
 
 Build Artifacts Removed:
 - pkg/ directory
-- target/ directory  
+- target/ directory
 - node_modules/ directory
 
 Temporary Files Removed:

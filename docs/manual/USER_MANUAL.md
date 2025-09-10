@@ -52,6 +52,7 @@ full = ["leptos-flow/full"]
 ### Core Components
 
 #### FlowEditor
+
 The main component that renders your flow diagram:
 
 ```rust
@@ -66,6 +67,7 @@ view! {
 ```
 
 #### Nodes
+
 Interactive elements that can be connected:
 
 ```rust
@@ -76,6 +78,7 @@ let node = Node::builder("unique-id")
 ```
 
 #### Edges
+
 Connections between nodes:
 
 ```rust
@@ -146,6 +149,7 @@ pub fn MyFlowEditor() -> impl IntoView {
 ### Node Properties
 
 #### Position and Size
+
 ```rust
 let node = Node::builder("my-node")
     .position(100.0, 150.0)           // X, Y coordinates
@@ -154,19 +158,21 @@ let node = Node::builder("my-node")
 ```
 
 #### Node Types
+
 ```rust
 let input_node = Node::builder("input")
     .node_type("input")               // Custom type identifier
     .position(50.0, 100.0)
     .build();
 
-let output_node = Node::builder("output") 
+let output_node = Node::builder("output")
     .node_type("output")
     .position(350.0, 100.0)
     .build();
 ```
 
 #### Visual Properties
+
 ```rust
 let styled_node = Node::builder("styled")
     .position(200.0, 200.0)
@@ -191,7 +197,7 @@ let create_node_at = move |x: f64, y: f64| {
         .position(x, y)
         .data(NodeData::default())
         .build();
-    
+
     set_nodes.update(|nodes| nodes.push(new_node));
 };
 
@@ -238,10 +244,10 @@ pub fn CustomNode() -> impl IntoView {
                 position=HandlePosition::Left
                 id="input"
             />
-            
+
             // Node content
             <div class="content">"My Node"</div>
-            
+
             // Output handle (right side)
             <Handle
                 handle_type=HandleType::Source
@@ -274,7 +280,7 @@ view! {
                 .source_handle(connection.source_handle)
                 .target_handle(connection.target_handle)
                 .build();
-            
+
             set_edges.update(|edges| edges.push(new_edge));
         }
         on_connect_start=move |_node_id, _handle_id| {
@@ -312,6 +318,7 @@ let styled_edge = Edge::builder()
 ### Selection
 
 #### Single Selection
+
 ```rust
 let (selected_nodes, set_selected_nodes) = create_signal(Vec::<String>::new());
 
@@ -327,6 +334,7 @@ view! {
 ```
 
 #### Multi-Selection
+
 ```rust
 view! {
     <FlowEditor
@@ -376,6 +384,7 @@ view! {
 ### Panning and Zooming
 
 #### Viewport Controls
+
 ```rust
 view! {
     <FlowEditor
@@ -396,6 +405,7 @@ view! {
 ```
 
 #### Programmatic Control
+
 ```rust
 let flow_instance = use_flow_instance();
 
@@ -579,14 +589,14 @@ Update styles based on node state:
 pub fn StatefulNode(node: Node<NodeData>) -> impl IntoView {
     let node_style = move || {
         let base_style = "padding: 12px; border-radius: 6px; border: 2px solid;";
-        
+
         match node.data.status {
             NodeStatus::Active => format!("{} background: #e6fffa; border-color: #38b2ac;", base_style),
             NodeStatus::Error => format!("{} background: #fed7d7; border-color: #e53e3e;", base_style),
             NodeStatus::Disabled => format!("{} background: #f7fafc; border-color: #cbd5e0; opacity: 0.6;", base_style),
         }
     };
-    
+
     view! {
         <div style=node_style>
             {node.data.title}
@@ -612,23 +622,23 @@ pub fn CalculatorNode(
     #[prop(optional)] on_change: Option<Callback<Node<CalculatorNodeData>>>,
 ) -> impl IntoView {
     let node_data = move || node.get();
-    
+
     view! {
         <div class="calculator-node">
             // Input handles
-            <Handle 
+            <Handle
                 handle_type=HandleType::Target
                 position=HandlePosition::Left
                 id="input-a"
                 style="top: 25%;"
             />
-            <Handle 
+            <Handle
                 handle_type=HandleType::Target
                 position=HandlePosition::Left
                 id="input-b"
                 style="top: 75%;"
             />
-            
+
             // Node content
             <div class="calculator-content">
                 <div class="operation">
@@ -638,9 +648,9 @@ pub fn CalculatorNode(
                     {move || node_data().data.result}
                 </div>
             </div>
-            
+
             // Output handle
-            <Handle 
+            <Handle
                 handle_type=HandleType::Source
                 position=HandlePosition::Right
                 id="result"
@@ -669,7 +679,7 @@ pub fn InputNode(
 ) -> impl IntoView {
     let node_data = move || node.get();
     let (local_value, set_local_value) = create_signal(String::new());
-    
+
     let update_node = move |new_value: String| {
         if let Some(callback) = on_change {
             let mut updated_node = node_data();
@@ -677,18 +687,18 @@ pub fn InputNode(
             callback.call(updated_node);
         }
     };
-    
+
     view! {
         <div class="input-node">
-            <Handle 
+            <Handle
                 handle_type=HandleType::Source
                 position=HandlePosition::Right
                 id="output"
             />
-            
+
             <div class="input-content">
                 <label>"Value:"</label>
-                <input 
+                <input
                     type="text"
                     value=move || node_data().data.value.clone()
                     on:input=move |ev| {
@@ -712,14 +722,14 @@ pub fn ResizableNode(
 ) -> impl IntoView {
     let node_data = move || node.get();
     let (is_resizing, set_is_resizing) = create_signal(false);
-    
+
     view! {
-        <div 
+        <div
             class="resizable-node"
             class:resizing=is_resizing
             style=move || format!(
-                "width: {}px; height: {}px;", 
-                node_data().size.width, 
+                "width: {}px; height: {}px;",
+                node_data().size.width,
                 node_data().size.height
             )
         >
@@ -727,9 +737,9 @@ pub fn ResizableNode(
             <div class="node-content">
                 {move || node_data().data.content.clone()}
             </div>
-            
+
             // Resize handle
-            <div 
+            <div
                 class="resize-handle"
                 on:mousedown=move |_| set_is_resizing.set(true)
                 on:mouseup=move |_| set_is_resizing.set(false)
@@ -792,7 +802,7 @@ create_effect(move |_| {
         .take(1000)  // Limit to 1000 visible nodes
         .cloned()
         .collect();
-    
+
     set_visible_nodes.set(visible);
 });
 
@@ -811,7 +821,7 @@ Choose optimal renderer for your use case:
 ```rust
 let renderer = move || {
     let node_count = nodes.get().len();
-    
+
     if node_count > 5000 && webgpu_available() {
         RendererType::WebGPU     // Best for large graphs
     } else if node_count > 100 {
@@ -835,6 +845,7 @@ view! {
 ### Common Issues
 
 #### Nodes Not Rendering
+
 ```rust
 // Check that nodes have valid positions
 let validate_nodes = move || {
@@ -847,6 +858,7 @@ let validate_nodes = move || {
 ```
 
 #### Performance Issues
+
 ```rust
 // Enable performance monitoring
 view! {
@@ -862,12 +874,13 @@ view! {
 ```
 
 #### Memory Leaks
+
 ```rust
 // Use cleanup effects
 create_effect(move |_| {
     // Setup expensive resources
     let resource = create_expensive_resource();
-    
+
     on_cleanup(move || {
         // Cleanup when component unmounts
         resource.cleanup();
@@ -915,7 +928,7 @@ create_effect(move |_| {
 // Send local changes to other clients
 let on_nodes_change = move |new_nodes| {
     set_nodes.set(new_nodes.clone());
-    
+
     let update = FlowUpdate::NodesChanged { nodes: new_nodes };
     let message = serde_json::to_string(&update).unwrap();
     ws.send(&message);
@@ -929,20 +942,20 @@ let history = use_history();
 
 view! {
     <div class="editor-controls">
-        <button 
+        <button
             on:click=move |_| history.undo()
             disabled=move || !history.can_undo.get()
         >
             "Undo"
         </button>
-        <button 
+        <button
             on:click=move |_| history.redo()
             disabled=move || !history.can_redo.get()
         >
             "Redo"
         </button>
     </div>
-    
+
     <FlowEditor
         nodes=nodes
         edges=edges
@@ -967,13 +980,13 @@ let export_flow = move || {
         edges: edges.get(),
         viewport: use_viewport().get(),
     };
-    
+
     let json = serde_json::to_string_pretty(&flow_data).unwrap();
-    
+
     // Download as file
     let blob = web_sys::Blob::new_with_str_sequence(&js_sys::Array::of1(&json.into())).unwrap();
     let url = web_sys::Url::create_object_url_with_blob(&blob).unwrap();
-    
+
     let link = document().create_element("a").unwrap();
     link.set_attribute("href", &url).unwrap();
     link.set_attribute("download", "flow.json").unwrap();
@@ -985,7 +998,7 @@ let import_flow = move |json: String| {
     if let Ok(flow_data) = serde_json::from_str::<FlowData>(&json) {
         set_nodes.set(flow_data.nodes);
         set_edges.set(flow_data.edges);
-        
+
         // Restore viewport
         let flow = use_flow_instance();
         flow.set_viewport(flow_data.viewport);

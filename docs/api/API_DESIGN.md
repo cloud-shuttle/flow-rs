@@ -7,18 +7,21 @@ This document defines the API surface for Leptos Flow, focusing on developer exp
 ## Design Philosophy
 
 ### 1. Leptos-First Integration
+
 - Native signal-based reactivity
 - Component-centric API design
 - Idiomatic Leptos patterns and conventions
 - Zero-cost abstractions with compile-time optimization
 
 ### 2. Builder Pattern for Configuration
+
 - Fluent, discoverable API
 - Compile-time validation
 - Sensible defaults with customization options
 - Progressive disclosure of complexity
 
 ### 3. Type-Safe Extensibility
+
 - Generic node/edge data types
 - Trait-based customization points
 - Compile-time validation of graph constraints
@@ -29,6 +32,7 @@ This document defines the API surface for Leptos Flow, focusing on developer exp
 ### 1. Declarative Component API
 
 #### Basic Flow Editor
+
 ```rust
 use leptos::*;
 use leptos_flow::*;
@@ -43,7 +47,7 @@ pub fn App() -> impl IntoView {
             .position(300.0, 200.0)
             .data(MyNodeData::default()),
     ]);
-    
+
     let (edges, set_edges) = create_signal(vec![
         Edge::new("e1")
             .connect("1", "2")
@@ -71,6 +75,7 @@ pub fn App() -> impl IntoView {
 ```
 
 #### Advanced Configuration
+
 ```rust
 view! {
     <FlowEditor
@@ -78,29 +83,29 @@ view! {
         edges=edges
         on_nodes_change=set_nodes
         on_edges_change=set_edges
-        
+
         // Interaction Configuration
         node_drag_threshold=5.0
         selection_key=Some(SelectionKey::Shift)
         multi_selection=true
         delete_key=Some("Delete")
-        
+
         // Viewport Configuration
         min_zoom=0.1
         max_zoom=4.0
         fit_view_on_init=true
         snap_to_grid=Some(SnapToGrid::new(10))
-        
+
         // Visual Configuration
         background=Background::Dots { spacing: 20, color: "#ddd" }
         connection_mode=ConnectionMode::Loose
         connection_line_type=ConnectionLineType::SmoothStep
-        
+
         // Performance Configuration
         only_render_visible_elements=true
         node_extent=Some(Extent::new(0, 0, 1000, 1000))
         translate_extent=Some(Extent::infinite())
-        
+
         // Event Handlers
         on_init=|flow_instance| { /* Setup */ }
         on_nodes_change=set_nodes
@@ -121,10 +126,10 @@ view! {
         <NodeType name="output" component=OutputNode />
         <EdgeType name="default" component=DefaultEdge />
         <EdgeType name="animated" component=AnimatedEdge />
-        
+
         // Optional child components
         <Controls position=ControlPosition::TopLeft />
-        <MiniMap 
+        <MiniMap
             position=MiniMapPosition::BottomRight
             mask_color="#f0f0f0"
             node_color="#333"
@@ -137,6 +142,7 @@ view! {
 ### 2. Imperative Flow Instance API
 
 #### Flow Instance Methods
+
 ```rust
 use leptos_flow::*;
 
@@ -148,13 +154,13 @@ pub struct FlowInstance {
     pub fn update_node(&self, node_id: &str, updates: NodeUpdate) -> Result<(), FlowError>;
     pub fn get_node(&self, node_id: &str) -> Option<Node>;
     pub fn get_nodes(&self) -> Vec<Node>;
-    
+
     pub fn add_edge(&self, edge: Edge) -> Result<(), FlowError>;
     pub fn remove_edge(&self, edge_id: &str) -> Result<Edge, FlowError>;
     pub fn update_edge(&self, edge_id: &str, updates: EdgeUpdate) -> Result<(), FlowError>;
     pub fn get_edge(&self, edge_id: &str) -> Option<Edge>;
     pub fn get_edges(&self) -> Vec<Edge>;
-    
+
     // Viewport operations
     pub fn fit_view(&self, options: FitViewOptions) -> Result<(), FlowError>;
     pub fn zoom_to(&self, zoom: f64) -> Result<(), FlowError>;
@@ -163,7 +169,7 @@ pub struct FlowInstance {
     pub fn set_center(&self, x: f64, y: f64) -> Result<(), FlowError>;
     pub fn get_zoom(&self) -> f64;
     pub fn get_viewport(&self) -> Viewport;
-    
+
     // Selection operations
     pub fn select_node(&self, node_id: &str) -> Result<(), FlowError>;
     pub fn select_nodes(&self, node_ids: Vec<String>) -> Result<(), FlowError>;
@@ -172,17 +178,17 @@ pub struct FlowInstance {
     pub fn clear_selection(&self) -> Result<(), FlowError>;
     pub fn get_selected_nodes(&self) -> Vec<Node>;
     pub fn get_selected_edges(&self) -> Vec<Edge>;
-    
+
     // Spatial queries
     pub fn get_nodes_in_rect(&self, rect: Rect) -> Vec<Node>;
     pub fn get_intersecting_nodes(&self, point: Point, radius: Option<f64>) -> Vec<Node>;
     pub fn screen_to_flow_position(&self, screen_pos: Point) -> Point;
     pub fn flow_to_screen_position(&self, flow_pos: Point) -> Point;
-    
+
     // Layout operations
     pub fn apply_layout(&self, algorithm: LayoutAlgorithm) -> Result<(), FlowError>;
     pub fn stop_layout(&self) -> Result<(), FlowError>;
-    
+
     // Export operations
     pub fn to_object(&self) -> FlowObject;
     pub fn to_json(&self) -> Result<String, FlowError>;
@@ -194,6 +200,7 @@ pub struct FlowInstance {
 ### 3. Hook-Based API for Custom Behaviors
 
 #### Core Hooks
+
 ```rust
 // Node management hooks
 pub fn use_nodes<T>() -> (ReadSignal<Vec<Node<T>>>, WriteSignal<Vec<Node<T>>>) {
@@ -246,11 +253,12 @@ pub fn use_layout() -> LayoutHandlers {
 ```
 
 #### Custom Hook Examples
+
 ```rust
 // Custom node selection hook
 pub fn use_multi_select() -> (ReadSignal<Vec<String>>, Callback<String>) {
     let (selected, set_selected) = create_signal(Vec::new());
-    
+
     let toggle_selection = Callback::new(move |node_id: String| {
         set_selected.update(|selection| {
             if selection.contains(&node_id) {
@@ -260,14 +268,14 @@ pub fn use_multi_select() -> (ReadSignal<Vec<String>>, Callback<String>) {
             }
         });
     });
-    
+
     (selected, toggle_selection)
 }
 
 // Custom undo/redo hook
 pub fn use_history<T>() -> HistoryHandlers<T> {
     let (history, set_history) = create_signal(History::new());
-    
+
     HistoryHandlers {
         undo: Callback::new(move || { /* Undo logic */ }),
         redo: Callback::new(move || { /* Redo logic */ }),
@@ -281,6 +289,7 @@ pub fn use_history<T>() -> HistoryHandlers<T> {
 ## Type System Design
 
 ### 1. Generic Node/Edge Types
+
 ```rust
 // Node with custom data type
 #[derive(Clone, Debug, PartialEq)]
@@ -334,6 +343,7 @@ pub struct Edge<T = ()> {
 ```
 
 ### 2. Trait-Based Extensibility
+
 ```rust
 // Custom node behavior
 pub trait NodeBehavior {
@@ -366,6 +376,7 @@ pub trait LayoutAlgorithm {
 ```
 
 ### 3. Compile-Time Validation
+
 ```rust
 // Type-safe node/edge creation
 pub struct NodeBuilder<T> {
@@ -382,17 +393,17 @@ impl<T> NodeBuilder<T> {
             }
         }
     }
-    
+
     pub fn position(mut self, x: f64, y: f64) -> Self {
         self.node.position = Position::new(x, y);
         self
     }
-    
+
     pub fn data(mut self, data: T) -> Self {
         self.node.data = data;
         self
     }
-    
+
     pub fn build(self) -> Node<T> {
         self.node
     }
@@ -405,7 +416,7 @@ pub struct EdgeBuilder<T> {
 
 impl<T> EdgeBuilder<T> {
     pub fn connect<S: Into<String>, T: Into<String>>(
-        source: S, 
+        source: S,
         target: T
     ) -> ConnectionBuilder<T> {
         ConnectionBuilder::new(source.into(), target.into())
@@ -421,8 +432,8 @@ pub struct ConnectionBuilder<T> {
 
 impl<T> ConnectionBuilder<T> {
     pub fn with_handles(
-        self, 
-        source_handle: impl Into<String>, 
+        self,
+        source_handle: impl Into<String>,
         target_handle: impl Into<String>
     ) -> EdgeBuilder<T> {
         EdgeBuilder {
@@ -442,6 +453,7 @@ impl<T> ConnectionBuilder<T> {
 ## Event System Design
 
 ### 1. Event Types
+
 ```rust
 #[derive(Clone, Debug)]
 pub enum FlowEvent {
@@ -452,24 +464,24 @@ pub enum FlowEvent {
     NodeDragStart { node_id: String, event: DragEvent },
     NodeDrag { node_id: String, event: DragEvent },
     NodeDragEnd { node_id: String, event: DragEvent },
-    
-    // Edge events  
+
+    // Edge events
     EdgeClick { edge_id: String, event: MouseEvent },
     EdgeDoubleClick { edge_id: String, event: MouseEvent },
     EdgeContextMenu { edge_id: String, event: MouseEvent },
-    
+
     // Connection events
     ConnectStart { node_id: String, handle_id: Option<String> },
     ConnectEnd { connection: Option<Connection> },
     Connect { connection: Connection },
-    
+
     // Selection events
     SelectionChange { selection: Selection },
-    
+
     // Viewport events
     ViewportChange { viewport: Viewport },
     ZoomChange { zoom: f64 },
-    
+
     // Pane events
     PaneClick { event: MouseEvent },
     PaneContextMenu { event: MouseEvent },
@@ -478,11 +490,12 @@ pub enum FlowEvent {
 ```
 
 ### 2. Event Handling
+
 ```rust
 // Reactive event handling with Leptos signals
 pub fn use_flow_events() -> FlowEventHandlers {
     let (events, set_events) = create_signal(Vec::new());
-    
+
     FlowEventHandlers {
         events: events.into(),
         emit: Callback::new(move |event: FlowEvent| {
@@ -498,16 +511,19 @@ pub fn use_flow_events() -> FlowEventHandlers {
 ## Performance Considerations
 
 ### 1. Lazy Evaluation
+
 - Nodes and edges only rendered when visible
 - Layout calculations deferred until needed
 - Event handlers registered on-demand
 
 ### 2. Memory Management
+
 - Automatic cleanup of unused resources
 - Object pooling for frequently created/destroyed objects
 - Efficient spatial indexing with R-tree
 
 ### 3. Bundle Size Optimization
+
 - Tree-shaking friendly API design
 - Feature flags for optional functionality
 - Minimal WASM binary size

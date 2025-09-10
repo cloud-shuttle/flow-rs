@@ -7,6 +7,7 @@ Get up and running with Leptos Flow in under 10 minutes. This guide walks throug
 ## Installation
 
 ### Prerequisites
+
 - Rust 1.70+ with `wasm32-unknown-unknown` target
 - Node.js 18+ (for development tools)
 - A Leptos project (0.6+)
@@ -14,6 +15,7 @@ Get up and running with Leptos Flow in under 10 minutes. This guide walks throug
 ### Add Dependencies
 
 Add to your `Cargo.toml`:
+
 ```toml
 [dependencies]
 leptos = "0.6"
@@ -25,6 +27,7 @@ webgpu = ["leptos-flow/webgpu"]
 ```
 
 ### Install Development Tools
+
 ```bash
 # Install wasm-pack for building
 cargo install wasm-pack
@@ -55,7 +58,7 @@ pub fn SimpleFlow() -> impl IntoView {
         pub value: i32,
     }
 
-    // Define edge data structure  
+    // Define edge data structure
     #[derive(Clone, Debug, Default)]
     pub struct EdgeData {
         pub weight: f64,
@@ -73,7 +76,7 @@ pub fn SimpleFlow() -> impl IntoView {
         Node::builder("2")
             .position(300.0, 200.0)
             .data(NodeData {
-                label: "Output".to_string(), 
+                label: "Output".to_string(),
                 value: 0,
             })
             .build(),
@@ -99,7 +102,7 @@ pub fn SimpleFlow() -> impl IntoView {
                         .connect(&connection.source, &connection.target)
                         .data(EdgeData { weight: 1.0 })
                         .build();
-                    
+
                     set_edges.update(|edges| edges.push(new_edge));
                 }
             />
@@ -119,29 +122,29 @@ pub fn CustomNode(
     #[prop(optional)] on_change: Option<Callback<Node<NodeData>>>,
 ) -> impl IntoView {
     let node_data = move || node.get();
-    
+
     view! {
-        <div class="custom-node" 
+        <div class="custom-node"
              style="
-                 padding: 10px; 
+                 padding: 10px;
                  border: 2px solid #1a365d;
                  border-radius: 8px;
                  background: white;
                  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
              ">
-            
+
             // Node handles for connections
-            <Handle 
+            <Handle
                 handle_type=HandleType::Source
                 position=HandlePosition::Right
                 id="output"
             />
-            <Handle 
-                handle_type=HandleType::Target  
+            <Handle
+                handle_type=HandleType::Target
                 position=HandlePosition::Left
                 id="input"
             />
-            
+
             // Node content
             <div class="node-content">
                 <h3>{move || node_data().data.label.clone()}</h3>
@@ -171,7 +174,7 @@ view! {
             <NodeType name="custom" component=CustomNode />
             <NodeType name="input" component=InputNode />
             <NodeType name="output" component=OutputNode />
-            
+
             // Add controls and minimap
             <Controls position=ControlPosition::TopLeft />
             <MiniMap position=MiniMapPosition::BottomRight />
@@ -233,10 +236,10 @@ view! {
 ```rust
 fn create_new_node_at(x: i32, y: i32) {
     let flow_instance = use_flow_instance();
-    
+
     // Convert screen coordinates to flow coordinates
     let flow_pos = flow_instance.screen_to_flow_position(Point::new(x as f64, y as f64));
-    
+
     let new_node = Node::builder(format!("node_{}", generate_id()))
         .position(flow_pos.x, flow_pos.y)
         .data(NodeData {
@@ -244,7 +247,7 @@ fn create_new_node_at(x: i32, y: i32) {
             value: 0,
         })
         .build();
-    
+
     set_nodes.update(|nodes| nodes.push(new_node));
 }
 ```
@@ -296,24 +299,24 @@ pub fn StyledNode(
     #[prop(into)] node: MaybeSignal<Node<NodeData>>,
 ) -> impl IntoView {
     let node_data = move || node.get();
-    
+
     // Dynamic styles based on node state
     let node_style = move || {
         let node = node_data();
         let base_color = if node.selected { "#3182ce" } else { "#1a365d" };
         let bg_color = if node.data.value > 50 { "#e6fffa" } else { "#ffffff" };
-        
+
         format!(
             "border-color: {}; background-color: {}; padding: 10px; border-radius: 8px;",
             base_color, bg_color
         )
     };
-    
+
     view! {
         <div class="custom-node" style=node_style>
             <Handle handle_type=HandleType::Target position=HandlePosition::Left />
             <Handle handle_type=HandleType::Source position=HandlePosition::Right />
-            
+
             <div class="content">
                 {move || node_data().data.label.clone()}
             </div>
@@ -334,14 +337,14 @@ let (apply_layout, _) = create_signal(());
 // Apply layout when signal changes
 create_effect(move |_| {
     apply_layout.get(); // Trigger when signal updates
-    
+
     let flow = use_flow_instance();
     let layout = ForceDirectedLayout::builder()
         .iterations(100)
         .spring_strength(0.5)
         .repulsion_strength(1000.0)
         .build();
-    
+
     // Apply layout asynchronously
     spawn_local(async move {
         flow.apply_layout(layout).await.unwrap();
@@ -374,7 +377,7 @@ view! {
             flow.apply_layout(hierarchical_layout.clone()).await.unwrap();
         });
     }>
-        "Arrange Hierarchically"  
+        "Arrange Hierarchically"
     </button>
 }
 ```
@@ -388,21 +391,21 @@ let history = use_history();
 
 view! {
     <div class="controls">
-        <button 
+        <button
             on:click=move |_| history.undo()
             disabled=move || !history.can_undo.get()
         >
             "Undo"
         </button>
-        <button 
+        <button
             on:click=move |_| history.redo()
             disabled=move || !history.can_redo.get()
         >
-            "Redo" 
+            "Redo"
         </button>
     </div>
-    
-    <FlowEditor 
+
+    <FlowEditor
         nodes=nodes
         edges=edges
         on_nodes_change=move |new_nodes| {
@@ -425,13 +428,13 @@ let save_flow = move || {
         nodes: nodes.get(),
         edges: edges.get(),
     };
-    
+
     let json = serde_json::to_string(&flow_data).unwrap();
     let storage = window().local_storage().unwrap().unwrap();
     storage.set_item("flow_data", &json).unwrap();
 };
 
-// Load flow from localStorage  
+// Load flow from localStorage
 let load_flow = move || {
     let storage = window().local_storage().unwrap().unwrap();
     if let Ok(Some(json)) = storage.get_item("flow_data") {
@@ -455,7 +458,7 @@ view! {
 Now that you have a basic flow editor working, explore these advanced topics:
 
 1. **[Custom Renderers](RENDERING.md)** - Create WebGPU or custom Canvas renderers
-2. **[Advanced Layouts](../api/LAYOUTS.md)** - Implement custom layout algorithms  
+2. **[Advanced Layouts](../api/LAYOUTS.md)** - Implement custom layout algorithms
 3. **[Performance Optimization](../performance/PERFORMANCE.md)** - Handle large graphs efficiently
 4. **[Testing](../dev/TESTING.md)** - Test your flow editor components
 5. **[Deployment](../dev/DEPLOYMENT.md)** - Build and deploy your application
@@ -463,6 +466,7 @@ Now that you have a basic flow editor working, explore these advanced topics:
 ## Common Patterns
 
 ### Real-Time Collaboration
+
 ```rust
 // WebSocket integration for real-time updates
 let ws = use_websocket("ws://localhost:8080/flow");
@@ -486,16 +490,17 @@ create_effect(move |_| {
 ```
 
 ### Data Flow Processing
+
 ```rust
 // Process data through connected nodes
 fn process_data_flow() {
     let flow = use_flow_instance();
     let nodes = flow.get_nodes();
     let edges = flow.get_edges();
-    
+
     // Build execution graph
     let execution_order = flow.topological_sort();
-    
+
     for node_id in execution_order {
         let node = flow.get_node(&node_id).unwrap();
         let inputs = flow.get_node_inputs(&node_id);

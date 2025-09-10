@@ -19,23 +19,26 @@ Before you begin, make sure you have the following installed:
 ### Required Software
 
 - **Rust** (latest stable version)
+
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   ```
 
 - **wasm-pack** (for building WASM modules)
+
   ```bash
   cargo install wasm-pack
   ```
 
 - **Python 3** (for serving the example)
+
   ```bash
   # macOS
   brew install python3
-  
+
   # Ubuntu/Debian
   sudo apt install python3
-  
+
   # Windows
   # Download from python.org
   ```
@@ -43,6 +46,7 @@ Before you begin, make sure you have the following installed:
 ### Optional but Recommended
 
 - **Node.js** (for advanced development)
+
   ```bash
   # Using nvm (recommended)
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
@@ -77,6 +81,7 @@ chmod +x build.sh
 ```
 
 This will:
+
 - Compile the Rust code to WebAssembly
 - Generate JavaScript bindings
 - Create the necessary files in the `pkg/` directory
@@ -121,18 +126,18 @@ Create a simple HTML file to get started:
 <body>
     <h1>My First Flow Diagram</h1>
     <canvas id="flow-canvas" width="800" height="600"></canvas>
-    
+
     <script type="module">
         import init, { create_simple_flow } from './pkg/simple_flow_example.js';
-        
+
         async function run() {
             // Initialize the WASM module
             await init();
-            
+
             // Create a simple flow diagram
             create_simple_flow();
         }
-        
+
         run().catch(console.error);
     </script>
 </body>
@@ -143,22 +148,22 @@ Create a simple HTML file to get started:
 
 ```javascript
 // Import the WASM module
-import init, { 
+import init, {
     create_simple_flow,
     add_node_at_position,
-    move_node 
+    move_node
 } from './pkg/simple_flow_example.js';
 
 // Initialize and use
 async function setupFlow() {
     await init();
-    
+
     // Create the initial flow
     create_simple_flow();
-    
+
     // Add a new node at position (400, 300)
     add_node_at_position(400, 300);
-    
+
     // Move a node (if you know the node ID)
     // move_node('node1', 500, 400);
 }
@@ -173,31 +178,41 @@ setupFlow();
 The Leptos Flow Simple Example consists of several key components:
 
 #### 1. **Graph**
+
 A data structure that contains nodes and edges:
+
 ```rust
 let mut graph = Graph::new();
 ```
 
 #### 2. **Nodes**
+
 Individual elements in the flow diagram:
+
 ```rust
 let node = Node::simple("node_id", Position::new(100.0, 100.0));
 ```
 
 #### 3. **Edges**
+
 Connections between nodes:
+
 ```rust
 let edge = Edge::simple("edge_id", "source_node", "target_node");
 ```
 
 #### 4. **Viewport**
+
 The visible area and zoom level:
+
 ```rust
 let viewport = Viewport::default();
 ```
 
 #### 5. **Renderer**
+
 Handles drawing to the canvas:
+
 ```rust
 let mut renderer = Canvas2DRenderer::new(&canvas)?;
 ```
@@ -212,6 +227,7 @@ let mut renderer = Canvas2DRenderer::new(&canvas)?;
 ### Node Properties
 
 Each node has the following properties:
+
 - **ID**: Unique identifier
 - **Position**: X and Y coordinates
 - **Size**: Width and height
@@ -220,6 +236,7 @@ Each node has the following properties:
 ### Edge Properties
 
 Each edge has the following properties:
+
 - **ID**: Unique identifier
 - **Source**: Starting node ID
 - **Target**: Ending node ID
@@ -283,41 +300,41 @@ Let's create a simple process flow diagram step by step:
         </div>
         <canvas id="flow-canvas" width="800" height="600"></canvas>
     </div>
-    
+
     <script type="module">
-        import init, { 
+        import init, {
             create_simple_flow,
             add_node_at_position,
-            clear_canvas 
+            clear_canvas
         } from './pkg/simple_flow_example.js';
-        
+
         let isInitialized = false;
-        
+
         async function initialize() {
             await init();
             isInitialized = true;
             create_simple_flow();
         }
-        
+
         window.addNode = function() {
             if (!isInitialized) return;
-            
+
             // Add node at random position
             const x = Math.random() * 700 + 50;
             const y = Math.random() * 500 + 50;
             add_node_at_position(x, y);
         };
-        
+
         window.clearCanvas = function() {
             if (!isInitialized) return;
             clear_canvas();
         };
-        
+
         window.saveFlow = function() {
             console.log('Saving flow...');
             // In a real application, you would save to a server or local storage
         };
-        
+
         // Initialize when page loads
         initialize().catch(console.error);
     </script>
@@ -331,11 +348,11 @@ Let's create a simple process flow diagram step by step:
 // Add mouse interaction
 document.getElementById('flow-canvas').addEventListener('click', function(event) {
     if (!isInitialized) return;
-    
+
     const rect = this.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Add node at click position
     add_node_at_position(x, y);
 });
@@ -343,7 +360,7 @@ document.getElementById('flow-canvas').addEventListener('click', function(event)
 // Add keyboard shortcuts
 document.addEventListener('keydown', function(event) {
     if (!isInitialized) return;
-    
+
     switch(event.key) {
         case 'n':
         case 'N':
@@ -417,26 +434,31 @@ The WASM module handles memory management automatically, but be aware of:
 Now that you have a basic understanding, here's what to explore next:
 
 ### 1. **Explore the API**
+
 - Read the [API Reference](./API_EXAMPLES.md) for detailed function documentation
 - Try different node and edge configurations
 - Experiment with viewport and rendering options
 
 ### 2. **Build Interactive Features**
+
 - Add drag and drop functionality
 - Implement node selection and editing
 - Create custom node types and styles
 
 ### 3. **Integrate with Frameworks**
+
 - Check out [Integration Examples](./INTEGRATION_EXAMPLES.md) for React, Vue.js, Angular
 - Learn how to integrate with your favorite framework
 - See examples of real-time collaboration
 
 ### 4. **Advanced Usage**
+
 - Explore [Usage Examples](./USAGE_EXAMPLES.md) for complex scenarios
 - Learn about performance optimization
 - Understand testing and debugging
 
 ### 5. **Customization**
+
 - Create custom themes and styles
 - Implement custom node shapes
 - Add animations and transitions
@@ -444,20 +466,26 @@ Now that you have a basic understanding, here's what to explore next:
 ## Common Issues and Solutions
 
 ### Issue: Canvas not rendering
+
 **Solution**: Make sure the WASM module is fully loaded before calling functions:
+
 ```javascript
 await init(); // Wait for initialization
 create_simple_flow(); // Then create the flow
 ```
 
 ### Issue: Functions not found
+
 **Solution**: Check that you're importing the correct function names:
+
 ```javascript
 import { create_simple_flow } from './pkg/simple_flow_example.js';
 ```
 
 ### Issue: Performance problems
+
 **Solution**: Limit the number of nodes and use efficient rendering:
+
 ```javascript
 // Don't create too many nodes at once
 for (let i = 0; i < 100; i++) { // Reasonable limit
@@ -466,7 +494,9 @@ for (let i = 0; i < 100; i++) { // Reasonable limit
 ```
 
 ### Issue: Canvas not interactive
+
 **Solution**: Make sure event listeners are properly set up:
+
 ```javascript
 canvas.addEventListener('click', handleClick);
 ```

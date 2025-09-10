@@ -1,0 +1,58 @@
+# Pre-commit hooks for Leptos Flow
+# Minimal, fast hooks that won't hang
+
+repos:
+  # General file checks (fast)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        description: Remove trailing whitespace
+        types: [text]
+
+      - id: end-of-file-fixer
+        name: Fix end of files
+        description: Ensure files end with newline
+        types: [text]
+
+      - id: check-yaml
+        name: Check YAML syntax
+        description: Validate YAML files
+        types: [yaml]
+
+      - id: check-toml
+        name: Check TOML syntax
+        description: Validate TOML files
+        types: [toml]
+
+      - id: check-json
+        name: Check JSON syntax
+        description: Validate JSON files
+        types: [json]
+
+      - id: check-added-large-files
+        name: Check for large files
+        description: Prevent large files from being committed
+        args: [--maxkb=1000]
+
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+        description: Check for merge conflict markers
+        types: [text]
+
+# Configuration
+default_stages: [pre-commit]
+fail_fast: false
+minimum_pre_commit_version: '3.0.0'
+
+# Exclude certain files from hooks
+exclude: |
+  (?x)^(
+    target/.*|
+    pkg/.*|
+    \.git/.*|
+    node_modules/.*|
+    \.cargo/.*|
+    Cargo\.lock
+  )$

@@ -41,10 +41,10 @@ pub fn use_canvas_mouse<N, E>(
 
                 Closure::wrap(Box::new(move |event: MouseEvent| {
                     event.prevent_default();
-                    
+
                     let button = MouseButton::from_mouse_event(&event);
                     let modifiers = KeyboardModifiers::from_mouse_event(&event);
-                    
+
                     if let Some(MouseButton::Left) = button {
                         let canvas_rect = canvas.get_bounding_client_rect();
                         let canvas_pos = Position::new(
@@ -106,7 +106,7 @@ pub fn use_canvas_mouse<N, E>(
                                         position: world_pos,
                                         modifiers,
                                     });
-                                    
+
                                     handler(FlowEvent::DragStart {
                                         position: world_pos,
                                         target: crate::events::DragTarget::Canvas,
@@ -270,7 +270,7 @@ pub fn use_canvas_wheel(
                 let zoom_factor = if delta_y < 0.0 { 1.1 } else { 1.0 / 1.1 };
 
                 let old_viewport = viewport_clone.get();
-                
+
                 viewport_clone.update(|vp| {
                     let world_pos = crate::events::utils::canvas_to_world(
                         canvas_pos,
@@ -406,14 +406,14 @@ where
     /// Undo last operation
     pub fn undo(&self) -> bool {
         let mut success = false;
-        
+
         self.undo_stack.update(|undo_stack| {
             if let Some(previous_state) = undo_stack.pop() {
                 // Save current state to redo stack
                 self.redo_stack.update(|redo_stack| {
                     redo_stack.push(self.graph.get());
                 });
-                
+
                 // Restore previous state
                 self.graph.set(previous_state);
                 success = true;
@@ -433,7 +433,7 @@ where
                 self.undo_stack.update(|undo_stack| {
                     undo_stack.push(self.graph.get());
                 });
-                
+
                 // Restore next state
                 self.graph.set(next_state);
                 success = true;

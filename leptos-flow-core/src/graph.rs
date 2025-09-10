@@ -17,7 +17,7 @@ pub struct Node<T = ()> {
     pub position: Position,
     pub size: Size,
     pub data: T,
-    
+
     // Optional properties
     pub node_type: Option<String>,
     pub selected: bool,
@@ -29,7 +29,7 @@ pub struct Node<T = ()> {
     pub parent_node: Option<NodeId>,
     pub z_index: Option<i32>,
     pub hidden: bool,
-    
+
     // Computed properties (not serialized)
     #[cfg_attr(feature = "serde", serde(skip))]
     pub measured: Option<Size>,
@@ -58,7 +58,7 @@ impl<T: Clone> Node<T> {
     }
 
     /// Create a builder for fluent construction
-    pub fn builder(id: impl Into<NodeId>) -> NodeBuilder<T> 
+    pub fn builder(id: impl Into<NodeId>) -> NodeBuilder<T>
     where
         T: Default,
     {
@@ -131,7 +131,7 @@ impl Node<()> {
 
 impl<T: Default> Node<T> {
     /// Create a node with default data
-    pub fn with_default_data(id: impl Into<NodeId>, position: Position) -> Self 
+    pub fn with_default_data(id: impl Into<NodeId>, position: Position) -> Self
     where
         T: Default + Clone,
     {
@@ -248,7 +248,7 @@ pub struct Edge<T = ()> {
     pub source: NodeId,
     pub target: NodeId,
     pub data: T,
-    
+
     // Optional properties
     pub source_handle: Option<String>,
     pub target_handle: Option<String>,
@@ -524,7 +524,7 @@ impl<T> Default for EdgeBuilder<T> {
 pub struct Graph<N = (), E = ()> {
     nodes: HashMap<NodeId, Node<N>>,
     edges: HashMap<EdgeId, Edge<E>>,
-    
+
     #[cfg_attr(feature = "serde", serde(skip))]
     _phantom: PhantomData<(N, E)>,
 }
@@ -544,7 +544,7 @@ impl<N, E> Graph<N, E> {
         if self.nodes.contains_key(&node.id) {
             return Err(FlowError::duplicate_node_id(node.id.as_str()));
         }
-        
+
         self.nodes.insert(node.id.clone(), node);
         Ok(())
     }
@@ -581,7 +581,7 @@ impl<N, E> Graph<N, E> {
         if !self.nodes.contains_key(&edge.target) {
             return Err(FlowError::node_not_found(edge.target.as_str()));
         }
-        
+
         if self.edges.contains_key(&edge.id) {
             return Err(FlowError::duplicate_edge_id(edge.id.as_str()));
         }
@@ -684,7 +684,7 @@ impl<N, E> Graph<N, E> {
     }
 
     /// Calculate bounding rectangle of all nodes
-    pub fn bounds(&self) -> Option<Rect> 
+    pub fn bounds(&self) -> Option<Rect>
     where
         N: Clone,
     {
@@ -775,19 +775,19 @@ mod tests {
     #[test]
     fn test_graph_operations() {
         let mut graph = Graph::new();
-        
+
         let node1 = Node::simple("node1", Position::new(0.0, 0.0));
         let node2 = Node::simple("node2", Position::new(100.0, 100.0));
-        
+
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();
-        
+
         assert_eq!(graph.node_count(), 2);
         assert!(graph.get_node(&"node1".into()).is_some());
-        
+
         let edge = Edge::simple("edge1", "node1", "node2");
         graph.add_edge(edge).unwrap();
-        
+
         assert_eq!(graph.edge_count(), 1);
         assert!(graph.are_connected(&"node1".into(), &"node2".into()));
     }
@@ -795,15 +795,15 @@ mod tests {
     #[test]
     fn test_graph_cascade_delete() {
         let mut graph = Graph::new();
-        
+
         graph.add_node(Node::simple("node1", Position::zero())).unwrap();
         graph.add_node(Node::simple("node2", Position::zero())).unwrap();
         graph.add_edge(Edge::simple("edge1", "node1", "node2")).unwrap();
-        
+
         assert_eq!(graph.edge_count(), 1);
-        
+
         graph.remove_node(&"node1".into()).unwrap();
-        
+
         assert_eq!(graph.node_count(), 1);
         assert_eq!(graph.edge_count(), 0); // Edge should be removed
     }
@@ -811,21 +811,21 @@ mod tests {
     #[test]
     fn test_graph_bounds() {
         let mut graph = Graph::new();
-        
+
         graph.add_node(
             Node::builder("node1")
                 .position(0.0, 0.0)
                 .size(100.0, 50.0)
                 .build()
         ).unwrap();
-        
+
         graph.add_node(
             Node::builder("node2")
                 .position(200.0, 300.0)
                 .size(100.0, 50.0)
                 .build()
         ).unwrap();
-        
+
         let bounds = graph.bounds().unwrap();
         assert_eq!(bounds, Rect::new(0.0, 0.0, 300.0, 350.0));
     }

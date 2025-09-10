@@ -198,7 +198,7 @@ impl Rect {
         let min_y = p1.y.min(p2.y);
         let max_x = p1.x.max(p2.x);
         let max_y = p1.y.max(p2.y);
-        
+
         Self::new(min_x, min_y, max_x - min_x, max_y - min_y)
     }
 
@@ -242,7 +242,7 @@ impl Rect {
         let min_y = self.y.min(other.y);
         let max_x = (self.x + self.width).max(other.x + other.width);
         let max_y = (self.y + self.height).max(other.y + other.height);
-        
+
         Self::new(min_x, min_y, max_x - min_x, max_y - min_y)
     }
 
@@ -383,7 +383,7 @@ impl Viewport {
 
 impl fmt::Display for Viewport {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Viewport[{}, {}, {}x{} @ {}x]", 
+        write!(f, "Viewport[{}, {}, {}x{} @ {}x]",
                self.x, self.y, self.width, self.height, self.zoom)
     }
 }
@@ -476,7 +476,7 @@ mod tests {
     fn test_position_operations() {
         let p1 = Position::new(1.0, 2.0);
         let p2 = Position::new(3.0, 4.0);
-        
+
         assert_eq!(p1 + p2, Position::new(4.0, 6.0));
         assert_eq!(p2 - p1, Position::new(2.0, 2.0));
         assert_eq!(p1 * 2.0, Position::new(2.0, 4.0));
@@ -487,11 +487,11 @@ mod tests {
     fn test_rect_operations() {
         let rect1 = Rect::new(0.0, 0.0, 10.0, 10.0);
         let rect2 = Rect::new(5.0, 5.0, 10.0, 10.0);
-        
+
         assert!(rect1.contains_point(Position::new(5.0, 5.0)));
         assert!(!rect1.contains_point(Position::new(15.0, 15.0)));
         assert!(rect1.intersects(rect2));
-        
+
         let union = rect1.union(rect2);
         assert_eq!(union, Rect::new(0.0, 0.0, 15.0, 15.0));
     }
@@ -499,11 +499,11 @@ mod tests {
     #[test]
     fn test_viewport_transformations() {
         let viewport = Viewport::new(10.0, 10.0, 100.0, 100.0, 2.0);
-        
+
         let flow_pos = Position::new(60.0, 60.0);
         let screen_pos = viewport.flow_to_screen(flow_pos);
         assert_eq!(screen_pos, Position::new(100.0, 100.0));
-        
+
         let back_to_flow = viewport.screen_to_flow(screen_pos);
         assert_eq!(back_to_flow, flow_pos);
     }

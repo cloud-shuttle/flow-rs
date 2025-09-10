@@ -1,5 +1,5 @@
 //! Interaction handlers for the flow editor
-//! 
+//!
 //! This module implements the interaction logic defined in the tests:
 //! - Node selection on click
 //! - Node dragging
@@ -75,7 +75,7 @@ impl InteractionHandler {
             }
             self.state.selected_nodes.insert(node_id.clone());
             self.state.dragging_node = Some(node_id.clone());
-            
+
             web_sys::console::log_1(&format!("Selected node: {:?}", node_id).into());
         } else {
             // Clicked on empty space
@@ -92,7 +92,7 @@ impl InteractionHandler {
     /// Handle mouse move events
     pub fn handle_mouse_move(&mut self, event: &web_sys::MouseEvent) -> Result<(), JsValue> {
         let pos = self.get_mouse_position(event)?;
-        
+
         if let Some(dragging_node) = self.state.dragging_node.clone() {
             // Drag the selected node
             if let Some(last_pos) = self.state.last_mouse_pos {
@@ -126,7 +126,7 @@ impl InteractionHandler {
         for node in self.graph.nodes() {
             let node_pos = node.position;
             let node_size = node.size;
-            
+
             if pos.x >= node_pos.x && pos.x <= node_pos.x + node_size.width &&
                pos.y >= node_pos.y && pos.y <= node_pos.y + node_size.height {
                 return Some(node.id.clone());
@@ -166,7 +166,7 @@ impl InteractionHandler {
         // Clear canvas
         self.renderer.clear(Some("#ffffff"))
             .map_err(|e| JsValue::from_str(&format!("Clear error: {:?}", e)))?;
-        
+
         // Render background
         let bg_config = leptos_flow_renderer::traits::BackgroundConfig {
             color: "#ffffff".to_string(),
@@ -177,10 +177,10 @@ impl InteractionHandler {
         };
         self.renderer.render_background(&bg_config, &self.viewport)
             .map_err(|e| JsValue::from_str(&format!("Background render error: {:?}", e)))?;
-        
+
         // Render graph with selection highlighting
         self.render_graph_with_selection()?;
-        
+
         // Present frame
         self.renderer.present()
             .map_err(|e| JsValue::from_str(&format!("Present error: {:?}", e)))?;

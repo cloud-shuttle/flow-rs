@@ -17,7 +17,7 @@ jobs:
       matrix:
         rust: [stable, beta]
         target: [x86_64-unknown-linux-gnu, wasm32-unknown-unknown]
-    
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -36,13 +36,13 @@ jobs:
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          
+
       - name: Cache cargo index
         uses: actions/cache@v3
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-          
+
       - name: Cache cargo build
         uses: actions/cache@v3
         with:
@@ -63,7 +63,7 @@ jobs:
         if: matrix.target == 'wasm32-unknown-unknown'
         run: |
           wasm-pack test --headless --firefox --chrome
-          
+
       - name: Run doctests
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo test --doc --all-features
@@ -132,7 +132,7 @@ jobs:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -168,13 +168,53 @@ jobs:
           alert-threshold: '200%'
           fail-on-alert: true
 
+  pre-commit:
+    name: Pre-commit Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
   browser-tests:
-    name: Browser Testing
+    name: Browser Testing (Playwright)
     runs-on: ubuntu-latest
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
-    
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -184,10 +224,11 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Playwright
-        run: |
-          npm ci
-          npx playwright install ${{ matrix.browser }}
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -196,16 +237,23 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
 
-      - name: Install trunk
-        run: cargo install trunk
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Build examples
+      - name: Build WASM example
         run: |
           cd examples/simple-flow
-          trunk build --release
+          wasm-pack build --target web --out-dir pkg --release
 
-      - name: Run browser tests
+      - name: Run Playwright E2E tests
         run: npx playwright test --browser=${{ matrix.browser }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-results-${{ matrix.browser }}
+          path: test-results/
 
   visual-regression:
     name: Visual Regression Tests
@@ -280,7 +328,7 @@ jobs:
     strategy:
       matrix:
         example: [simple-flow, custom-nodes, large-graph]
-    
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -343,7 +391,7 @@ jobs:
     name: Publish Check
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4

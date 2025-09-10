@@ -27,7 +27,7 @@ For beta testing and early feedback:
 
 ```
 0.1.0-alpha.1  → Initial alpha release
-0.1.0-beta.1   → First beta 
+0.1.0-beta.1   → First beta
 0.1.0-rc.1     → Release candidate
 0.1.0          → First stable release
 0.1.1          → Bug fix
@@ -40,6 +40,7 @@ For beta testing and early feedback:
 ### Patch Releases (0.1.0 → 0.1.1)
 
 **Triggers:**
+
 - Critical bug fixes
 - Security vulnerabilities
 - Performance regressions
@@ -48,6 +49,7 @@ For beta testing and early feedback:
 **Timeline:** As needed, typically within 24-48 hours of issue identification
 
 **Process:**
+
 1. Create hotfix branch from main
 2. Implement fix with tests
 3. Fast-track review process
@@ -56,6 +58,7 @@ For beta testing and early feedback:
 ### Minor Releases (0.1.0 → 0.2.0)
 
 **Triggers:**
+
 - New features
 - API additions (backward compatible)
 - Significant performance improvements
@@ -64,6 +67,7 @@ For beta testing and early feedback:
 **Timeline:** Monthly or bi-monthly
 
 **Process:**
+
 1. Feature freeze 1 week before release
 2. Beta release for testing
 3. Full QA cycle
@@ -72,6 +76,7 @@ For beta testing and early feedback:
 ### Major Releases (0.9.0 → 1.0.0)
 
 **Triggers:**
+
 - Breaking API changes
 - Architecture redesign
 - Major milestone achievements
@@ -80,6 +85,7 @@ For beta testing and early feedback:
 **Timeline:** Quarterly or as needed
 
 **Process:**
+
 1. RFC process for breaking changes
 2. Migration guide preparation
 3. Extended beta period (4-6 weeks)
@@ -317,34 +323,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        
+
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy, rustfmt
-          
+
       - name: Quality Gates
         run: |
           # Code quality
           cargo fmt --all -- --check
           cargo clippy --all-targets --all-features -- -D warnings
-          
+
           # Tests
           cargo test --all-features
           cargo test --target wasm32-unknown-unknown
-          
+
           # Security
           cargo audit
-          
+
           # Performance benchmarks
           cargo bench --all-features
-          
+
       - name: Build Release
         run: |
           cargo build --release --all-features
           wasm-pack build --release --target web
-          
+
       - name: Publish to crates.io
         if: startsWith(github.ref, 'refs/tags/')
         run: |
@@ -399,7 +405,7 @@ valgrind --tool=memcheck --leak-check=full cargo test --release
 ```bash
 # Test across all supported browsers
 npx playwright test --browser=chromium
-npx playwright test --browser=firefox  
+npx playwright test --browser=firefox
 npx playwright test --browser=webkit
 
 # Test different screen sizes
@@ -426,7 +432,7 @@ We're excited to announce Leptos Flow v0.2.0! This release focuses on performanc
 ## 🐛 Bug Fixes
 
 - Fixed memory leak in spatial indexing (#123)
-- Resolved edge connection issues in Firefox (#145)  
+- Resolved edge connection issues in Firefox (#145)
 - Improved touch device support (#167)
 
 ## ⚡ Performance Improvements
@@ -461,11 +467,13 @@ leptos-flow = "0.2.0"
 ## 🙏 Contributors
 
 Special thanks to our contributors:
+
 - @contributor1 - WebGPU renderer implementation
 - @contributor2 - Performance optimizations
 - @contributor3 - Documentation improvements
 
-Full changelog: https://github.com/leptos-flow/leptos-flow/compare/v0.1.0...v0.2.0
+Full changelog: <https://github.com/leptos-flow/leptos-flow/compare/v0.1.0...v0.2.0>
+
 ```
 
 ### Announcement Channels
@@ -534,7 +542,7 @@ cargo publish
 ### Post-Release Monitoring
 
 - Monitor GitHub issues for new bug reports
-- Track crates.io download statistics  
+- Track crates.io download statistics
 - Monitor performance metrics in real deployments
 - Collect community feedback via surveys
 - Review crash reports and error telemetry

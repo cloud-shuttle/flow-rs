@@ -47,12 +47,12 @@ impl PerformanceMonitor {
 
         let current_time = web_sys::js_sys::Date::now();
         let frame_time = current_time - self.last_frame_time;
-        
+
         self.frame_times.push_back(frame_time);
         if self.frame_times.len() > self.max_samples {
             self.frame_times.pop_front();
         }
-        
+
         self.last_frame_time = current_time;
     }
 
@@ -62,7 +62,7 @@ impl PerformanceMonitor {
         if self.frame_times.is_empty() {
             return 0.0;
         }
-        
+
         let sum: f64 = self.frame_times.iter().sum();
         sum / self.frame_times.len() as f64
     }
@@ -88,7 +88,7 @@ impl PerformanceMonitor {
             min_frame_time: self.frame_times.iter().fold(f64::INFINITY, |a, &b| a.min(b)),
             max_frame_time: self.frame_times.iter().fold(0.0, |a, &b| a.max(b)),
         };
-        
+
         serde_wasm_bindgen::to_value(&stats).unwrap_or(JsValue::NULL)
     }
 
@@ -167,7 +167,7 @@ impl MemoryMonitor {
     pub fn get_memory_usage(&self) -> Option<f64> {
         let window = web_sys::window()?;
         let performance = window.performance()?;
-        
+
         // Note: performance.memory() is not available in all browsers
         // This is a placeholder for when it becomes available
         None
@@ -192,7 +192,7 @@ impl MemoryMonitor {
                 self.get_memory_usage().map(|current| current - init)
             }).flatten(),
         };
-        
+
         serde_wasm_bindgen::to_value(&stats).unwrap_or(JsValue::NULL)
     }
 }
@@ -232,7 +232,7 @@ impl RenderingAnalyzer {
         self.render_times.push_back(render_time);
         self.node_counts.push_back(node_count);
         self.edge_counts.push_back(edge_count);
-        
+
         if self.render_times.len() > self.max_samples {
             self.render_times.pop_front();
             self.node_counts.pop_front();
@@ -250,7 +250,7 @@ impl RenderingAnalyzer {
             nodes_per_ms: self.get_nodes_per_ms(),
             edges_per_ms: self.get_edges_per_ms(),
         };
-        
+
         serde_wasm_bindgen::to_value(&metrics).unwrap_or(JsValue::NULL)
     }
 
@@ -334,29 +334,29 @@ impl PerformanceBenchmark {
     pub fn run_benchmark(&mut self, duration_ms: f64) -> JsValue {
         self.monitor.start_monitoring();
         self.memory_monitor.init();
-        
+
         // Simulate benchmark duration
         let start_time = web_sys::js_sys::Date::now();
         let end_time = start_time + duration_ms;
-        
+
         while web_sys::js_sys::Date::now() < end_time {
             self.monitor.record_frame();
             self.memory_monitor.update_peak_memory();
-            
+
             // Simulate rendering work
             let render_start = web_sys::js_sys::Date::now();
             // ... rendering work would happen here ...
             let render_end = web_sys::js_sys::Date::now();
-            
+
             self.render_analyzer.record_render(
                 render_end - render_start,
                 100, // simulated node count
                 50,  // simulated edge count
             );
         }
-        
+
         self.monitor.stop_monitoring();
-        
+
         let result = BenchmarkResult {
             duration_ms,
             average_fps: self.monitor.get_fps(),
@@ -365,9 +365,9 @@ impl PerformanceBenchmark {
             memory_stats: serde_json::from_str(&format!("{:?}", self.memory_monitor.get_memory_stats())).unwrap_or(serde_json::Value::Null),
             rendering_metrics: serde_json::from_str(&format!("{:?}", self.render_analyzer.get_metrics())).unwrap_or(serde_json::Value::Null),
         };
-        
+
         self.benchmark_results.push(result.clone());
-        
+
         serde_wasm_bindgen::to_value(&result).unwrap_or(JsValue::NULL)
     }
 

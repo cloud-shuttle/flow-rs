@@ -7,12 +7,14 @@ Welcome to the comprehensive documentation for the Leptos Flow Simple Example! T
 This documentation is organized into several sections to help you get started quickly and dive deep into advanced usage:
 
 ### 🚀 [Getting Started Guide](./GETTING_STARTED.md)
+
 - Quick setup and installation
 - Your first flow diagram
 - Basic concepts and terminology
 - Common use cases
 
 ### 🔧 [API Reference](./API_EXAMPLES.md)
+
 - Complete API documentation with examples
 - Canvas2D renderer usage
 - Graph operations and management
@@ -20,6 +22,7 @@ This documentation is organized into several sections to help you get started qu
 - Error handling and performance optimization
 
 ### 💡 [Usage Examples](./USAGE_EXAMPLES.md)
+
 - Practical examples for common scenarios
 - Flow diagrams, decision trees, and process flows
 - Interactive editors and data visualization
@@ -27,6 +30,7 @@ This documentation is organized into several sections to help you get started qu
 - Custom styling and theming
 
 ### 🔗 [Integration Examples](./INTEGRATION_EXAMPLES.md)
+
 - Framework integrations (React, Vue.js, Angular)
 - Vanilla JavaScript usage
 - WebSocket real-time updates
@@ -34,6 +38,7 @@ This documentation is organized into several sections to help you get started qu
 - Database and backend integration
 
 ### 🧪 [Testing Guide](./TESTING.md)
+
 - Test infrastructure and setup
 - Running tests and debugging
 - Performance testing and benchmarks
@@ -96,15 +101,19 @@ The Leptos Flow Simple Example is built with the following components:
 ## 📖 Documentation Sections
 
 ### For Beginners
+
 Start with the [Getting Started Guide](./GETTING_STARTED.md) to understand the basics and create your first flow diagram.
 
 ### For Developers
+
 Use the [API Reference](./API_EXAMPLES.md) to understand the complete API and see detailed code examples.
 
 ### For Integrators
+
 Check out the [Integration Examples](./INTEGRATION_EXAMPLES.md) to see how to integrate with your favorite framework or technology stack.
 
 ### For Advanced Users
+
 Explore the [Usage Examples](./USAGE_EXAMPLES.md) for complex scenarios and advanced features.
 
 ## 🛠️ Development
@@ -143,6 +152,7 @@ wasm-pack test --headless --firefox --test performance_tests
 ## 🎨 Examples Gallery
 
 ### Basic Flow Diagram
+
 ```rust
 let mut graph = Graph::new();
 let node1 = Node::simple("start", Position::new(100.0, 100.0));
@@ -155,6 +165,7 @@ graph.add_edge(edge)?;
 ```
 
 ### Interactive Editor
+
 ```rust
 let mut interaction_handler = InteractionHandler::new(
     canvas.clone(),
@@ -169,6 +180,7 @@ interaction_handler.render()?;
 ```
 
 ### Custom Styling
+
 ```rust
 let mut node = Node::simple("custom", Position::new(200.0, 200.0));
 node.style = NodeStyle {
@@ -186,12 +198,14 @@ node.style = NodeStyle {
 ## 🔧 Configuration
 
 ### Canvas Configuration
+
 ```rust
 let mut renderer = Canvas2DRenderer::new(&canvas)?;
 renderer.resize(800, 600)?;
 ```
 
 ### Background Configuration
+
 ```rust
 let bg_config = BackgroundConfig {
     color: "#f8fafc".to_string(),
@@ -203,6 +217,7 @@ let bg_config = BackgroundConfig {
 ```
 
 ### Viewport Configuration
+
 ```rust
 let viewport = Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0);
 ```

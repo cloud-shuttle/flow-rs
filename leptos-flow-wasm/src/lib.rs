@@ -22,13 +22,13 @@ pub fn init() {
     {
         use tracing_wasm::{WASMLayerConfigBuilder};
         use tracing::Level;
-        
+
         let config = WASMLayerConfigBuilder::default()
             .set_max_level(Level::INFO)
             .build();
-        
+
         tracing_wasm::set_as_global_default_with_config(config);
-        
+
         tracing::info!("Leptos Flow WASM initialized");
     }
 }

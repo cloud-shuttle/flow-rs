@@ -53,10 +53,10 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
       // Set canvas size
       canvasRef.current.width = width;
       canvasRef.current.height = height;
-      
+
       // Create flow diagram
       create_simple_flow();
-      
+
       // Set up event handlers
       if (onNodeClick) {
         canvasRef.current.addEventListener('click', (event) => {
@@ -86,11 +86,11 @@ export const FlowCanvas: React.FC<FlowCanvasProps> = ({
 ```tsx
 // useFlowCanvas.ts
 import { useEffect, useRef, useState, useCallback } from 'react';
-import init, { 
-  create_simple_flow, 
+import init, {
+  create_simple_flow,
   add_node_at_position,
   move_node,
-  remove_node 
+  remove_node
 } from './pkg/simple_flow_example';
 
 interface FlowNode {
@@ -155,7 +155,7 @@ export const useFlowCanvas = (options: UseFlowCanvasOptions = {}) => {
   // Move node
   const moveNode = useCallback((nodeId: string, x: number, y: number) => {
     move_node(nodeId, x, y);
-    setNodes(prev => prev.map(node => 
+    setNodes(prev => prev.map(node =>
       node.id === nodeId ? { ...node, x, y } : node
     ));
   }, []);
@@ -164,7 +164,7 @@ export const useFlowCanvas = (options: UseFlowCanvasOptions = {}) => {
   const removeNode = useCallback((nodeId: string) => {
     remove_node(nodeId);
     setNodes(prev => prev.filter(node => node.id !== nodeId));
-    setEdges(prev => prev.filter(edge => 
+    setEdges(prev => prev.filter(edge =>
       edge.source !== nodeId && edge.target !== nodeId
     ));
   }, []);
@@ -172,16 +172,16 @@ export const useFlowCanvas = (options: UseFlowCanvasOptions = {}) => {
   // Handle canvas click
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
-    
+
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Check if clicking on existing node or empty space
-    const clickedNode = nodes.find(node => 
+    const clickedNode = nodes.find(node =>
       Math.abs(node.x - x) < 50 && Math.abs(node.y - y) < 30
     );
-    
+
     if (clickedNode) {
       setSelectedNode(clickedNode.id);
     } else {
@@ -218,7 +218,7 @@ interface FlowEditorProps {
 export const FlowEditor: React.FC<FlowEditorProps> = ({ onSave, onLoad }) => {
   const [isAddingNode, setIsAddingNode] = useState(false);
   const [nodeColor, setNodeColor] = useState('#3b82f6');
-  
+
   const {
     canvasRef,
     isInitialized,
@@ -240,7 +240,7 @@ export const FlowEditor: React.FC<FlowEditorProps> = ({ onSave, onLoad }) => {
       const rect = canvasRef.current!.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      
+
       const newNode: FlowNode = {
         id: `node_${Date.now()}`,
         x,
@@ -248,7 +248,7 @@ export const FlowEditor: React.FC<FlowEditorProps> = ({ onSave, onLoad }) => {
         label: `Node ${nodes.length + 1}`,
         color: nodeColor,
       };
-      
+
       addNode(newNode);
       setIsAddingNode(false);
     } else {
@@ -276,7 +276,7 @@ export const FlowEditor: React.FC<FlowEditorProps> = ({ onSave, onLoad }) => {
   return (
     <div className="flow-editor">
       <div className="toolbar">
-        <button 
+        <button
           onClick={handleAddNode}
           className={isAddingNode ? 'active' : ''}
         >
@@ -295,14 +295,14 @@ export const FlowEditor: React.FC<FlowEditorProps> = ({ onSave, onLoad }) => {
         <button onClick={handleSave}>Save</button>
         <button onClick={handleLoad}>Load</button>
       </div>
-      
+
       <FlowCanvas
         ref={canvasRef}
         width={800}
         height={600}
         onCanvasClick={handleCanvasClickWithAdd}
       />
-      
+
       <div className="properties">
         {selectedNode && (
           <div>
@@ -342,10 +342,10 @@ export const FlowEditor: React.FC<FlowEditorProps> = ({ onSave, onLoad }) => {
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import init, { 
+import init, {
   create_simple_flow,
   add_node_at_position,
-  move_node 
+  move_node
 } from './pkg/simple_flow_example';
 
 interface Props {
@@ -379,7 +379,7 @@ const dragStart = ref({ x: 0, y: 0 });
 onMounted(async () => {
   await init();
   isInitialized.value = true;
-  
+
   if (canvasRef.value) {
     create_simple_flow();
   }
@@ -397,16 +397,16 @@ watch(() => props.nodes, (newNodes) => {
 
 const handleCanvasClick = (event: MouseEvent) => {
   if (!canvasRef.value) return;
-  
+
   const rect = canvasRef.value.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  
+
   // Check if clicking on a node
-  const clickedNode = props.nodes.find(node => 
+  const clickedNode = props.nodes.find(node =>
     Math.abs(node.x - x) < 50 && Math.abs(node.y - y) < 30
   );
-  
+
   if (clickedNode) {
     emit('node-click', clickedNode.id);
   } else {
@@ -416,7 +416,7 @@ const handleCanvasClick = (event: MouseEvent) => {
 
 const handleMouseDown = (event: MouseEvent) => {
   if (!canvasRef.value) return;
-  
+
   const rect = canvasRef.value.getBoundingClientRect();
   dragStart.value = {
     x: event.clientX - rect.left,
@@ -427,17 +427,17 @@ const handleMouseDown = (event: MouseEvent) => {
 
 const handleMouseMove = (event: MouseEvent) => {
   if (!isDragging.value || !canvasRef.value) return;
-  
+
   const rect = canvasRef.value.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  
+
   // Find node being dragged
-  const draggedNode = props.nodes.find(node => 
-    Math.abs(node.x - dragStart.value.x) < 50 && 
+  const draggedNode = props.nodes.find(node =>
+    Math.abs(node.x - dragStart.value.x) < 50 &&
     Math.abs(node.y - dragStart.value.y) < 30
   );
-  
+
   if (draggedNode) {
     move_node(draggedNode.id, x, y);
     emit('node-move', draggedNode.id, x, y);
@@ -505,7 +505,7 @@ export const useFlowStore = defineStore('flow', () => {
 
   const removeNode = (nodeId: string) => {
     nodes.value = nodes.value.filter(node => node.id !== nodeId);
-    edges.value = edges.value.filter(edge => 
+    edges.value = edges.value.filter(edge =>
       edge.source !== nodeId && edge.target !== nodeId
     );
     if (selectedNode.value === nodeId) {
@@ -552,10 +552,10 @@ export const useFlowStore = defineStore('flow', () => {
 ```typescript
 // flow-canvas.component.ts
 import { Component, ElementRef, Input, Output, EventEmitter, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import init, { 
+import init, {
   create_simple_flow,
   add_node_at_position,
-  move_node 
+  move_node
 } from './pkg/simple_flow_example';
 
 interface FlowNode {
@@ -588,11 +588,11 @@ interface FlowNode {
 })
 export class FlowCanvasComponent implements OnInit, OnDestroy {
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
-  
+
   @Input() width: number = 800;
   @Input() height: number = 600;
   @Input() nodes: FlowNode[] = [];
-  
+
   @Output() nodeClick = new EventEmitter<string>();
   @Output() nodeMove = new EventEmitter<{nodeId: string, x: number, y: number}>();
   @Output() canvasClick = new EventEmitter<{x: number, y: number}>();
@@ -604,7 +604,7 @@ export class FlowCanvasComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     await init();
     this.isInitialized = true;
-    
+
     if (this.canvas.nativeElement) {
       create_simple_flow();
     }
@@ -616,16 +616,16 @@ export class FlowCanvasComponent implements OnInit, OnDestroy {
 
   onCanvasClick(event: MouseEvent) {
     if (!this.canvas.nativeElement) return;
-    
+
     const rect = this.canvas.nativeElement.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Check if clicking on a node
-    const clickedNode = this.nodes.find(node => 
+    const clickedNode = this.nodes.find(node =>
       Math.abs(node.x - x) < 50 && Math.abs(node.y - y) < 30
     );
-    
+
     if (clickedNode) {
       this.nodeClick.emit(clickedNode.id);
     } else {
@@ -635,7 +635,7 @@ export class FlowCanvasComponent implements OnInit, OnDestroy {
 
   onMouseDown(event: MouseEvent) {
     if (!this.canvas.nativeElement) return;
-    
+
     const rect = this.canvas.nativeElement.getBoundingClientRect();
     this.dragStart = {
       x: event.clientX - rect.left,
@@ -646,17 +646,17 @@ export class FlowCanvasComponent implements OnInit, OnDestroy {
 
   onMouseMove(event: MouseEvent) {
     if (!this.isDragging || !this.canvas.nativeElement) return;
-    
+
     const rect = this.canvas.nativeElement.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Find node being dragged
-    const draggedNode = this.nodes.find(node => 
-      Math.abs(node.x - this.dragStart.x) < 50 && 
+    const draggedNode = this.nodes.find(node =>
+      Math.abs(node.x - this.dragStart.x) < 50 &&
       Math.abs(node.y - this.dragStart.y) < 30
     );
-    
+
     if (draggedNode) {
       move_node(draggedNode.id, x, y);
       this.nodeMove.emit({ nodeId: draggedNode.id, x, y });
@@ -675,11 +675,11 @@ export class FlowCanvasComponent implements OnInit, OnDestroy {
 // flow.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import init, { 
+import init, {
   create_simple_flow,
   add_node_at_position,
   move_node,
-  remove_node 
+  remove_node
 } from './pkg/simple_flow_example';
 
 export interface FlowNode {
@@ -729,12 +729,12 @@ export class FlowService {
     remove_node(nodeId);
     const currentNodes = this.nodesSubject.value;
     const currentEdges = this.edgesSubject.value;
-    
+
     this.nodesSubject.next(currentNodes.filter(node => node.id !== nodeId));
-    this.edgesSubject.next(currentEdges.filter(edge => 
+    this.edgesSubject.next(currentEdges.filter(edge =>
       edge.source !== nodeId && edge.target !== nodeId
     ));
-    
+
     if (this.selectedNodeSubject.value === nodeId) {
       this.selectedNodeSubject.next(null);
     }
@@ -743,7 +743,7 @@ export class FlowService {
   moveNode(nodeId: string, x: number, y: number) {
     move_node(nodeId, x, y);
     const currentNodes = this.nodesSubject.value;
-    const updatedNodes = currentNodes.map(node => 
+    const updatedNodes = currentNodes.map(node =>
       node.id === nodeId ? { ...node, x, y } : node
     );
     this.nodesSubject.next(updatedNodes);
@@ -769,11 +769,11 @@ export class FlowService {
 
 ```javascript
 // flow-manager.js
-import init, { 
+import init, {
   create_simple_flow,
   add_node_at_position,
   move_node,
-  remove_node 
+  remove_node
 } from './pkg/simple_flow_example.js';
 
 class FlowManager {
@@ -791,14 +791,14 @@ class FlowManager {
     this.isInitialized = false;
     this.isDragging = false;
     this.dragStart = { x: 0, y: 0 };
-    
+
     this.init();
   }
 
   async init() {
     await init();
     this.isInitialized = true;
-    
+
     if (this.canvas) {
       this.canvas.width = this.options.width;
       this.canvas.height = this.options.height;
@@ -818,11 +818,11 @@ class FlowManager {
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
-    const clickedNode = this.nodes.find(node => 
+
+    const clickedNode = this.nodes.find(node =>
       Math.abs(node.x - x) < 50 && Math.abs(node.y - y) < 30
     );
-    
+
     if (clickedNode) {
       this.selectNode(clickedNode.id);
       this.onNodeClick?.(clickedNode);
@@ -843,16 +843,16 @@ class FlowManager {
 
   handleMouseMove(event) {
     if (!this.isDragging) return;
-    
+
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
-    const draggedNode = this.nodes.find(node => 
-      Math.abs(node.x - this.dragStart.x) < 50 && 
+
+    const draggedNode = this.nodes.find(node =>
+      Math.abs(node.x - this.dragStart.x) < 50 &&
       Math.abs(node.y - this.dragStart.y) < 30
     );
-    
+
     if (draggedNode) {
       move_node(draggedNode.id, x, y);
       draggedNode.x = x;
@@ -874,14 +874,14 @@ class FlowManager {
   removeNode(nodeId) {
     remove_node(nodeId);
     this.nodes = this.nodes.filter(node => node.id !== nodeId);
-    this.edges = this.edges.filter(edge => 
+    this.edges = this.edges.filter(edge =>
       edge.source !== nodeId && edge.target !== nodeId
     );
-    
+
     if (this.selectedNode === nodeId) {
       this.selectedNode = null;
     }
-    
+
     this.onNodeRemoved?.(nodeId);
   }
 
@@ -939,31 +939,31 @@ class WebSocketFlowManager extends FlowManager {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 1000;
-    
+
     this.connect();
   }
 
   connect() {
     try {
       this.ws = new WebSocket(this.wsUrl);
-      
+
       this.ws.onopen = () => {
         console.log('WebSocket connected');
         this.reconnectAttempts = 0;
         this.onConnected?.();
       };
-      
+
       this.ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         this.handleWebSocketMessage(data);
       };
-      
+
       this.ws.onclose = () => {
         console.log('WebSocket disconnected');
         this.onDisconnected?.();
         this.attemptReconnect();
       };
-      
+
       this.ws.onerror = (error) => {
         console.error('WebSocket error:', error);
         this.onError?.(error);
@@ -1013,7 +1013,7 @@ class WebSocketFlowManager extends FlowManager {
     // Remove node without triggering WebSocket message
     remove_node(nodeId);
     this.nodes = this.nodes.filter(node => node.id !== nodeId);
-    this.edges = this.edges.filter(edge => 
+    this.edges = this.edges.filter(edge =>
       edge.source !== nodeId && edge.target !== nodeId
     );
     this.onNodeRemoved?.(nodeId);
@@ -1023,13 +1023,13 @@ class WebSocketFlowManager extends FlowManager {
     // Clear current nodes
     this.nodes.forEach(node => remove_node(node.id));
     this.nodes = [];
-    
+
     // Add remote nodes
     remoteNodes.forEach(node => {
       add_node_at_position(node.x, node.y);
       this.nodes.push(node);
     });
-    
+
     this.onNodesSynced?.(remoteNodes);
   }
 
@@ -1051,24 +1051,24 @@ class WebSocketFlowManager extends FlowManager {
 
   handleMouseMove(event) {
     if (!this.isDragging) return;
-    
+
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
-    const draggedNode = this.nodes.find(node => 
-      Math.abs(node.x - this.dragStart.x) < 50 && 
+
+    const draggedNode = this.nodes.find(node =>
+      Math.abs(node.x - this.dragStart.x) < 50 &&
       Math.abs(node.y - this.dragStart.y) < 30
     );
-    
+
     if (draggedNode) {
       move_node(draggedNode.id, x, y);
       draggedNode.x = x;
       draggedNode.y = y;
-      this.sendMessage('node_moved', { 
-        nodeId: draggedNode.id, 
-        x, 
-        y 
+      this.sendMessage('node_moved', {
+        nodeId: draggedNode.id,
+        x,
+        y
       });
       this.onNodeMove?.(draggedNode);
     }
@@ -1139,21 +1139,21 @@ class APIFlowManager extends FlowManager {
       this.isLoading = true;
       const response = await fetch(`${this.apiBaseUrl}/flows/${flowId}`);
       const data = await response.json();
-      
+
       // Clear current flow
       this.nodes.forEach(node => remove_node(node.id));
       this.nodes = [];
       this.edges = [];
-      
+
       // Load nodes
       data.nodes.forEach(node => {
         add_node_at_position(node.x, node.y);
         this.nodes.push(node);
       });
-      
+
       // Load edges
       this.edges = data.edges;
-      
+
       this.onFlowLoaded?.(data);
     } catch (error) {
       console.error('Failed to load flow:', error);
@@ -1173,7 +1173,7 @@ class APIFlowManager extends FlowManager {
         metadata,
         updatedAt: new Date().toISOString()
       };
-      
+
       const response = await fetch(`${this.apiBaseUrl}/flows/${flowId}`, {
         method: 'PUT',
         headers: {
@@ -1181,11 +1181,11 @@ class APIFlowManager extends FlowManager {
         },
         body: JSON.stringify(flowData)
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       this.onFlowSaved?.(result);
     } catch (error) {
@@ -1206,7 +1206,7 @@ class APIFlowManager extends FlowManager {
         edges: this.edges,
         createdAt: new Date().toISOString()
       };
-      
+
       const response = await fetch(`${this.apiBaseUrl}/flows`, {
         method: 'POST',
         headers: {
@@ -1214,11 +1214,11 @@ class APIFlowManager extends FlowManager {
         },
         body: JSON.stringify(flowData)
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       this.onFlowCreated?.(result);
       return result;
@@ -1249,11 +1249,11 @@ class APIFlowManager extends FlowManager {
       const response = await fetch(`${this.apiBaseUrl}/flows/${flowId}`, {
         method: 'DELETE'
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       this.onFlowDeleted?.(flowId);
     } catch (error) {
       console.error('Failed to delete flow:', error);

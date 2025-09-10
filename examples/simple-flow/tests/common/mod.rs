@@ -1,5 +1,5 @@
 //! Common test utilities and helpers
-//! 
+//!
 //! This module provides shared test utilities that can be used across
 //! different test files.
 
@@ -34,28 +34,28 @@ pub fn create_test_canvas_with_size(width: u32, height: u32) -> HtmlCanvasElemen
 /// Create a simple test graph with 3 nodes and 2 edges
 pub fn create_simple_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
-    
+
     let node1 = Node::simple("node1", Position::new(100.0, 100.0));
     let node2 = Node::simple("node2", Position::new(300.0, 200.0));
     let node3 = Node::simple("node3", Position::new(500.0, 150.0));
-    
+
     graph.add_node(node1).unwrap();
     graph.add_node(node2).unwrap();
     graph.add_node(node3).unwrap();
-    
+
     let edge1 = Edge::simple("edge1", "node1", "node2");
     let edge2 = Edge::simple("edge2", "node2", "node3");
-    
+
     graph.add_edge(edge1).unwrap();
     graph.add_edge(edge2).unwrap();
-    
+
     graph
 }
 
 /// Create a complex test graph with many nodes and edges
 pub fn create_complex_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
-    
+
     // Create a grid of nodes
     for i in 0..5 {
         for j in 0..5 {
@@ -65,7 +65,7 @@ pub fn create_complex_test_graph() -> Graph<(), ()> {
             graph.add_node(node).unwrap();
         }
     }
-    
+
     // Create edges between adjacent nodes
     for i in 0..4 {
         for j in 0..5 {
@@ -77,7 +77,7 @@ pub fn create_complex_test_graph() -> Graph<(), ()> {
             graph.add_edge(edge).unwrap();
         }
     }
-    
+
     for i in 0..5 {
         for j in 0..4 {
             // Vertical edges
@@ -88,7 +88,7 @@ pub fn create_complex_test_graph() -> Graph<(), ()> {
             graph.add_edge(edge).unwrap();
         }
     }
-    
+
     graph
 }
 
@@ -114,8 +114,8 @@ pub fn create_test_viewport_with_settings(x: f64, y: f64, width: f64, height: f6
 }
 
 /// Assert that a renderer operation succeeds
-pub fn assert_renderer_operation_success<F, R>(operation: F) 
-where 
+pub fn assert_renderer_operation_success<F, R>(operation: F)
+where
     F: FnOnce() -> Result<R, Box<dyn std::error::Error>>,
 {
     let result = operation();
@@ -124,19 +124,19 @@ where
 
 /// Assert that a renderer operation fails with expected error
 pub fn assert_renderer_operation_fails<F, R>(operation: F, expected_error: &str)
-where 
+where
     F: FnOnce() -> Result<R, Box<dyn std::error::Error>>,
 {
     let result = operation();
     assert!(result.is_err(), "Renderer operation should fail");
     let error_msg = format!("{:?}", result.err().unwrap());
-    assert!(error_msg.contains(expected_error), 
+    assert!(error_msg.contains(expected_error),
            "Expected error containing '{}', got: {}", expected_error, error_msg);
 }
 
 /// Performance test helper - measure execution time
 pub fn measure_execution_time<F, R>(operation: F) -> (R, f64)
-where 
+where
     F: FnOnce() -> R,
 {
     let start = web_sys::js_sys::Date::now();
@@ -148,10 +148,10 @@ where
 
 /// Assert that an operation completes within a time limit (in milliseconds)
 pub fn assert_operation_within_time_limit<F, R>(operation: F, max_time_ms: f64)
-where 
+where
     F: FnOnce() -> R,
 {
     let (_, duration) = measure_execution_time(operation);
-    assert!(duration <= max_time_ms, 
+    assert!(duration <= max_time_ms,
            "Operation took {}ms, expected <= {}ms", duration, max_time_ms);
 }

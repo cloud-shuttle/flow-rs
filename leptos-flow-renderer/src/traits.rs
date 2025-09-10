@@ -256,7 +256,7 @@ pub trait CustomNodeRenderer: Renderer {
         N: Clone + 'static;
 }
 
-/// Trait for renderers that support edge customization  
+/// Trait for renderers that support edge customization
 pub trait CustomEdgeRenderer: Renderer {
     /// Render a single edge with custom style
     fn render_custom_edge<E>(
@@ -308,7 +308,7 @@ pub mod utils {
 
     fn parse_hex_color(color: &str) -> Option<[f32; 4]> {
         let hex = color.trim_start_matches('#');
-        
+
         let (r, g, b, a) = match hex.len() {
             3 => {
                 let r = u8::from_str_radix(&hex[0..1], 16).ok()? * 17;
@@ -345,12 +345,12 @@ pub mod utils {
         if color.starts_with("rgb(") {
             let values = color.trim_start_matches("rgb(").trim_end_matches(')');
             let parts: Vec<&str> = values.split(',').map(|s| s.trim()).collect();
-            
+
             if parts.len() == 3 {
                 let r = parts[0].parse::<u8>().ok()?;
                 let g = parts[1].parse::<u8>().ok()?;
                 let b = parts[2].parse::<u8>().ok()?;
-                
+
                 return Some([
                     r as f32 / 255.0,
                     g as f32 / 255.0,
@@ -387,7 +387,7 @@ pub mod utils {
             let mid_x = (start.x + end.x) / 2.0;
             Position::new(mid_x, start.y)
         });
-        
+
         let c2 = control2.unwrap_or_else(|| {
             let mid_x = (start.x + end.x) / 2.0;
             Position::new(mid_x, end.y)
@@ -432,11 +432,11 @@ mod tests {
         assert_eq!(parse_color("#ff0000"), Some([1.0, 0.0, 0.0, 1.0]));
         assert_eq!(parse_color("#00ff00"), Some([0.0, 1.0, 0.0, 1.0]));
         assert_eq!(parse_color("#f00"), Some([1.0, 0.0, 0.0, 1.0]));
-        
+
         // Test named colors
         assert_eq!(parse_color("black"), Some([0.0, 0.0, 0.0, 1.0]));
         assert_eq!(parse_color("white"), Some([1.0, 1.0, 1.0, 1.0]));
-        
+
         // Test RGB colors
         assert_eq!(parse_color("rgb(255, 0, 0)"), Some([1.0, 0.0, 0.0, 1.0]));
     }
@@ -445,7 +445,7 @@ mod tests {
     fn test_bezier_curve_calculation() {
         let start = Position::new(0.0, 0.0);
         let end = Position::new(100.0, 100.0);
-        
+
         let points = calculate_bezier_curve(start, end, None, None, 10);
         assert_eq!(points.len(), 11); // 0 to 10 inclusive
         assert_eq!(points[0], start);

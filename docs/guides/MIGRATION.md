@@ -7,14 +7,17 @@ This guide helps developers migrate from React Flow or xyflow to Leptos Flow. Wh
 ## Key Differences
 
 ### Reactivity Model
+
 - **React Flow**: useState/useCallback hooks with manual re-renders
 - **Leptos Flow**: Signal-based fine-grained reactivity with automatic updates
 
-### Type System  
+### Type System
+
 - **React Flow**: TypeScript with runtime type checking
 - **Leptos Flow**: Rust with compile-time type safety and zero-cost abstractions
 
 ### Performance
+
 - **React Flow**: Virtual DOM diffing and reconciliation
 - **Leptos Flow**: Direct DOM updates with WASM-optimized rendering
 
@@ -48,7 +51,7 @@ This guide helps developers migrate from React Flow or xyflow to Leptos Flow. Wh
 | React Flow | Leptos Flow | Notes |
 |------------|-------------|-------|
 | `onNodesChange` | `on_nodes_change` | Node updates |
-| `onEdgesChange` | `on_edges_change` | Edge updates |  
+| `onEdgesChange` | `on_edges_change` | Edge updates |
 | `onConnect` | `on_connect` | New connections |
 | `onNodeClick` | `on_node_click` | Node interactions |
 | `onEdgeClick` | `on_edge_click` | Edge interactions |
@@ -70,6 +73,7 @@ This guide helps developers migrate from React Flow or xyflow to Leptos Flow. Wh
 ### 1. Project Setup
 
 #### React Flow Project
+
 ```typescript
 // package.json
 {
@@ -80,7 +84,8 @@ This guide helps developers migrate from React Flow or xyflow to Leptos Flow. Wh
 }
 ```
 
-#### Leptos Flow Project  
+#### Leptos Flow Project
+
 ```toml
 # Cargo.toml
 [dependencies]
@@ -91,6 +96,7 @@ leptos-flow = "0.1"
 ### 2. Basic Component Migration
 
 #### React Flow Component
+
 ```typescript
 import React, { useState, useCallback } from 'react';
 import ReactFlow, {
@@ -133,6 +139,7 @@ export default function FlowComponent() {
 ```
 
 #### Leptos Flow Component
+
 ```rust
 use leptos::*;
 use leptos_flow::*;
@@ -187,6 +194,7 @@ pub fn FlowComponent() -> impl IntoView {
 ### 3. Custom Node Migration
 
 #### React Flow Custom Node
+
 ```typescript
 import React from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
@@ -198,7 +206,7 @@ interface CustomNodeData {
 
 function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
   return (
-    <div 
+    <div
       className={`custom-node ${selected ? 'selected' : ''}`}
       style={{
         padding: '10px',
@@ -219,6 +227,7 @@ function CustomNode({ data, selected }: NodeProps<CustomNodeData>) {
 ```
 
 #### Leptos Flow Custom Node
+
 ```rust
 #[derive(Clone, Debug)]
 pub struct CustomNodeData {
@@ -231,9 +240,9 @@ pub fn CustomNode(
     #[prop(into)] node: MaybeSignal<Node<CustomNodeData>>,
 ) -> impl IntoView {
     let node_data = move || node.get();
-    
+
     view! {
-        <div 
+        <div
             class="custom-node"
             class:selected=move || node_data().selected
             style="
@@ -243,17 +252,17 @@ pub fn CustomNode(
                 background: white;
             "
         >
-            <Handle 
+            <Handle
                 handle_type=HandleType::Target
-                position=HandlePosition::Left 
+                position=HandlePosition::Left
             />
             <div>
                 <h3>{move || node_data().data.label.clone()}</h3>
                 <div>"Value: " {move || node_data().data.value}</div>
             </div>
-            <Handle 
+            <Handle
                 handle_type=HandleType::Source
-                position=HandlePosition::Right 
+                position=HandlePosition::Right
             />
         </div>
     }
@@ -263,6 +272,7 @@ pub fn CustomNode(
 ### 4. Event Handling Migration
 
 #### React Flow Events
+
 ```typescript
 const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
   console.log('Node clicked:', node.id);
@@ -288,6 +298,7 @@ return (
 ```
 
 #### Leptos Flow Events
+
 ```rust
 let on_node_click = move |node_id: String| {
     logging::log!("Node clicked: {}", node_id);
@@ -315,6 +326,7 @@ view! {
 ### 5. State Management Migration
 
 #### React Flow with Redux/Zustand
+
 ```typescript
 // Zustand store
 interface FlowState {
@@ -327,8 +339,8 @@ interface FlowState {
 const useFlowStore = create<FlowState>((set) => ({
   nodes: [],
   edges: [],
-  addNode: (node) => set((state) => ({ 
-    nodes: [...state.nodes, node] 
+  addNode: (node) => set((state) => ({
+    nodes: [...state.nodes, node]
   })),
   updateNode: (id, updates) => set((state) => ({
     nodes: state.nodes.map(n => n.id === id ? { ...n, ...updates } : n)
@@ -337,6 +349,7 @@ const useFlowStore = create<FlowState>((set) => ({
 ```
 
 #### Leptos Flow with Global State
+
 ```rust
 use leptos::*;
 
@@ -354,13 +367,13 @@ impl<N, E> FlowState<N, E> {
             edges: create_rw_signal(Vec::new()),
         }
     }
-    
+
     pub fn add_node(&self, node: Node<N>) {
         self.nodes.update(|nodes| nodes.push(node));
     }
-    
-    pub fn update_node<F>(&self, id: &str, updater: F) 
-    where 
+
+    pub fn update_node<F>(&self, id: &str, updater: F)
+    where
         F: Fn(&mut Node<N>)
     {
         self.nodes.update(|nodes| {
@@ -376,7 +389,7 @@ impl<N, E> FlowState<N, E> {
 pub fn FlowApp() -> impl IntoView {
     let flow_state = FlowState::<NodeData, EdgeData>::new();
     provide_context(flow_state);
-    
+
     view! {
         <FlowComponent />
     }
@@ -386,7 +399,7 @@ pub fn FlowApp() -> impl IntoView {
 #[component]
 pub fn FlowComponent() -> impl IntoView {
     let flow_state = use_context::<FlowState<NodeData, EdgeData>>().unwrap();
-    
+
     view! {
         <FlowEditor
             nodes=flow_state.nodes
@@ -399,14 +412,15 @@ pub fn FlowComponent() -> impl IntoView {
 ## Performance Considerations
 
 ### React Flow Optimization
+
 ```typescript
 // React Flow performance patterns
-const nodeTypes = useMemo(() => ({ 
-  custom: CustomNode 
+const nodeTypes = useMemo(() => ({
+  custom: CustomNode
 }), []);
 
-const edges = useMemo(() => 
-  edgeData.map(edge => ({ ...edge, type: 'smoothstep' })), 
+const edges = useMemo(() =>
+  edgeData.map(edge => ({ ...edge, type: 'smoothstep' })),
   [edgeData]
 );
 
@@ -421,10 +435,11 @@ return (
 ```
 
 ### Leptos Flow Optimization
+
 ```rust
 // Leptos Flow automatically optimizes through:
 // 1. Compile-time optimizations
-// 2. Fine-grained reactivity  
+// 2. Fine-grained reactivity
 // 3. WASM performance
 // 4. Built-in viewport culling
 
@@ -444,6 +459,7 @@ view! {
 ### 1. Layout Algorithms
 
 #### React Flow with dagre
+
 ```typescript
 import dagre from 'dagre';
 
@@ -477,6 +493,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 ```
 
 #### Leptos Flow Built-in Layouts
+
 ```rust
 use leptos_flow::layout::*;
 
@@ -487,7 +504,7 @@ let apply_layout = move || {
         .level_separation(60)
         .node_separation(40)
         .build();
-    
+
     spawn_local(async move {
         flow.apply_layout(layout).await.unwrap();
     });
@@ -503,6 +520,7 @@ view! {
 ### 2. Minimap and Controls
 
 #### React Flow
+
 ```typescript
 import { MiniMap, Controls, Background } from 'reactflow';
 
@@ -516,6 +534,7 @@ return (
 ```
 
 #### Leptos Flow
+
 ```rust
 view! {
     <FlowEditor nodes=nodes edges=edges>
@@ -529,6 +548,7 @@ view! {
 ## Feature Parity Checklist
 
 ### Core Features
+
 - [x] Node creation and positioning
 - [x] Edge connections
 - [x] Drag and drop interactions
@@ -538,7 +558,8 @@ view! {
 - [x] Custom edge types
 - [x] Event handling
 
-### Advanced Features  
+### Advanced Features
+
 - [x] Auto-layout algorithms
 - [x] Minimap
 - [x] Controls
@@ -549,6 +570,7 @@ view! {
 - [x] Spatial indexing
 
 ### Performance Features
+
 - [x] Viewport culling
 - [x] Level-of-detail rendering
 - [x] Memory optimization
@@ -557,6 +579,7 @@ view! {
 ## Common Migration Patterns
 
 ### 1. Component Lifecycle
+
 ```typescript
 // React Flow
 useEffect(() => {
@@ -579,6 +602,7 @@ on_cleanup(move || {
 ```
 
 ### 2. Conditional Rendering
+
 ```typescript
 // React Flow
 {showMiniMap && <MiniMap />}
@@ -592,6 +616,7 @@ on_cleanup(move || {
 ```
 
 ### 3. Dynamic Node Types
+
 ```typescript
 // React Flow
 const nodeTypes = useMemo(() => ({
@@ -633,7 +658,7 @@ pub fn import_react_flow_data(json: &str) -> Result<(Vec<Node<serde_json::Value>
         nodes: Vec<Node<serde_json::Value>>,
         edges: Vec<Edge<serde_json::Value>>,
     }
-    
+
     let data: ReactFlowData = serde_json::from_str(json)?;
     Ok((data.nodes, data.edges))
 }

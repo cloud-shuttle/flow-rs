@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "leptos-flow-core",
-    "leptos-flow-renderer", 
+    "leptos-flow-renderer",
     "leptos-flow-leptos",
     "leptos-flow-wasm",
     "examples/simple-flow",

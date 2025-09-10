@@ -1,6 +1,6 @@
 # Contributing to Leptos Flow
 
-## Welcome Contributors! 
+## Welcome Contributors
 
 We're excited you want to contribute to Leptos Flow. This guide will help you get started with development, understand our processes, and make meaningful contributions.
 
@@ -9,16 +9,19 @@ We're excited you want to contribute to Leptos Flow. This guide will help you ge
 ### Prerequisites
 
 **Required:**
+
 - Rust 1.70+ with `wasm32-unknown-unknown` target
 - Node.js 18+ (for development tools)
 - Git
 
 **Install Rust targets:**
+
 ```bash
 rustup target add wasm32-unknown-unknown
 ```
 
 **Install development tools:**
+
 ```bash
 # Essential tools
 cargo install trunk
@@ -40,12 +43,14 @@ cargo install cargo-deny        # License/dependency checking
 ### Development Setup
 
 1. **Fork and clone the repository:**
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/leptos-flow.git
 cd leptos-flow
 ```
 
 2. **Install dependencies:**
+
 ```bash
 # Install npm dependencies for examples
 cd examples/basic
@@ -54,12 +59,14 @@ cd ../..
 ```
 
 3. **Run the test suite:**
+
 ```bash
 cargo test --all-features
 cargo test --target wasm32-unknown-unknown --all-features
 ```
 
 4. **Start development server:**
+
 ```bash
 cd examples/basic
 trunk serve --open
@@ -107,6 +114,7 @@ We use a simple branching model:
 - `docs/improvement-description` - Documentation updates
 
 **Create a feature branch:**
+
 ```bash
 git checkout develop
 git pull origin develop
@@ -120,16 +128,19 @@ git checkout -b feature/your-feature-name
 We follow the standard Rust style with these additional guidelines:
 
 **Format your code:**
+
 ```bash
 cargo fmt --all
 ```
 
 **Run clippy:**
+
 ```bash
 cargo clippy --all-targets --all-features -- -D warnings
 ```
 
 **Our clippy configuration:**
+
 ```toml
 # Cargo.toml
 [lints.clippy]
@@ -147,6 +158,7 @@ missing_panics_doc = "allow"
 #### Code Organization
 
 **Module structure:**
+
 ```rust
 // Good: Clear module hierarchy
 pub mod graph {
@@ -162,13 +174,14 @@ pub mod graph_algorithms;
 ```
 
 **Error handling:**
+
 ```rust
 // Good: Use proper error types
 #[derive(Debug, thiserror::Error)]
 pub enum FlowError {
     #[error("Invalid node ID: {id}")]
     InvalidNodeId { id: String },
-    
+
     #[error("Renderer error: {0}")]
     Renderer(#[from] RendererError),
 }
@@ -178,6 +191,7 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 ```
 
 **Documentation:**
+
 ```rust
 // Good: Comprehensive documentation
 /// Adds a new node to the graph.
@@ -214,6 +228,7 @@ pub fn add_node(&mut self, node: Node) -> Result<(), FlowError> {
 #### Test Categories
 
 **1. Unit Tests**
+
 ```bash
 # Run unit tests
 cargo test --lib
@@ -224,6 +239,7 @@ cargo tarpaulin --all-features --out Html
 ```
 
 **2. Integration Tests**
+
 ```bash
 # Run integration tests
 cargo test --test integration
@@ -233,6 +249,7 @@ wasm-pack test --headless --firefox --chrome
 ```
 
 **3. Property-Based Tests**
+
 ```rust
 use proptest::prelude::*;
 
@@ -245,18 +262,19 @@ proptest! {
         for node in &nodes {
             let _ = graph.add_node(node.clone());
         }
-        
+
         // Adding the same nodes again should not change the graph
         for node in &nodes {
             let _ = graph.add_node(node.clone());
         }
-        
+
         prop_assert_eq!(graph.node_count(), nodes.len());
     }
 }
 ```
 
 **4. Visual Regression Tests**
+
 ```bash
 # Setup visual tests (requires Chrome/Chromium)
 cd tests/visual
@@ -270,6 +288,7 @@ npm run test:visual -- --update-snapshots
 ```
 
 **5. Performance Benchmarks**
+
 ```bash
 # Run benchmarks
 cargo bench
@@ -295,8 +314,9 @@ refactor(leptos): simplify hook implementation
 ```
 
 **Commit types:**
+
 - `feat` - New features
-- `fix` - Bug fixes  
+- `fix` - Bug fixes
 - `docs` - Documentation changes
 - `test` - Test additions/changes
 - `perf` - Performance improvements
@@ -310,6 +330,7 @@ refactor(leptos): simplify hook implementation
 #### Before Creating a PR
 
 **1. Ensure tests pass:**
+
 ```bash
 cargo test --all-features
 cargo clippy --all-targets --all-features
@@ -317,11 +338,13 @@ cargo fmt --all -- --check
 ```
 
 **2. Update documentation:**
+
 ```bash
 cargo doc --no-deps --all-features
 ```
 
 **3. Run the full test suite:**
+
 ```bash
 # Run all tests including WASM
 ./scripts/test-all.sh
@@ -377,6 +400,7 @@ List any breaking changes and migration path
 ### 1. Performance Considerations
 
 **Memory efficiency:**
+
 ```rust
 // Good: Use references where possible
 pub fn render_nodes(&self, nodes: &[Node], viewport: &Viewport) {
@@ -385,11 +409,12 @@ pub fn render_nodes(&self, nodes: &[Node], viewport: &Viewport) {
 
 // Bad: Unnecessary cloning
 pub fn render_nodes(&self, nodes: Vec<Node>, viewport: Viewport) {
-    // Implementation  
+    // Implementation
 }
 ```
 
 **WASM optimization:**
+
 ```rust
 // Good: Minimize allocations
 #[wasm_bindgen]
@@ -407,6 +432,7 @@ pub fn create_node(id: String) -> Node {
 ### 2. API Design Principles
 
 **Consistency:**
+
 ```rust
 // Good: Consistent naming
 pub fn add_node(&mut self, node: Node) -> Result<(), FlowError>;
@@ -420,6 +446,7 @@ pub fn change_node(&mut self, id: &str, data: NodeData) -> Result<(), FlowError>
 ```
 
 **Type safety:**
+
 ```rust
 // Good: Strong typing
 pub struct NodeId(String);
@@ -432,27 +459,29 @@ pub fn connect_nodes(source: String, target: String) -> Edge;
 ### 3. Error Handling
 
 **Comprehensive error types:**
+
 ```rust
 #[derive(Debug, thiserror::Error)]
 pub enum FlowError {
     #[error("Node with ID '{id}' not found")]
     NodeNotFound { id: String },
-    
+
     #[error("Cannot connect node to itself")]
     SelfConnection,
-    
+
     #[error("Renderer error: {source}")]
     Renderer {
         #[from]
         source: RendererError,
     },
-    
+
     #[error("Layout error: {message}")]
     Layout { message: String },
 }
 ```
 
 **Graceful degradation:**
+
 ```rust
 // Good: Fallback behavior
 pub fn select_renderer() -> Box<dyn Renderer> {
@@ -499,13 +528,14 @@ We follow [Semantic Versioning](https://semver.org/):
 
 - `MAJOR.MINOR.PATCH` (e.g., 1.2.3)
 - Breaking changes increment MAJOR
-- New features increment MINOR  
+- New features increment MINOR
 - Bug fixes increment PATCH
 - Pre-release versions: `1.0.0-alpha.1`, `1.0.0-beta.2`, `1.0.0-rc.1`
 
 ### 2. Release Checklist
 
 **Pre-release:**
+
 - [ ] All tests passing
 - [ ] Performance benchmarks run
 - [ ] Documentation updated
@@ -514,6 +544,7 @@ We follow [Semantic Versioning](https://semver.org/):
 - [ ] Version bumped in Cargo.toml
 
 **Release:**
+
 - [ ] Git tag created
 - [ ] Crates published to crates.io
 - [ ] GitHub release created
@@ -532,13 +563,14 @@ We follow [Semantic Versioning](https://semver.org/):
 ### Communication
 
 - **GitHub Discussions**: General questions and ideas
-- **GitHub Issues**: Bug reports and feature requests  
+- **GitHub Issues**: Bug reports and feature requests
 - **Pull Requests**: Code contributions and discussions
 - **Discord**: Real-time chat (link in README)
 
 ### Common Issues
 
 **Build failures:**
+
 ```bash
 # Clear cache and rebuild
 cargo clean
@@ -546,6 +578,7 @@ cargo build --all-features
 ```
 
 **WASM test failures:**
+
 ```bash
 # Install wasm-pack if not available
 cargo install wasm-pack
@@ -555,10 +588,11 @@ wasm-pack test --headless --chrome -- --test-threads=1
 ```
 
 **Performance regressions:**
+
 ```bash
 # Run benchmarks and compare
 cargo bench -- --save-baseline main
-git checkout your-branch  
+git checkout your-branch
 cargo bench -- --baseline main
 ```
 

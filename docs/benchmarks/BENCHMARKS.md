@@ -7,12 +7,14 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Benchmark Environment
 
 ### Test Hardware
+
 - **CPU**: Apple M2 Pro (12-core)
 - **Memory**: 32GB LPDDR5
 - **GPU**: Apple M2 Pro (19-core)
 - **Display**: 3456×2234 Retina Display
 
 ### Software Environment
+
 - **OS**: macOS 14.1
 - **Browser**: Chrome 119, Firefox 119, Safari 17.1
 - **Rust**: 1.75.0
@@ -23,6 +25,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ### Rendering Performance
 
 #### Node Rendering (Canvas2D Renderer)
+
 | Nodes | FPS | Frame Time | Memory | CPU Usage |
 |-------|-----|------------|---------|-----------|
 | 100   | 60  | 16.7ms     | 8MB     | 15%       |
@@ -33,6 +36,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 10,000| 18  | 55.6ms     | 230MB   | 95%       |
 
 #### Node Rendering (WebGL2 Renderer)
+
 | Nodes | FPS | Frame Time | Memory | GPU Memory |
 |-------|-----|------------|---------|-------------|
 | 100   | 60  | 16.7ms     | 12MB    | 5MB         |
@@ -43,6 +47,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 10,000| 45  | 22.2ms     | 240MB   | 95MB        |
 
 #### Node Rendering (WebGPU Renderer) - Experimental
+
 | Nodes | FPS | Frame Time | Memory | GPU Memory |
 |-------|-----|------------|---------|-------------|
 | 100   | 60  | 16.7ms     | 10MB    | 4MB         |
@@ -55,6 +60,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ### Spatial Query Performance
 
 #### R-tree Spatial Index
+
 | Nodes | Insert Time | Query Time | Memory Overhead |
 |-------|-------------|------------|-----------------|
 | 100   | 0.8μs       | 0.2μs      | 4KB             |
@@ -63,6 +69,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 100,000| 3.8μs      | 2.8μs      | 4MB             |
 
 #### Viewport Culling Effectiveness
+
 | Total Nodes | Viewport Size | Visible Nodes | Culling Ratio |
 |-------------|---------------|---------------|---------------|
 | 1,000       | 800×600       | 45            | 95.5%         |
@@ -72,6 +79,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ### Layout Algorithm Performance
 
 #### Force-Directed Layout
+
 | Nodes | Edges | Iterations | Time (Single-threaded) | Time (Web Worker) |
 |-------|-------|------------|------------------------|-------------------|
 | 50    | 75    | 100        | 12ms                   | 8ms               |
@@ -80,6 +88,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 1,000 | 1,500 | 100        | 4.8s                   | 3.2s              |
 
 #### Hierarchical Layout
+
 | Nodes | Levels | Time | Memory |
 |-------|--------|------|--------|
 | 100   | 5      | 25ms | 2MB    |
@@ -90,6 +99,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ### Memory Usage Analysis
 
 #### Memory Breakdown (1,000 nodes, 1,500 edges)
+
 | Component | Memory Usage | Percentage |
 |-----------|--------------|------------|
 | Node Data | 12MB         | 37.5%      |
@@ -100,6 +110,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | **Total** | **32MB**     | **100%**   |
 
 #### Memory Growth Pattern
+
 | Nodes | Base Memory | Per Node | Growth Rate |
 |-------|-------------|----------|-------------|
 | 100   | 8MB         | 32KB     | Linear      |
@@ -161,18 +172,21 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Real-World Scenarios
 
 ### Data Flow Editor (500 nodes, 800 edges)
+
 - **Use Case**: Visual programming interface
 - **Performance**: 58 FPS average
 - **Memory**: 45MB peak
 - **User Experience**: Smooth interactions, responsive UI
 
 ### Network Topology Viewer (2,000 nodes, 5,000 edges)
+
 - **Use Case**: Infrastructure monitoring dashboard
 - **Performance**: 42 FPS with culling enabled
 - **Memory**: 120MB peak
 - **Features**: Real-time updates, filtering, search
 
 ### Workflow Designer (300 nodes, 450 edges)
+
 - **Use Case**: Business process automation
 - **Performance**: 60 FPS consistently
 - **Memory**: 28MB average
@@ -181,21 +195,25 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Performance Optimizations Impact
 
 ### Viewport Culling
+
 - **Performance Gain**: 3-8x FPS improvement with large graphs
 - **Memory Savings**: 60-80% reduction in render memory
 - **Trade-offs**: Slight complexity in edge cases
 
 ### Object Pooling
+
 - **Allocation Reduction**: 85% fewer object allocations
 - **GC Pressure**: 70% reduction in garbage collection
 - **Memory Stability**: More predictable memory usage
 
 ### Spatial Indexing
+
 - **Query Speed**: 100-1000x faster spatial queries
 - **Memory Overhead**: ~4% of total memory usage
 - **Scalability**: O(log n) vs O(n) for large datasets
 
 ### Instanced Rendering (WebGL2)
+
 - **Draw Call Reduction**: 50-90% fewer GPU draw calls
 - **Performance Gain**: 2-5x rendering performance
 - **GPU Utilization**: Better parallelization
@@ -203,6 +221,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Mobile Performance
 
 ### iOS Safari (iPhone 14 Pro)
+
 | Nodes | FPS | Memory | Battery Impact |
 |-------|-----|--------|----------------|
 | 100   | 58  | 12MB   | Low            |
@@ -210,6 +229,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 1,000 | 32  | 52MB   | High           |
 
 ### Android Chrome (Pixel 7)
+
 | Nodes | FPS | Memory | Battery Impact |
 |-------|-----|--------|----------------|
 | 100   | 55  | 15MB   | Low            |
@@ -217,6 +237,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 1,000 | 28  | 58MB   | High           |
 
 ### Mobile Optimizations
+
 - Touch-specific interaction handling
 - Reduced texture quality on low-end devices
 - Aggressive viewport culling
@@ -225,12 +246,14 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Memory Leak Analysis
 
 ### Long-Running Session Test (8 hours)
+
 - **Initial Memory**: 32MB (1,000 nodes)
 - **Peak Memory**: 38MB (after 4 hours)
 - **Final Memory**: 33MB (stable)
 - **Leak Rate**: <0.3MB/hour (acceptable)
 
 ### Stress Test Results (Node Creation/Deletion)
+
 - **Operations**: 10,000 create/delete cycles
 - **Memory Growth**: +2MB total
 - **Object Pool Effectiveness**: 98% reuse rate
@@ -241,6 +264,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ### Automated Benchmark Results
 
 #### Version Comparison (Frame Time, 1,000 nodes)
+
 | Version | Canvas2D | WebGL2 | Change |
 |---------|----------|--------|--------|
 | 0.1.0   | 24.5ms   | 19.2ms | -      |
@@ -249,6 +273,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 | 0.2.0   | 17.2ms   | 16.7ms | ✅ +30% |
 
 #### Memory Usage Trends
+
 | Version | 1K Nodes | 5K Nodes | 10K Nodes |
 |---------|----------|----------|-----------|
 | 0.1.0   | 38MB     | 165MB    | 320MB     |
@@ -259,6 +284,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Continuous Monitoring
 
 ### Performance Dashboard Metrics
+
 - Real-time FPS monitoring
 - Memory usage tracking
 - Error rate monitoring
@@ -266,6 +292,7 @@ This document presents performance benchmarks for Leptos Flow across different s
 - Bundle size tracking
 
 ### Alerting Thresholds
+
 - FPS drops below 45 for >1 second
 - Memory usage increases >50% between versions
 - Bundle size increases >10%
@@ -274,12 +301,14 @@ This document presents performance benchmarks for Leptos Flow across different s
 ## Future Performance Goals
 
 ### Short-term Targets (Next 6 months)
+
 - **20,000 nodes** at 30+ FPS (WebGPU renderer)
 - **Sub-200MB** memory usage for 10,000 nodes
 - **<400KB** total bundle size (gzipped)
 - **60 FPS** on mid-range mobile devices (1,000 nodes)
 
 ### Long-term Vision (12+ months)
+
 - **100,000 nodes** with streaming/virtualization
 - **Native performance** through advanced WASM features
 - **Multi-threaded** layout and rendering

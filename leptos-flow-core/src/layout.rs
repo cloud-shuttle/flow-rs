@@ -37,7 +37,7 @@ pub struct ForceDirectedLayout {
     pub damping: f64,
     pub center_force: f64,
     pub randomize_start: bool,
-    
+
     // Runtime state
     current_iteration: usize,
     running: bool,
@@ -87,7 +87,7 @@ impl ForceDirectedLayout {
                 let distance = delta.x.hypot(delta.y).max(0.1);
                 let displacement = distance - self.spring_length;
                 let force_magnitude = self.spring_strength * displacement;
-                
+
                 let force_direction = Position::new(delta.x / distance, delta.y / distance);
                 let force = force_direction * force_magnitude;
 
@@ -112,7 +112,7 @@ impl ForceDirectedLayout {
                 if i != j {
                     let delta = node1.position - node2.position;
                     let distance_squared = delta.x * delta.x + delta.y * delta.y;
-                    
+
                     if distance_squared > 0.01 { // Avoid division by zero
                         let distance = distance_squared.sqrt();
                         let force_magnitude = self.repulsion_strength / distance_squared;
@@ -131,11 +131,11 @@ impl ForceDirectedLayout {
     /// Calculate center force to prevent nodes from drifting
     fn calculate_center_forces<N, E>(&self, graph: &Graph<N, E>) -> HashMap<NodeId, Position> {
         let mut forces = HashMap::new();
-        
+
         // Calculate center of mass
         let mut center = Position::zero();
         let node_count = graph.node_count() as f64;
-        
+
         if node_count > 0.0 {
             for node in graph.nodes() {
                 center += node.position;
@@ -157,18 +157,18 @@ impl ForceDirectedLayout {
     fn apply_forces<N, E>(&mut self, graph: &mut Graph<N, E>, forces: &HashMap<NodeId, Position>) {
         let dt = 0.1; // Time step
         let cooling = 1.0 - (self.current_iteration as f64 / self.iterations as f64);
-        
+
         for node in graph.nodes_mut() {
             if let Some(&force) = forces.get(&node.id) {
                 // Update velocity
                 let velocity = self.node_velocities.entry(node.id.clone())
                     .or_insert(Position::zero());
-                
+
                 *velocity = *velocity * self.damping + force * dt;
-                
+
                 // Apply cooling to reduce movement over time
                 *velocity = *velocity * cooling;
-                
+
                 // Update position
                 node.position += *velocity * dt;
             }
@@ -180,23 +180,23 @@ impl ForceDirectedLayout {
         if self.randomize_start {
             use std::collections::hash_map::DefaultHasher;
             use std::hash::{Hash, Hasher};
-            
+
             for node in graph.nodes_mut() {
                 // Use node ID as seed for deterministic randomness
                 let mut hasher = DefaultHasher::new();
                 node.id.hash(&mut hasher);
                 let seed = hasher.finish();
-                
+
                 // Simple LCG for pseudo-random numbers
                 let a = 1664525u64;
                 let c = 1013904223u64;
                 let x = a.wrapping_mul(seed).wrapping_add(c);
                 let y = a.wrapping_mul(x).wrapping_add(c);
-                
+
                 let range = 200.0;
                 let rand_x = ((x % 1000) as f64 / 1000.0 - 0.5) * range;
                 let rand_y = ((y % 1000) as f64 / 1000.0 - 0.5) * range;
-                
+
                 node.position = Position::new(rand_x, rand_y);
             }
         }
@@ -206,18 +206,18 @@ impl ForceDirectedLayout {
     fn calculate_energy<N, E>(&self, graph: &Graph<N, E>) -> f64 {
         let spring_forces = self.calculate_spring_forces(graph);
         let repulsion_forces = self.calculate_repulsion_forces(graph);
-        
+
         let mut energy = 0.0;
         let zero = Position::zero();
-        
+
         for node in graph.nodes() {
             let spring_force = spring_forces.get(&node.id).unwrap_or(&zero);
             let repulsion_force = repulsion_forces.get(&node.id).unwrap_or(&zero);
-            
+
             let total_force = *spring_force + *repulsion_force;
             energy += total_force.x * total_force.x + total_force.y * total_force.y;
         }
-        
+
         energy.sqrt()
     }
 
@@ -240,7 +240,7 @@ impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
         self.running = true;
         self.current_iteration = 0;
         self.node_velocities.clear();
-        
+
         // Initialize positions if requested
         self.maybe_randomize_positions(graph);
 
@@ -250,7 +250,7 @@ impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
             let spring_forces = self.calculate_spring_forces(graph);
             let repulsion_forces = self.calculate_repulsion_forces(graph);
             let center_forces = self.calculate_center_forces(graph);
-            
+
             // Combine forces
             let mut total_forces = HashMap::new();
             for node in graph.nodes() {
@@ -258,19 +258,19 @@ impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
                 let spring = spring_forces.get(&node.id).unwrap_or(&zero);
                 let repulsion = repulsion_forces.get(&node.id).unwrap_or(&zero);
                 let center = center_forces.get(&node.id).unwrap_or(&zero);
-                
+
                 total_forces.insert(node.id.clone(), *spring + *repulsion + *center);
             }
-            
+
             // Apply forces
             self.apply_forces(graph, &total_forces);
-            
+
             // Check convergence
             let energy = self.calculate_energy(graph);
             if self.has_converged(energy) {
                 break;
             }
-            
+
             self.current_iteration += 1;
         }
 
@@ -417,7 +417,7 @@ impl<N, E> LayoutAlgorithm<N, E> for GridLayout {
     fn apply(&mut self, graph: &mut Graph<N, E>) -> Result<()> {
         let nodes: Vec<_> = graph.nodes_mut().collect();
         let node_count = nodes.len();
-        
+
         if node_count == 0 {
             return Ok(());
         }
@@ -431,10 +431,10 @@ impl<N, E> LayoutAlgorithm<N, E> for GridLayout {
         for (i, node) in nodes.into_iter().enumerate() {
             let row = i / columns;
             let col = i % columns;
-            
+
             let x = col as f64 * (self.cell_width + self.margin);
             let y = row as f64 * (self.cell_height + self.margin);
-            
+
             node.position = Position::new(x, y);
         }
 
@@ -451,7 +451,7 @@ impl LayoutUtils {
         if let Some(bounds) = graph.bounds() {
             let center = bounds.center();
             let offset = Position::zero() - center;
-            
+
             for node in graph.nodes_mut() {
                 node.position += offset;
             }
@@ -465,9 +465,9 @@ impl LayoutUtils {
                 let scale_x = target_width / bounds.width;
                 let scale_y = target_height / bounds.height;
                 let scale = scale_x.min(scale_y);
-                
+
                 let center = bounds.center();
-                
+
                 for node in graph.nodes_mut() {
                     let relative_pos = node.position - center;
                     node.position = center + relative_pos * scale;
@@ -491,17 +491,17 @@ mod tests {
 
     fn create_test_graph() -> Graph<(), ()> {
         let mut graph = Graph::new();
-        
+
         // Add nodes
         graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
         graph.add_node(Node::builder("2").position(100.0, 0.0).build()).unwrap();
         graph.add_node(Node::builder("3").position(50.0, 100.0).build()).unwrap();
-        
+
         // Add edges
         graph.add_edge(Edge::builder().connect("1", "2").build().unwrap()).unwrap();
         graph.add_edge(Edge::builder().connect("2", "3").build().unwrap()).unwrap();
         graph.add_edge(Edge::builder().connect("3", "1").build().unwrap()).unwrap();
-        
+
         graph
     }
 
@@ -512,15 +512,15 @@ mod tests {
             .iterations(10)
             .randomize_start(false)
             .build();
-        
+
         // Store initial positions
         let initial_positions: HashMap<_, _> = graph.nodes()
             .map(|node| (node.id.clone(), node.position))
             .collect();
-        
+
         // Apply layout
         layout.apply(&mut graph).unwrap();
-        
+
         // Check that positions changed
         let mut positions_changed = false;
         for node in graph.nodes() {
@@ -531,7 +531,7 @@ mod tests {
                 }
             }
         }
-        
+
         assert!(positions_changed, "Layout should change node positions");
         assert_eq!(layout.progress(), 1.0);
         assert!(!layout.is_running());
@@ -543,21 +543,21 @@ mod tests {
         let mut layout = GridLayout::new()
             .columns(Some(2))
             .cell_size(100.0, 80.0);
-        
+
         layout.apply(&mut graph).unwrap();
-        
+
         // Check that nodes are positioned in a grid
         let nodes: Vec<_> = graph.nodes().collect();
         assert_eq!(nodes.len(), 3);
-        
+
         // First node should be at origin
         let node1 = graph.get_node(&"1".into()).unwrap();
         assert_eq!(node1.position, Position::new(0.0, 0.0));
-        
+
         // Second node should be in next column
         let node2 = graph.get_node(&"2".into()).unwrap();
         assert_eq!(node2.position, Position::new(120.0, 0.0)); // 100 + 20 margin
-        
+
         // Third node should be in second row
         let node3 = graph.get_node(&"3".into()).unwrap();
         assert_eq!(node3.position, Position::new(0.0, 100.0)); // 80 + 20 margin
@@ -567,7 +567,7 @@ mod tests {
     fn test_layout_utils_center() {
         let mut graph = create_test_graph();
         LayoutUtils::center_graph(&mut graph);
-        
+
         if let Some(bounds) = graph.bounds() {
             let center = bounds.center();
             // Center should be close to origin (allowing for floating point errors)
@@ -579,7 +579,7 @@ mod tests {
     fn test_layout_utils_scale() {
         let mut graph = create_test_graph();
         LayoutUtils::scale_to_fit(&mut graph, 200.0, 200.0);
-        
+
         if let Some(bounds) = graph.bounds() {
             assert!(bounds.width <= 200.0);
             assert!(bounds.height <= 200.0);
@@ -595,7 +595,7 @@ mod tests {
             .damping(0.95)
             .randomize_start(false)
             .build();
-        
+
         assert_eq!(layout.iterations, 50);
         assert_eq!(layout.spring_strength, 0.8);
         assert_eq!(layout.repulsion_strength, 1500.0);
@@ -609,17 +609,17 @@ mod tests {
         let mut layout = ForceDirectedLayout::builder()
             .iterations(1000)
             .build();
-        
+
         assert!(layout.can_interrupt());
-        
+
         // Start layout in a separate context (simulated)
         // In real usage, this would be in a separate thread or async context
         layout.running = true;
         layout.current_iteration = 10;
-        
+
         assert!(layout.is_running());
         assert!(layout.progress() < 1.0);
-        
+
         layout.stop().unwrap();
         assert!(!layout.is_running());
     }

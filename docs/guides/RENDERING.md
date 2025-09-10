@@ -67,7 +67,7 @@ Select renderer based on device capabilities:
 ```rust
 let renderer_type = move || {
     let capabilities = detect_renderer_capabilities();
-    
+
     if capabilities.webgpu && nodes.get().len() > 1000 {
         RendererType::WebGPU  // Use WebGPU for large graphs
     } else if capabilities.webgl2 {
@@ -89,6 +89,7 @@ view! {
 ## WebGPU Renderer
 
 ### Features
+
 - **GPU Compute Shaders**: Parallel layout calculations
 - **Instanced Rendering**: Efficient rendering of similar nodes
 - **Advanced Shaders**: Custom visual effects and animations
@@ -104,11 +105,11 @@ let webgpu_config = WebGPUConfig {
     power_preference: PowerPreference::HighPerformance,
     max_instances_per_draw: 10000,
     use_compute_shaders: true,
-    
+
     // Quality settings
     msaa_samples: 4,
     anisotropy: 16,
-    
+
     // Memory settings
     buffer_usage: BufferUsage::DYNAMIC,
     max_buffer_size: 256 * 1024 * 1024, // 256MB
@@ -154,7 +155,7 @@ var<uniform> view_proj: mat4x4<f32>;
 @vertex
 fn vs_main(vertex: VertexInput, instance: InstanceInput) -> VertexOutput {
     let world_pos = vertex.position * instance.instance_size + instance.instance_position;
-    
+
     var out: VertexOutput;
     out.clip_position = view_proj * vec4<f32>(world_pos, 0.0, 1.0);
     out.uv = vertex.uv;
@@ -172,7 +173,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let dist = length(max(abs(center) - vec2<f32>(0.4), vec2<f32>(0.0)));
     let border = smoothstep(0.08, 0.1, dist);
     let fill = 1.0 - smoothstep(0.0, 0.02, dist - 0.08);
-    
+
     return mix(in.color, vec4<f32>(0.0, 0.0, 0.0, 1.0), border) * fill;
 }
 "#;
@@ -187,6 +188,7 @@ let custom_renderer = WebGPURenderer::builder()
 ## WebGL2 Renderer
 
 ### Features
+
 - **GPU Rendering**: Hardware-accelerated drawing
 - **Texture Atlasing**: Efficient sprite rendering
 - **Batch Rendering**: Reduced draw calls
@@ -204,12 +206,12 @@ let webgl2_config = WebGL2Config {
     depth: false,
     stencil: false,
     preserve_drawing_buffer: false,
-    
+
     // Performance settings
     max_textures: 16,
     max_draw_calls: 1000,
     batch_size: 2000,
-    
+
     // Quality settings
     texture_filtering: TextureFiltering::Linear,
     max_texture_size: 4096,
@@ -247,7 +249,7 @@ void main() {
 ```
 
 ```glsl
-// Custom fragment shader  
+// Custom fragment shader
 precision mediump float;
 
 varying vec2 v_uv;
@@ -258,7 +260,7 @@ void main() {
     vec2 center = v_uv - 0.5;
     float dist = length(max(abs(center) - vec2(0.4), 0.0));
     float alpha = 1.0 - smoothstep(0.0, 0.02, dist - 0.08);
-    
+
     gl_FragColor = v_color * alpha;
 }
 ```
@@ -266,6 +268,7 @@ void main() {
 ## Canvas2D Renderer
 
 ### Features
+
 - **Universal Compatibility**: Works on all browsers
 - **Vector Graphics**: Crisp rendering at any zoom level
 - **Text Rendering**: Native font support
@@ -280,12 +283,12 @@ let canvas2d_config = Canvas2DConfig {
     // Quality settings
     image_smoothing: true,
     text_rendering: TextRenderingQuality::Optimized,
-    
+
     // Performance settings
     use_offscreen_canvas: true,
     worker_rendering: false,
     dirty_rect_optimization: true,
-    
+
     // Appearance settings
     pixel_ratio: window().device_pixel_ratio(),
     font_family: "system-ui, sans-serif".to_string(),
@@ -312,41 +315,41 @@ pub struct CustomCanvas2DRenderer {
 impl Canvas2DRenderer for CustomCanvas2DRenderer {
     fn render_node(&mut self, node: &Node, viewport: &Viewport) {
         let ctx = &self.context;
-        
+
         // Transform to node coordinates
         ctx.save();
         ctx.translate(node.position.x, node.position.y);
         ctx.scale(viewport.zoom, viewport.zoom);
-        
+
         // Custom node rendering
         self.render_node_background(node);
         self.render_node_content(node);
         self.render_node_border(node);
-        
+
         ctx.restore();
     }
-    
+
     fn render_node_background(&self, node: &Node) {
         let ctx = &self.context;
-        
+
         // Gradient background
         let gradient = ctx.create_linear_gradient(0.0, 0.0, node.size.width, 0.0);
         gradient.add_color_stop(0.0, "#ffffff");
         gradient.add_color_stop(1.0, "#f0f0f0");
-        
+
         ctx.set_fill_style(&gradient);
         ctx.fill_rect(0.0, 0.0, node.size.width, node.size.height);
     }
-    
+
     fn render_node_content(&self, node: &Node) {
         let ctx = &self.context;
-        
+
         // Render text content
         ctx.set_font("14px system-ui");
         ctx.set_fill_style(&JsValue::from_str("#333"));
         ctx.set_text_align("center");
         ctx.set_text_baseline("middle");
-        
+
         let label = node.data.get("label").unwrap_or(&"Node".to_string());
         ctx.fill_text(
             label,
@@ -369,18 +372,18 @@ use leptos_flow::renderer::*;
 pub trait Renderer {
     type Config: Default;
     type Error: std::error::Error;
-    
+
     // Lifecycle methods
     fn new(config: Self::Config) -> Result<Self, Self::Error> where Self: Sized;
     fn resize(&mut self, width: u32, height: u32) -> Result<(), Self::Error>;
     fn clear(&mut self) -> Result<(), Self::Error>;
     fn present(&mut self) -> Result<(), Self::Error>;
-    
+
     // Rendering methods
     fn render_nodes(&mut self, nodes: &[Node], viewport: &Viewport) -> Result<(), Self::Error>;
     fn render_edges(&mut self, edges: &[Edge], viewport: &Viewport) -> Result<(), Self::Error>;
     fn render_selection(&mut self, selection: &Selection, viewport: &Viewport) -> Result<(), Self::Error>;
-    
+
     // Capability queries
     fn capabilities(&self) -> RendererCapabilities;
     fn max_texture_size(&self) -> u32;
@@ -402,7 +405,7 @@ pub struct ASCIIRenderer {
 impl Renderer for ASCIIRenderer {
     type Config = ASCIIConfig;
     type Error = ASCIIError;
-    
+
     fn new(config: Self::Config) -> Result<Self, Self::Error> {
         Ok(Self {
             width: config.width,
@@ -410,20 +413,20 @@ impl Renderer for ASCIIRenderer {
             buffer: vec![' '; config.width * config.height],
         })
     }
-    
+
     fn render_nodes(&mut self, nodes: &[Node], viewport: &Viewport) -> Result<(), Self::Error> {
         for node in nodes {
             let screen_pos = viewport.world_to_screen(node.position);
             let x = (screen_pos.x as usize).min(self.width - 1);
             let y = (screen_pos.y as usize).min(self.height - 1);
-            
+
             if x < self.width && y < self.height {
                 self.buffer[y * self.width + x] = '█';
             }
         }
         Ok(())
     }
-    
+
     fn present(&mut self) -> Result<(), Self::Error> {
         // Print buffer to console
         for y in 0..self.height {
@@ -447,11 +450,11 @@ All renderers support automatic viewport culling:
 let culling_config = CullingConfig {
     // Frustum culling
     viewport_margin: 50.0,  // Render 50px outside viewport
-    
+
     // LOD (Level of Detail)
     lod_enabled: true,
     lod_distance_threshold: 500.0,
-    
+
     // Occlusion culling
     occlusion_culling: true,
     max_occlusion_queries: 1000,
@@ -474,11 +477,11 @@ let batching_config = BatchingConfig {
     // Group similar nodes together
     batch_by_type: true,
     batch_by_material: true,
-    
+
     // Instance rendering thresholds
     instancing_threshold: 10,  // Use instancing for 10+ similar objects
     max_instances_per_batch: 1000,
-    
+
     // Draw call optimization
     max_draw_calls_per_frame: 100,
     prefer_large_batches: true,
@@ -500,15 +503,15 @@ let memory_config = MemoryConfig {
     // Texture memory
     texture_cache_size: 128 * 1024 * 1024,  // 128MB
     max_texture_uploads_per_frame: 4,
-    
+
     // Vertex buffer memory
     vertex_buffer_size: 64 * 1024 * 1024,   // 64MB
     index_buffer_size: 32 * 1024 * 1024,    // 32MB
-    
+
     // Object pooling
     node_pool_size: 10000,
     edge_pool_size: 15000,
-    
+
     // Garbage collection
     gc_interval: Duration::from_secs(30),
     gc_threshold: 0.8,  // GC when 80% of memory used
@@ -527,12 +530,12 @@ let debug_config = DebugConfig {
     show_bounding_boxes: true,
     show_viewport_bounds: true,
     show_spatial_index: true,
-    
-    // Performance debugging  
+
+    // Performance debugging
     show_frame_time: true,
     show_draw_calls: true,
     show_memory_usage: true,
-    
+
     // Validation
     validate_state: true,
     check_gl_errors: true,
@@ -553,11 +556,11 @@ let performance_monitor = use_renderer_performance();
 
 create_effect(move |_| {
     let stats = performance_monitor.get();
-    
+
     if stats.frame_time > 16.67 {
         logging::warn!("Frame dropped: {}ms", stats.frame_time);
     }
-    
+
     if stats.memory_usage > 500_000_000 {  // 500MB
         logging::warn!("High memory usage: {}MB", stats.memory_usage / 1_000_000);
     }

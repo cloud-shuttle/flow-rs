@@ -1,4 +1,5 @@
 # Rust xyflow Design Document
+
 ## Leveraging Leptos Helios Architecture for Node-Based UI
 
 ### Executive Summary
@@ -8,24 +9,28 @@ This document outlines the design for `rust-xyflow`, a high-performance node-bas
 ## 🎯 **Strategic Advantages from Leptos Helios**
 
 ### **1. Proven Architecture Patterns**
+
 - **Modular workspace structure** with clear separation of concerns
 - **Framework-agnostic core** with framework-specific integrations
 - **WASM bindings** for universal web compatibility
 - **Compile-time validation** and optimization macros
 
 ### **2. Performance Infrastructure**
+
 - **WebGPU + Canvas2D** rendering pipeline
 - **Memory pool management** and efficient allocation
 - **SIMD optimizations** for geometric calculations
 - **Multi-threaded data processing** capabilities
 
 ### **3. Developer Experience**
+
 - **Type-safe specifications** with compile-time validation
 - **Comprehensive testing framework** (1000+ tests)
 - **Performance benchmarking** and profiling tools
 - **Cross-browser compatibility** testing
 
 ### **4. Production-Ready Features**
+
 - **Export capabilities** (PNG, SVG, PDF)
 - **Accessibility support** (WCAG 2.1 AA)
 - **Responsive design** system
@@ -34,6 +39,7 @@ This document outlines the design for `rust-xyflow`, a high-performance node-bas
 ## 🏗️ **Architecture Design**
 
 ### **Repository Structure**
+
 ```
 rust-xyflow/
 ├── xyflow-core/           # Core node-based UI engine
@@ -46,6 +52,7 @@ rust-xyflow/
 ```
 
 ### **Core Dependencies (Leveraging Helios)**
+
 ```toml
 # xyflow-core/Cargo.toml
 [dependencies]
@@ -79,6 +86,7 @@ js-sys = { workspace = true }
 ## 🎨 **Core Data Structures**
 
 ### **Node System**
+
 ```rust
 // xyflow-core/src/node.rs
 use serde::{Deserialize, Serialize};
@@ -144,6 +152,7 @@ pub struct NodeStyle {
 ```
 
 ### **Edge System**
+
 ```rust
 // xyflow-core/src/edge.rs
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -192,6 +201,7 @@ pub struct PathOptions {
 ```
 
 ### **Flow System**
+
 ```rust
 // xyflow-core/src/flow.rs
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -283,6 +293,7 @@ pub struct Extent {
 ## 🎨 **Rendering System (Leveraging Helios)**
 
 ### **WebGPU Renderer**
+
 ```rust
 // xyflow-core/src/renderer/webgpu.rs
 use wgpu::*;
@@ -332,6 +343,7 @@ impl WebGpuNodeRenderer {
 ```
 
 ### **Canvas2D Fallback**
+
 ```rust
 // xyflow-core/src/renderer/canvas2d.rs
 use web_sys::CanvasRenderingContext2d;
@@ -373,6 +385,7 @@ impl Canvas2DNodeRenderer {
 ## 🧠 **Performance Optimizations (From Helios)**
 
 ### **Memory Pool Management**
+
 ```rust
 // xyflow-core/src/memory.rs
 use std::collections::VecDeque;
@@ -408,6 +421,7 @@ impl NodeMemoryPool {
 ```
 
 ### **Spatial Indexing**
+
 ```rust
 // xyflow-core/src/spatial.rs
 use std::collections::HashMap;
@@ -454,6 +468,7 @@ impl SpatialIndex {
 ## 🔧 **Framework Integrations**
 
 ### **Leptos Integration**
+
 ```rust
 // xyflow-leptos/src/lib.rs
 use leptos::*;
@@ -510,6 +525,7 @@ pub fn Node(
 ```
 
 ### **WASM Bindings (Universal)**
+
 ```rust
 // xyflow-wasm/src/lib.rs
 use wasm_bindgen::prelude::*;
@@ -576,6 +592,7 @@ impl FlowEditor {
 ## 🧪 **Testing Strategy (From Helios)**
 
 ### **Comprehensive Test Suite**
+
 ```rust
 // xyflow-core/tests/integration_tests.rs
 use proptest::prelude::*;
@@ -669,24 +686,28 @@ fn test_spatial_index_performance() {
 ## 🚀 **Fast Development Strategy**
 
 ### **Phase 1: Core Foundation (Week 1)**
+
 1. **Setup workspace** with proven helios-core patterns
 2. **Implement basic data structures** (Node, Edge, Flow)
 3. **Create Canvas2D renderer** (fastest to implement)
 4. **Basic interaction handling** (click, drag, zoom)
 
 ### **Phase 2: Rendering Pipeline (Week 2)**
+
 1. **WebGPU renderer** (leverage helios-core WebGPU setup)
 2. **Performance optimizations** (spatial indexing, memory pools)
 3. **Animation system** (leverage helios-core animation patterns)
 4. **Export capabilities** (SVG, PNG)
 
 ### **Phase 3: Framework Integration (Week 3)**
+
 1. **Leptos integration** (reactive components)
 2. **WASM bindings** (universal web support)
 3. **React/Vue/Angular** compatibility via WASM
 4. **Desktop integration** (Tauri, Bevy)
 
 ### **Phase 4: Advanced Features (Week 4)**
+
 1. **Custom node types** and edge types
 2. **Advanced interactions** (multi-select, keyboard shortcuts)
 3. **Performance benchmarking** and optimization
@@ -695,6 +716,7 @@ fn test_spatial_index_performance() {
 ## 📊 **Performance Targets**
 
 ### **Benchmarks (Leveraging Helios Infrastructure)**
+
 ```rust
 // xyflow-benchmarks/benches/performance.rs
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -738,18 +760,21 @@ criterion_main!(benches);
 ## 🎯 **Success Metrics**
 
 ### **Performance Goals**
+
 - **Render 1000 nodes** at 60 FPS
 - **Spatial queries** in <1ms for 10,000 nodes
 - **Memory usage** <50MB for 1000 nodes
 - **Bundle size** <500KB (WASM + JS)
 
 ### **Feature Parity**
+
 - **100% API compatibility** with xyflow
 - **All node types** (Input, Output, Default, Group, Custom)
 - **All edge types** (Default, Step, SmoothStep, Straight, Bezier)
 - **All interactions** (drag, zoom, pan, select, connect)
 
 ### **Framework Support**
+
 - **Leptos** (native integration)
 - **React/Vue/Angular** (via WASM)
 - **Desktop** (Tauri, Bevy)
@@ -758,24 +783,28 @@ criterion_main!(benches);
 ## 🚀 **Implementation Timeline**
 
 ### **Week 1: Foundation**
+
 - [ ] Workspace setup
 - [ ] Core data structures
 - [ ] Basic Canvas2D renderer
 - [ ] Simple interactions
 
 ### **Week 2: Rendering**
+
 - [ ] WebGPU renderer
 - [ ] Performance optimizations
 - [ ] Animation system
 - [ ] Export capabilities
 
 ### **Week 3: Integration**
+
 - [ ] Leptos components
 - [ ] WASM bindings
 - [ ] Framework compatibility
 - [ ] Desktop support
 
 ### **Week 4: Polish**
+
 - [ ] Advanced features
 - [ ] Performance tuning
 - [ ] Documentation
@@ -792,4 +821,3 @@ criterion_main!(benches);
 7. **🔧 Extensible**: Plugin system for custom node types
 
 This design leverages all the wins from Leptos Helios while creating a focused, high-performance node-based UI library that can be built quickly and efficiently! 🎯
-

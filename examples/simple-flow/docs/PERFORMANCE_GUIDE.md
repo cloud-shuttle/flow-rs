@@ -228,11 +228,11 @@ monitor.startMonitoring();
 function renderLoop() {
     // ... rendering code ...
     monitor.recordFrame();
-    
+
     if (monitor.getFps() < 30) {
         console.warn('Performance degraded:', monitor.getStats());
     }
-    
+
     requestAnimationFrame(renderLoop);
 }
 ```
@@ -316,11 +316,11 @@ fn benchmark_large_graph_rendering() {
     let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
     let graph = create_large_test_graph(1000); // 1000 nodes
     let viewport = create_test_viewport();
-    
+
     let start_time = web_sys::js_sys::Date::now();
     renderer.render_graph(&graph, &viewport).unwrap();
     let end_time = web_sys::js_sys::Date::now();
-    
+
     let render_time = end_time - start_time;
     assert!(render_time <= 500.0, "Large graph rendering took {}ms, expected <= 500ms", render_time);
 }
@@ -333,17 +333,17 @@ fn benchmark_large_graph_rendering() {
 fn benchmark_memory_usage() {
     let canvas = create_test_canvas();
     let renderer = Canvas2DRenderer::new(&canvas).unwrap();
-    
+
     // Check memory usage after initialization
     if let Some(performance) = web_sys::window().unwrap().performance() {
         let memory = performance.memory();
         if !memory.is_undefined() {
             let used_js_heap_size = js_sys::Reflect::get(&memory, &"usedJSHeapSize".into()).unwrap();
             let used_js_heap_size = used_js_heap_size.as_f64().unwrap();
-            
+
             let max_memory_mb = 50.0 * 1024.0 * 1024.0; // 50MB
-            assert!(used_js_heap_size <= max_memory_mb, 
-                   "Memory usage {}MB exceeds limit of 50MB", 
+            assert!(used_js_heap_size <= max_memory_mb,
+                   "Memory usage {}MB exceeds limit of 50MB",
                    used_js_heap_size / (1024.0 * 1024.0));
         }
     }
@@ -362,16 +362,16 @@ fn benchmark_memory_usage() {
 <body>
     <canvas id="benchmark-canvas" width="800" height="600"></canvas>
     <div id="results"></div>
-    
+
     <script type="module">
         import init, { PerformanceBenchmark } from './pkg/simple_flow_example.js';
-        
+
         async function runBenchmark() {
             await init();
-            
+
             const benchmark = new PerformanceBenchmark();
             const result = benchmark.runBenchmark(5000); // 5 seconds
-            
+
             document.getElementById('results').innerHTML = `
                 <h2>Benchmark Results</h2>
                 <p>Average FPS: ${result.average_fps.toFixed(2)}</p>
@@ -379,7 +379,7 @@ fn benchmark_memory_usage() {
                 <p>Performance Grade: ${result.performance_grade}</p>
             `;
         }
-        
+
         runBenchmark();
     </script>
 </body>
@@ -393,11 +393,13 @@ fn benchmark_memory_usage() {
 #### 1. Low FPS (< 30 FPS)
 
 **Symptoms:**
+
 - Choppy animations
 - Slow response to user input
 - High frame times (> 33ms)
 
 **Solutions:**
+
 ```rust
 // Reduce node count
 const MAX_NODES: usize = 500;
@@ -419,11 +421,13 @@ let settings = PerformanceSettings {
 #### 2. High Memory Usage (> 100MB)
 
 **Symptoms:**
+
 - Browser becomes unresponsive
 - Memory usage keeps growing
 - Garbage collection pauses
 
 **Solutions:**
+
 ```rust
 // Use object pooling
 let mut node_pool = MemoryPool::new(1000);
@@ -440,11 +444,13 @@ memory_monitor.init();
 #### 3. Slow Initial Rendering (> 200ms)
 
 **Symptoms:**
+
 - Long delay before first render
 - Blank canvas for several seconds
 - High initial frame time
 
 **Solutions:**
+
 ```rust
 // Optimize initial graph creation
 let graph = create_optimized_graph();
@@ -459,11 +465,13 @@ renderer.pre_warm();
 #### 4. Memory Leaks
 
 **Symptoms:**
+
 - Memory usage keeps growing
 - Performance degrades over time
 - Browser crashes after extended use
 
 **Solutions:**
+
 ```rust
 // Proper cleanup
 impl Drop for FlowRenderer {
@@ -514,9 +522,9 @@ console::log_1(&format!("Background: {}ms, Graph: {}ms", bg_time, graph_time).in
 ```rust
 // Monitor resource usage
 let stats = renderer.get_stats();
-console::log_1(&format!("Nodes: {}, Edges: {}, Draw calls: {}", 
-    stats.nodes_rendered, 
-    stats.edges_rendered, 
+console::log_1(&format!("Nodes: {}, Edges: {}, Draw calls: {}",
+    stats.nodes_rendered,
+    stats.edges_rendered,
     stats.draw_calls
 ).into());
 ```
@@ -549,6 +557,7 @@ console::log_1(&format!("Nodes: {}, Edges: {}, Draw calls: {}",
 The Leptos Flow Simple Example provides comprehensive performance optimization features. By following this guide and using the built-in performance monitoring tools, you can ensure your flow diagrams perform well across all devices and use cases.
 
 For more information, see:
+
 - [API Examples](./API_EXAMPLES.md) for detailed API usage
 - [Usage Examples](./USAGE_EXAMPLES.md) for practical examples
 - [Testing Guide](./TESTING.md) for performance testing

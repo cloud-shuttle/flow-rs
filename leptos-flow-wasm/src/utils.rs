@@ -287,7 +287,7 @@ impl EventUtils {
         let rect = canvas.get_bounding_client_rect();
         let x = event.client_x() as f64 - rect.left();
         let y = event.client_y() as f64 - rect.top();
-        
+
         let array = js_sys::Array::new();
         array.push(&JsValue::from(x));
         array.push(&JsValue::from(y));
@@ -315,12 +315,12 @@ pub fn get_version() -> String {
 #[wasm_bindgen]
 pub fn get_build_info() -> JsValue {
     let info = js_sys::Object::new();
-    
+
     js_sys::Reflect::set(&info, &"version".into(), &JsValue::from_str(env!("CARGO_PKG_VERSION"))).unwrap();
     js_sys::Reflect::set(&info, &"name".into(), &JsValue::from_str(env!("CARGO_PKG_NAME"))).unwrap();
     js_sys::Reflect::set(&info, &"authors".into(), &JsValue::from_str(env!("CARGO_PKG_AUTHORS"))).unwrap();
     js_sys::Reflect::set(&info, &"rustc_version".into(), &JsValue::from_str(env!("RUSTC_VERSION"))).unwrap_or_default();
-    
+
     info.into()
 }
 
@@ -334,12 +334,12 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_performance_timer() {
         let mut timer = PerformanceTimer::new("test");
-        
+
         // Timer should start with near-zero elapsed time
         let elapsed = timer.elapsed();
         assert!(elapsed >= 0.0);
         assert!(elapsed < 10.0); // Should be less than 10ms for this simple test
-        
+
         timer.reset();
         let new_elapsed = timer.elapsed();
         assert!(new_elapsed >= 0.0);
@@ -349,11 +349,11 @@ mod tests {
     #[wasm_bindgen_test]
     fn test_frame_rate_calculator() {
         let mut fps_calc = FrameRateCalculator::new(10);
-        
+
         // Initial state
         assert_eq!(fps_calc.average_fps(), 0.0);
         assert_eq!(fps_calc.current_fps(), 0.0);
-        
+
         // After update, should have some measurement
         fps_calc.update();
         // Can't assert specific values since timing is unpredictable in tests
@@ -370,7 +370,7 @@ mod tests {
     fn test_version_info() {
         let version = get_version();
         assert!(!version.is_empty());
-        
+
         let build_info = get_build_info();
         assert!(!build_info.is_null());
     }

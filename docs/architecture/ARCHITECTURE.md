@@ -7,21 +7,25 @@ Leptos Flow is a high-performance, reactive flow-based node editor built on Rust
 ## Core Design Principles
 
 ### 1. Zero-Cost Abstractions
+
 - Leverage Rust's ownership system for memory safety without runtime overhead
 - Compile-time optimizations through trait specialization
 - WASM-optimized code generation with minimal bundle size
 
 ### 2. Framework-Agnostic Core
+
 - Pure Rust logic layer independent of UI frameworks
 - Clean separation between computation and presentation
 - Pluggable renderer architecture supporting multiple backends
 
 ### 3. Progressive Enhancement
+
 - Graceful degradation from WebGPU → WebGL2 → Canvas2D
 - Feature detection and automatic fallback selection
 - Adaptive performance based on device capabilities
 
 ### 4. Reactive State Management
+
 - Signal-based reactivity aligned with Leptos patterns
 - Efficient dirty checking and selective updates
 - Minimal re-renders through dependency tracking
@@ -49,8 +53,10 @@ Leptos Flow is a high-performance, reactive flow-based node editor built on Rust
 ## Module Boundaries
 
 ### leptos-flow-core
+
 **Purpose**: Framework-agnostic core logic
 **Responsibilities**:
+
 - Graph data structures (Node, Edge, Graph)
 - Spatial indexing and collision detection
 - Layout algorithms (Force-directed, Hierarchical, Manual)
@@ -58,6 +64,7 @@ Leptos Flow is a high-performance, reactive flow-based node editor built on Rust
 - Memory management and object pooling
 
 **Key Types**:
+
 ```rust
 pub struct Graph<N, E> {
     pub nodes: HashMap<NodeId, Node<N>>,
@@ -81,14 +88,17 @@ pub struct Edge<T> {
 ```
 
 ### leptos-flow-renderer
+
 **Purpose**: Rendering abstraction and implementations
 **Responsibilities**:
+
 - Renderer trait definition
 - WebGPU/WebGL2/Canvas2D implementations
 - Viewport management and camera controls
 - Performance monitoring and metrics
 
 **Key Traits**:
+
 ```rust
 pub trait Renderer {
     fn render(&mut self, graph: &Graph, viewport: &Viewport) -> Result<()>;
@@ -98,14 +108,17 @@ pub trait Renderer {
 ```
 
 ### leptos-flow-leptos
+
 **Purpose**: Leptos framework integration
 **Responsibilities**:
+
 - Leptos component wrappers
 - Signal integration and reactivity
 - Event handling bridge
 - Context providers
 
 **Key Components**:
+
 ```rust
 #[component]
 pub fn FlowEditor<N, E>(
@@ -116,8 +129,10 @@ pub fn FlowEditor<N, E>(
 ```
 
 ### leptos-flow-wasm
+
 **Purpose**: WebAssembly bindings and optimization
 **Responsibilities**:
+
 - WASM interface generation
 - JavaScript interop
 - Memory management across WASM boundary
@@ -126,6 +141,7 @@ pub fn FlowEditor<N, E>(
 ## Data Flow Architecture
 
 ### 1. Reactive State Management
+
 ```rust
 // Leptos signals drive the reactive system
 let (nodes, set_nodes) = create_signal(Vec::new());
@@ -138,12 +154,14 @@ let graph = create_memo(move |_| {
 ```
 
 ### 2. Event Propagation System
+
 ```
-User Interaction → DOM Event → Leptos Event Handler → 
+User Interaction → DOM Event → Leptos Event Handler →
 Core Engine → State Update → Signal Update → Re-render
 ```
 
 ### 3. Render Pipeline Stages
+
 ```
 1. Dirty Detection   → Identify changed elements
 2. Spatial Query     → Query visible nodes/edges
@@ -154,6 +172,7 @@ Core Engine → State Update → Signal Update → Re-render
 ```
 
 ### 4. Memory Management Strategy
+
 - **Object Pooling**: Reuse Node/Edge instances to reduce allocations
 - **Incremental Updates**: Only process changed elements
 - **Spatial Partitioning**: Efficient spatial queries using R-tree
@@ -162,12 +181,14 @@ Core Engine → State Update → Signal Update → Re-render
 ## Performance Characteristics
 
 ### Target Performance Metrics
+
 - **10,000 nodes** at **60 FPS** (smooth interaction)
-- **Sub-millisecond** spatial queries for viewport operations  
+- **Sub-millisecond** spatial queries for viewport operations
 - **<50MB memory** usage for 1000-node graphs
 - **<500KB** WASM bundle size (gzipped)
 
 ### Optimization Strategies
+
 - **Spatial Indexing**: R-tree for O(log n) spatial queries
 - **Object Pooling**: Reduce GC pressure through reuse
 - **Dirty Rectangle Rendering**: Only redraw changed regions
@@ -178,24 +199,26 @@ Core Engine → State Update → Signal Update → Re-render
 ## Error Handling & Recovery
 
 ### Error Types
+
 ```rust
 #[derive(Debug, thiserror::Error)]
 pub enum FlowError {
     #[error("Renderer initialization failed: {0}")]
     RendererInit(String),
-    
+
     #[error("Invalid graph structure: {0}")]
     InvalidGraph(String),
-    
+
     #[error("Spatial index error: {0}")]
     SpatialIndex(String),
-    
+
     #[error("WASM boundary error: {0}")]
     WasmBoundary(String),
 }
 ```
 
 ### Recovery Strategies
+
 - **Graceful Degradation**: Fall back to simpler renderer
 - **State Recovery**: Restore from last known good state
 - **Progressive Loading**: Load large graphs incrementally
@@ -204,6 +227,7 @@ pub enum FlowError {
 ## Extensibility Points
 
 ### Custom Node Types
+
 ```rust
 #[derive(Clone, Debug)]
 pub struct CustomNodeData {
@@ -220,6 +244,7 @@ impl NodeData for CustomNodeData {
 ```
 
 ### Custom Layout Algorithms
+
 ```rust
 pub trait LayoutAlgorithm {
     fn layout(&mut self, graph: &mut Graph, options: LayoutOptions) -> Result<()>;
@@ -233,6 +258,7 @@ pub struct ForceDirectedLayout {
 ```
 
 ### Custom Renderers
+
 ```rust
 pub struct CustomRenderer {
     context: CustomRenderContext,
@@ -248,12 +274,14 @@ impl Renderer for CustomRenderer {
 ## Security Considerations
 
 ### WASM Sandbox
+
 - All core logic runs within WASM security sandbox
 - No direct file system access
 - Limited network capabilities
 - Memory isolation from host environment
 
 ### Input Validation
+
 - Sanitize all user inputs at WASM boundary
 - Validate graph structure integrity
 - Prevent excessive resource consumption
@@ -262,24 +290,28 @@ impl Renderer for CustomRenderer {
 ## Testing Strategy
 
 ### Unit Tests
+
 - Core data structures and algorithms
 - Renderer implementations
 - Layout algorithms
 - Spatial indexing
 
-### Integration Tests  
+### Integration Tests
+
 - Leptos component integration
 - Event handling workflows
 - State synchronization
 - WASM boundary operations
 
 ### Performance Tests
+
 - Rendering benchmarks
 - Memory usage profiling
 - Large graph handling
 - Interaction responsiveness
 
 ### Visual Regression Tests
+
 - Automated screenshot comparison
 - Cross-browser compatibility
 - Rendering accuracy validation

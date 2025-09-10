@@ -38,3 +38,16 @@ __pycache__/
 # Build scripts output
 dist/
 build/
+
+# Playwright test results
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Pre-commit cache
+.pre-commit-cache/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

@@ -35,16 +35,19 @@ cargo install wasm-pack
 ### Running
 
 1. Navigate to the example directory:
+
    ```bash
    cd examples/simple-flow
    ```
 
 2. Build the WASM module:
+
    ```bash
    ./build.sh
    ```
 
 3. Serve the example (in a new terminal):
+
    ```bash
    python3 -m http.server 8080
    ```
@@ -75,6 +78,7 @@ python3 -m http.server 8080
 ### Key Concepts
 
 #### WASM Entry Point
+
 ```rust
 #[wasm_bindgen(start)]
 pub fn main() {
@@ -83,6 +87,7 @@ pub fn main() {
 ```
 
 #### Graph Creation
+
 ```rust
 let mut graph = Graph::new();
 let node1 = Node::simple("node1", Position::new(100.0, 100.0));
@@ -90,12 +95,14 @@ graph.add_node(node1).unwrap();
 ```
 
 #### Renderer Setup
+
 ```rust
 let mut renderer = Canvas2DRenderer::new(&canvas)?;
 renderer.render_graph(&graph, &viewport)?;
 ```
 
 #### Background Configuration
+
 ```rust
 let bg_config = BackgroundConfig {
     color: "#ffffff".to_string(),
@@ -109,6 +116,7 @@ let bg_config = BackgroundConfig {
 ## Expected Output
 
 You should see:
+
 - A white canvas with a dotted background pattern
 - Three rectangular nodes positioned at different locations
 - Two curved edges connecting the nodes
@@ -135,6 +143,7 @@ This example demonstrates the basic rendering capabilities. To extend it:
 ### Debug Mode
 
 To enable debug logging, add this to your browser's console:
+
 ```javascript
 localStorage.setItem('debug', 'leptos-flow:*');
 ```

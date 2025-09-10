@@ -7,24 +7,28 @@ This document describes the testing infrastructure and how to run tests for the 
 The testing infrastructure is organized into several layers:
 
 ### 1. Unit Tests (`src/interaction_tests.rs`)
+
 - **Purpose**: Test individual components and functions
 - **Scope**: Interaction handlers, state management, utility functions
 - **Framework**: `wasm-bindgen-test`
 - **Location**: `src/interaction_tests.rs`
 
 ### 2. Integration Tests (`tests/integration_tests.rs`)
+
 - **Purpose**: Test complete workflows and component interactions
 - **Scope**: End-to-end rendering, graph operations, viewport management
 - **Framework**: `wasm-bindgen-test`
 - **Location**: `tests/integration_tests.rs`
 
 ### 3. Performance Tests (`tests/performance_tests.rs`)
+
 - **Purpose**: Verify performance characteristics and benchmarks
 - **Scope**: Rendering speed, memory usage, operation timing
 - **Framework**: `wasm-bindgen-test`
 - **Location**: `tests/performance_tests.rs`
 
 ### 4. Common Test Utilities (`tests/common/mod.rs`)
+
 - **Purpose**: Shared test helpers and utilities
 - **Scope**: Test data creation, assertion helpers, performance measurement
 - **Location**: `tests/common/mod.rs`
@@ -34,6 +38,7 @@ The testing infrastructure is organized into several layers:
 ### Prerequisites
 
 1. **Install wasm-pack**:
+
    ```bash
    cargo install wasm-pack
    ```
@@ -52,30 +57,35 @@ Use the provided test runner script:
 ```
 
 This will:
+
 - Build all test dependencies
 - Run unit tests
-- Run integration tests  
+- Run integration tests
 - Run performance tests
 - Generate a test summary
 
 ### Running Specific Test Suites
 
 #### Unit Tests Only
+
 ```bash
 wasm-pack test --headless --firefox --lib
 ```
 
 #### Integration Tests Only
+
 ```bash
 wasm-pack test --headless --firefox --test integration_tests
 ```
 
 #### Performance Tests Only
+
 ```bash
 wasm-pack test --headless --firefox --test performance_tests
 ```
 
 #### Interactive Testing (Browser)
+
 ```bash
 wasm-pack test --firefox
 ```
@@ -182,10 +192,10 @@ wasm-pack test --firefox
 fn test_new_functionality() {
     // Arrange
     let setup = create_test_setup();
-    
+
     // Act
     let result = perform_operation(&setup);
-    
+
     // Assert
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), expected_value);
@@ -201,7 +211,7 @@ fn test_end_to_end_workflow() {
     let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
     let graph = create_test_graph();
     let viewport = create_test_viewport();
-    
+
     let result = renderer.render_graph(&graph, &viewport);
     assert!(result.is_ok());
 }
@@ -213,11 +223,11 @@ fn test_end_to_end_workflow() {
 #[wasm_bindgen_test]
 fn test_operation_performance() {
     let setup = create_test_setup();
-    
+
     let (_, duration) = measure_execution_time(|| {
         perform_operation(&setup);
     });
-    
+
     assert!(duration <= max_time_ms);
 }
 ```

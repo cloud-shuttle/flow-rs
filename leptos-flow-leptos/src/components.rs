@@ -44,7 +44,7 @@ pub fn FlowEditor<N, E>(
     /// Canvas width
     #[prop(default = 800)]
     width: u32,
-    /// Canvas height  
+    /// Canvas height
     #[prop(default = 600)]
     height: u32,
     /// Preferred renderer type
@@ -109,7 +109,7 @@ where
     create_effect(move |_| {
         let graph_val = graph.get();
         let viewport_val = viewport.get();
-        
+
         flow_state.update(|state| {
             if let Some(renderer) = &mut state.renderer {
                 // Clear canvas
@@ -158,7 +158,7 @@ pub fn FlowCanvas<N, E>(
     #[prop(default = 400)]
     width: u32,
     /// Canvas height
-    #[prop(default = 300)]  
+    #[prop(default = 300)]
     height: u32,
 ) -> impl IntoView
 where
@@ -166,7 +166,7 @@ where
     E: Clone + 'static,
 {
     let graph_rw = create_rw_signal(graph.get());
-    
+
     // Keep graph_rw in sync with the read signal
     create_effect(move |_| {
         graph_rw.set(graph.get());
@@ -182,7 +182,7 @@ where
 }
 
 /// Performance statistics display component
-#[component]  
+#[component]
 pub fn FlowStats(
     /// Flow state containing render stats
     flow_state: ReadSignal<FlowState>,
@@ -230,10 +230,10 @@ mod tests {
     fn test_flow_editor_props() {
         let graph = create_rw_signal(Graph::new());
         let viewport = create_rw_signal(ViewportState::default());
-        
+
         let _props = FlowEditorProps {
             graph,
-            viewport, 
+            viewport,
             width: 800,
             height: 600,
             renderer_type: Some(RendererType::Canvas2D),

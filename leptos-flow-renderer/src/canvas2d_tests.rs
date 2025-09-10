@@ -19,16 +19,16 @@ fn create_test_canvas() -> HtmlCanvasElement {
 
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
-    
+
     let node1 = Node::simple("node1", Position::new(100.0, 100.0));
     let node2 = Node::simple("node2", Position::new(300.0, 200.0));
-    
+
     graph.add_node(node1).unwrap();
     graph.add_node(node2).unwrap();
-    
+
     let edge = Edge::simple("edge1", "node1", "node2");
     graph.add_edge(edge).unwrap();
-    
+
     graph
 }
 
@@ -44,7 +44,7 @@ fn test_capabilities() {
     let canvas = create_test_canvas();
     let renderer = Canvas2DRenderer::new(&canvas).unwrap();
     let caps = renderer.capabilities();
-    
+
     assert_eq!(caps.name, "Canvas2D");
     assert_eq!(caps.supports_msaa, true);
     assert_eq!(caps.supports_compute_shaders, false);
@@ -54,7 +54,7 @@ fn test_capabilities() {
 fn test_clear() {
     let canvas = create_test_canvas();
     let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
-    
+
     assert!(renderer.clear(Some("#ff0000")).is_ok());
     assert!(renderer.clear(None).is_ok());
 }
@@ -63,7 +63,7 @@ fn test_clear() {
 fn test_resize() {
     let canvas = create_test_canvas();
     let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
-    
+
     assert!(renderer.resize(800, 600).is_ok());
 }
 
@@ -73,11 +73,11 @@ fn test_render_graph() {
     let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
     let graph = create_test_graph();
     let viewport = Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0);
-    
+
     // This test should pass once we fix the compilation errors
     let result = renderer.render_graph(&graph, &viewport);
     assert!(result.is_ok());
-    
+
     let stats = result.unwrap();
     assert_eq!(stats.nodes_rendered, 2);
     assert_eq!(stats.edges_rendered, 1);
@@ -88,7 +88,7 @@ fn test_render_background() {
     let canvas = create_test_canvas();
     let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
     let viewport = Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0);
-    
+
     let config = BackgroundConfig {
         color: "#ffffff".to_string(),
         pattern_color: "#cccccc".to_string(),
@@ -96,6 +96,6 @@ fn test_render_background() {
         size: 20.0,
         opacity: 0.5,
     };
-    
+
     assert!(renderer.render_background(&config, &viewport).is_ok());
 }

@@ -96,10 +96,10 @@ echo "📊 Analyzing build results..."
 if [ -f "pkg/simple_flow_example_bg.wasm" ]; then
     WASM_SIZE=$(du -h pkg/simple_flow_example_bg.wasm | cut -f1)
     JS_SIZE=$(du -h pkg/simple_flow_example.js | cut -f1)
-    
+
     echo "   WASM file size: $WASM_SIZE"
     echo "   JS file size: $JS_SIZE"
-    
+
     if [ -f "pkg/simple_flow_example_bg.wasm.gz" ]; then
         GZIP_SIZE=$(du -h pkg/simple_flow_example_bg.wasm.gz | cut -f1)
         echo "   WASM file size (gzipped): $GZIP_SIZE"
@@ -135,33 +135,33 @@ cat > pkg/benchmark.html << 'EOF'
 </head>
 <body>
     <h1>Leptos Flow Performance Benchmark</h1>
-    
+
     <div class="benchmark">
         <h2>Rendering Performance</h2>
         <canvas id="perf-canvas" width="800" height="600"></canvas>
         <div id="perf-results"></div>
     </div>
-    
+
     <div class="benchmark">
         <h2>Memory Usage</h2>
         <div id="memory-results"></div>
     </div>
-    
+
     <script type="module">
         import init, { create_simple_flow } from './simple_flow_example.js';
-        
+
         async function runBenchmark() {
             await init();
-            
+
             const canvas = document.getElementById('perf-canvas');
             const perfResults = document.getElementById('perf-results');
             const memoryResults = document.getElementById('memory-results');
-            
+
             // Test rendering performance
             const startTime = performance.now();
             create_simple_flow();
             const endTime = performance.now();
-            
+
             const renderTime = endTime - startTime;
             perfResults.innerHTML = `
                 <div class="result">Initial render time: ${renderTime.toFixed(2)}ms</div>
@@ -169,13 +169,13 @@ cat > pkg/benchmark.html << 'EOF'
                     Performance: ${renderTime < 100 ? 'Excellent' : renderTime < 500 ? 'Good' : 'Needs optimization'}
                 </div>
             `;
-            
+
             // Test memory usage
             if (performance.memory) {
                 const memory = performance.memory;
                 const usedMB = (memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
                 const totalMB = (memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
-                
+
                 memoryResults.innerHTML = `
                     <div class="result">Memory usage: ${usedMB}MB / ${totalMB}MB</div>
                     <div class="${usedMB < 50 ? 'result' : usedMB < 100 ? 'warning' : 'error'}">
@@ -186,7 +186,7 @@ cat > pkg/benchmark.html << 'EOF'
                 memoryResults.innerHTML = '<div class="warning">Memory API not available in this browser</div>';
             }
         }
-        
+
         runBenchmark().catch(console.error);
     </script>
 </body>

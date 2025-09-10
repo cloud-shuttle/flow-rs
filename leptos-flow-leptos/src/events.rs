@@ -363,7 +363,7 @@ mod tests {
     #[test]
     fn test_position_in_rect() {
         let rect = leptos_flow_core::Rect::new(10.0, 10.0, 100.0, 50.0);
-        
+
         assert!(utils::position_in_rect(Position::new(50.0, 25.0), &rect));
         assert!(!utils::position_in_rect(Position::new(5.0, 25.0), &rect));
         assert!(!utils::position_in_rect(Position::new(120.0, 25.0), &rect));
