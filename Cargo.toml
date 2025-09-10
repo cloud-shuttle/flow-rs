@@ -1,0 +1,130 @@
+[workspace]
+members = [
+    "leptos-flow-core",
+    "leptos-flow-renderer", 
+    "leptos-flow-leptos",
+    "leptos-flow-wasm",
+    "examples/simple-flow",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Leptos Flow Contributors"]
+edition = "2021"
+rust-version = "1.70"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/leptos-flow/leptos-flow"
+homepage = "https://leptos-flow.dev"
+documentation = "https://docs.rs/leptos-flow"
+keywords = ["leptos", "flow", "graph", "wasm", "reactive"]
+categories = ["gui", "web-programming", "wasm", "visualization"]
+readme = "README.md"
+
+[workspace.dependencies]
+# Core Leptos ecosystem
+leptos = "0.6"
+leptos_dom = "0.6"
+leptos_reactive = "0.6"
+
+# WASM and web APIs
+wasm-bindgen = "0.2"
+web-sys = "0.3"
+js-sys = "0.3"
+
+# Graphics and rendering
+wgpu = "0.19"
+bytemuck = { version = "1.14", features = ["derive"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Utilities
+thiserror = "1.0"
+tracing = "0.1"
+uuid = { version = "1.6", features = ["v4", "wasm-bindgen"] }
+
+# Math and algorithms
+nalgebra = "0.32"
+spade = "2.4"  # Spatial data structures
+
+# Development dependencies
+console_error_panic_hook = "0.1"
+tracing-wasm = "0.2"
+
+[package]
+name = "leptos-flow"
+description = "High-performance reactive flow editor for Leptos"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[features]
+default = ["canvas2d", "leptos"]
+
+# Rendering backends
+canvas2d = ["leptos-flow-renderer/canvas2d"]
+webgl2 = ["leptos-flow-renderer/webgl2"]
+webgpu = ["leptos-flow-renderer/webgpu"]
+
+# Framework integrations
+leptos = ["leptos-flow-leptos"]
+
+# Development features
+debug = ["leptos-flow-core/debug", "leptos-flow-renderer/debug"]
+profiling = ["leptos-flow-core/profiling"]
+
+# Full feature set
+full = ["canvas2d", "webgl2", "webgpu", "leptos", "debug"]
+
+[dependencies]
+# Re-export core functionality
+leptos-flow-core = { version = "0.1.0", path = "leptos-flow-core" }
+leptos-flow-renderer = { version = "0.1.0", path = "leptos-flow-renderer", default-features = false }
+leptos-flow-leptos = { version = "0.1.0", path = "leptos-flow-leptos", optional = true }
+
+# Core dependencies
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.4"
+tokio = { version = "1.35", features = ["macros", "rt"] }
+
+
+[profile.release]
+opt-level = "s"          # Optimize for size
+lto = true              # Enable Link Time Optimization
+debug = false           # No debug info in release
+panic = "abort"         # Smaller binary size
+codegen-units = 1       # Better optimization
+
+[profile.dev]
+opt-level = 0           # Fast compilation
+debug = true            # Include debug info
+panic = "unwind"        # Better debugging
+incremental = true      # Faster rebuilds
+
+[profile.bench]
+opt-level = 3           # Maximum optimization for benchmarks
+debug = false
+lto = true
+codegen-units = 1
+panic = "abort"
+
+# Package metadata for crates.io
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.playground]
+features = ["full"]

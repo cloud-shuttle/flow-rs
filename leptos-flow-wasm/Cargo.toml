@@ -1,0 +1,57 @@
+[package]
+name = "leptos-flow-wasm"
+description = "WASM bindings and utilities for Leptos Flow"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["console_error_panic_hook"]
+debug = ["console_error_panic_hook", "tracing-wasm"]
+
+[dependencies]
+# Core dependencies
+leptos-flow-core = { version = "0.1.0", path = "../leptos-flow-core" }
+leptos-flow-renderer = { version = "0.1.0", path = "../leptos-flow-renderer" }
+
+# WASM bindings
+wasm-bindgen = { workspace = true, features = ["serde-serialize"] }
+wasm-bindgen-futures = "0.4"
+js-sys = { workspace = true }
+web-sys = { workspace = true, features = [
+    "console",
+    "Window",
+    "Document",
+    "Element",
+    "HtmlElement",
+    "HtmlCanvasElement",
+    "CanvasRenderingContext2d",
+    "MouseEvent",
+    "WheelEvent",
+    "KeyboardEvent",
+    "Performance",
+]}
+
+# Serialization
+serde = { workspace = true }
+serde-wasm-bindgen = "0.6"
+
+# Utilities
+uuid = { workspace = true }
+thiserror = { workspace = true }
+
+# Optional debugging
+console_error_panic_hook = { version = "0.1", optional = true }
+tracing = { version = "0.1", optional = true }
+tracing-wasm = { version = "0.2", optional = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

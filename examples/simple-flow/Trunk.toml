@@ -1,0 +1,3 @@
+# This example uses wasm-pack instead of trunk
+# Run: wasm-pack build --target web --out-dir pkg
+# Then serve with: python -m http.server 8080

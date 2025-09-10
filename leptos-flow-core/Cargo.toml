@@ -1,0 +1,37 @@
+[package]
+name = "leptos-flow-core"
+description = "Core data structures and algorithms for Leptos Flow"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[features]
+default = []
+debug = ["tracing"]
+profiling = ["debug"]
+serde = ["dep:serde", "uuid/serde"]
+
+[dependencies]
+# Math and spatial operations
+nalgebra = { workspace = true }
+spade = { workspace = true }
+
+# Utilities
+uuid = { workspace = true }
+thiserror = { workspace = true }
+
+# Optional serialization
+serde = { workspace = true, optional = true }
+
+# Optional debugging
+tracing = { version = "0.1", optional = true }
+
+[dev-dependencies]
+proptest = "1.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+
