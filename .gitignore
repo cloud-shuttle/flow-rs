@@ -3,6 +3,20 @@
 **/*.rs.bk
 Cargo.lock
 
+# Rust testing and profiling artifacts
+mutants.out/
+*.profraw
+*.profdata
+cargo-mutants*
+*.gcda
+*.gcno
+
+# Rust patch files and cargo cache
+*.orig
+*.rej
+.cargo/
+rust-toolchain*
+
 # WASM build artifacts
 /pkg/
 *.wasm
