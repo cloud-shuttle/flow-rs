@@ -162,7 +162,7 @@ impl ForceDirectedLayout {
             if let Some(&force) = forces.get(&node.id) {
                 // Update velocity
                 let velocity = self.node_velocities.entry(node.id.clone())
-                    .or_insert(Position::zero());
+                    .or_default();
 
                 *velocity = *velocity * self.damping + force * dt;
 
@@ -302,16 +302,9 @@ impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
 
 /// Builder for force-directed layout
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct ForceDirectedLayoutBuilder {
     layout: ForceDirectedLayout,
-}
-
-impl Default for ForceDirectedLayoutBuilder {
-    fn default() -> Self {
-        Self {
-            layout: ForceDirectedLayout::new(),
-        }
-    }
 }
 
 impl ForceDirectedLayoutBuilder {
@@ -681,17 +674,9 @@ struct TreeNode {
 }
 
 /// Builder for hierarchical layout
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct HierarchicalLayoutBuilder {
     layout: HierarchicalLayout,
-}
-
-impl Default for HierarchicalLayoutBuilder {
-    fn default() -> Self {
-        Self {
-            layout: HierarchicalLayout::new(),
-        }
-    }
 }
 
 impl HierarchicalLayoutBuilder {

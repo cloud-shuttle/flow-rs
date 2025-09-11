@@ -8,9 +8,10 @@ use crate::graph::Graph;
 use crate::groups::GroupManager;
 
 /// Selection modes for different interaction patterns
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum SelectionMode {
     /// Single node selection (default)
+    #[default]
     Single,
     /// Multi-node selection with Ctrl+Click
     Multi,
@@ -29,11 +30,6 @@ pub struct SelectionManager {
     rectangle_bounds: Option<(Position, Position)>,
 }
 
-impl Default for SelectionMode {
-    fn default() -> Self {
-        SelectionMode::Single
-    }
-}
 
 impl SelectionManager {
     /// Create a new selection manager

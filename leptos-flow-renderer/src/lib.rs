@@ -17,11 +17,12 @@ mod canvas2d_tests;
 #[cfg(test)]
 pub mod tests;
 
-#[cfg(feature = "webgl2")]
-pub mod webgl2;
+// TODO: Implement WebGL2 and WebGPU renderers
+// #[cfg(feature = "webgl2")]
+// pub mod webgl2;
 
-#[cfg(feature = "webgpu")]
-pub mod webgpu;
+// #[cfg(feature = "webgpu")]
+// pub mod webgpu;
 
 // Re-export commonly used types
 pub use error::{RendererError, Result};

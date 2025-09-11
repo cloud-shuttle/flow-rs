@@ -86,7 +86,7 @@ impl SpatialIndex {
         for cell in &grid_cells {
             self.grid
                 .entry(*cell)
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(node.id.clone());
         }
 

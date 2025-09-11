@@ -1,14 +1,14 @@
 //! Canvas2D renderer implementation
 
 use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId};
 use crate::traits::{
     Renderer, CustomNodeRenderer, CustomEdgeRenderer, BatchRenderer,
     RendererCapabilities, RenderStats, NodeStyle, EdgeStyle, SelectionStyle, BackgroundConfig, BackgroundVariant
 };
 use crate::error::{RendererError, Result};
-use crate::performance::{PerformanceManager, PerformanceSettings, RenderStats as PerfRenderStats};
+use crate::performance::{PerformanceManager, PerformanceSettings};
 
 /// Canvas2D renderer implementation
 pub struct Canvas2DRenderer {
@@ -49,7 +49,7 @@ impl Canvas2DRenderer {
             .map_err(|_| RendererError::context_creation_failed("Failed to cast to 2D context"))
     }
 
-    fn create_capabilities(canvas: &HtmlCanvasElement) -> RendererCapabilities {
+    fn create_capabilities(_canvas: &HtmlCanvasElement) -> RendererCapabilities {
         let max_size = 8192u32; // Reasonable limit for Canvas2D
 
         RendererCapabilities {
@@ -534,7 +534,7 @@ impl Renderer for Canvas2DRenderer {
         Ok(())
     }
 
-    fn render_edges<E>(&mut self, edges: &[Edge<E>], viewport: &Viewport) -> Result<()>
+    fn render_edges<E>(&mut self, edges: &[Edge<E>], _viewport: &Viewport) -> Result<()>
     where
         E: Clone + 'static,
     {

@@ -1,7 +1,7 @@
 //! Renderer trait definitions and shared types
 
 use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId};
-use crate::error::{RendererError, Result};
+use crate::error::Result;
 
 /// Supported rendering backends
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -304,7 +304,7 @@ pub trait BatchRenderer: Renderer {
 /// Utility functions for rendering
 pub mod utils {
     use super::*;
-    use leptos_flow_core::{Position, Size};
+    use leptos_flow_core::Position;
 
     /// Parse CSS color string to RGBA values
     pub fn parse_color(color: &str) -> Option<[f32; 4]> {
