@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leptos Flow Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+
+        .info ul {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h3>🚀 Leptos Flow Demo</h3>
+            <p>This demo showcases the Leptos Flow editor with the following features:</p>
+            <ul>
+                <li><strong>Drag & Drop:</strong> Click and drag nodes to move them around</li>
+                <li><strong>Edge Connections:</strong> Edges automatically connect nodes with smooth curves</li>
+                <li><strong>Viewport Controls:</strong> Pan and zoom the canvas</li>
+                <li><strong>Real-time Rendering:</strong> Canvas2D renderer with performance stats</li>
+                <li><strong>Interactive Controls:</strong> Add nodes, clear graph, and create connections</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>Interactive Flow Editor</h2>
+            <div id="app"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init from './pkg/leptos_demo.js';
+        init();
+    </script>
+</body>
+</html>

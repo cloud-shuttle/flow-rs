@@ -3,31 +3,41 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use leptos_flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Viewport};
-use leptos_flow_renderer::{Renderer, RenderStats};
+use leptos_flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Viewport, SelectionManager, SelectionMode, NavigationDirection, GroupManager, GroupId};
+use leptos_flow_renderer::traits::RenderStats;
+
+#[cfg(feature = "canvas2d")]
+use leptos_flow_renderer::Canvas2DRenderer;
 
 /// Main application state for the flow editor
 #[derive(Clone, Debug)]
 pub struct FlowState {
-    pub renderer: Option<Box<dyn Renderer>>,
     pub render_stats: Option<RenderStats>,
+    // Legacy selection fields - kept for backwards compatibility
     pub selected_nodes: Vec<NodeId>,
     pub selected_edges: Vec<EdgeId>,
+    // New selection manager
+    pub selection_manager: SelectionManager,
     pub is_dragging: bool,
     pub drag_start: Option<Position>,
     pub last_mouse_pos: Option<Position>,
+    // Connection state for edge creation
+    pub connection_source: Option<NodeId>,
+    pub connection_start_position: Option<Position>,
 }
 
 impl Default for FlowState {
     fn default() -> Self {
         Self {
-            renderer: None,
             render_stats: None,
             selected_nodes: Vec::new(),
             selected_edges: Vec::new(),
+            selection_manager: SelectionManager::new(),
             is_dragging: false,
             drag_start: None,
             last_mouse_pos: None,
+            connection_source: None,
+            connection_start_position: None,
         }
     }
 }
@@ -40,31 +50,147 @@ impl FlowState {
 
     /// Clear all selections
     pub fn clear_selection(&mut self) {
+        self.selection_manager.clear_selection();
+        // Sync legacy fields
         self.selected_nodes.clear();
         self.selected_edges.clear();
     }
 
     /// Select a node (replacing current selection)
     pub fn select_node(&mut self, node_id: NodeId) {
-        self.clear_selection();
-        self.selected_nodes.push(node_id);
+        self.selection_manager.select_node(node_id.clone());
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
     }
 
-    /// Add node to selection
+    /// Add node to selection (multi-select)
     pub fn add_node_to_selection(&mut self, node_id: NodeId) {
-        if !self.selected_nodes.contains(&node_id) {
-            self.selected_nodes.push(node_id);
-        }
+        self.selection_manager.set_mode(SelectionMode::Multi);
+        self.selection_manager.select_node(node_id);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+    }
+
+    /// Toggle node selection (for Ctrl+Click)
+    pub fn toggle_node_selection(&mut self, node_id: NodeId) {
+        self.selection_manager.toggle_node(node_id);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
     }
 
     /// Remove node from selection
     pub fn remove_node_from_selection(&mut self, node_id: &NodeId) {
-        self.selected_nodes.retain(|id| id != node_id);
+        self.selection_manager.deselect_node(node_id);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
     }
 
     /// Check if node is selected
     pub fn is_node_selected(&self, node_id: &NodeId) -> bool {
-        self.selected_nodes.contains(node_id)
+        self.selection_manager.is_selected(node_id)
+    }
+
+    /// Get selection manager for advanced operations
+    pub fn selection_manager(&self) -> &SelectionManager {
+        &self.selection_manager
+    }
+
+    /// Get mutable selection manager for advanced operations
+    pub fn selection_manager_mut(&mut self) -> &mut SelectionManager {
+        &mut self.selection_manager
+    }
+
+    /// Set selection mode
+    pub fn set_selection_mode(&mut self, mode: SelectionMode) {
+        self.selection_manager.set_mode(mode);
+    }
+
+    /// Navigate selection using keyboard
+    pub fn navigate_selection<N, E>(&mut self, graph: &Graph<N, E>, direction: NavigationDirection) -> Option<NodeId>
+    where
+        N: Clone,
+        E: Clone,
+    {
+        let result = self.selection_manager.navigate_selection(graph, direction);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        result
+    }
+
+    /// Start rectangle selection
+    pub fn start_rectangle_selection(&mut self, start: Position) {
+        self.selection_manager.start_rectangle_selection(start);
+    }
+
+    /// Update rectangle selection
+    pub fn update_rectangle_selection(&mut self, end: Position) {
+        self.selection_manager.update_rectangle_selection(end);
+    }
+
+    /// Complete rectangle selection
+    pub fn complete_rectangle_selection<N, E>(&mut self, graph: &Graph<N, E>) -> Vec<NodeId>
+    where
+        N: Clone,
+        E: Clone,
+    {
+        let result = self.selection_manager.complete_rectangle_selection(graph);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        result
+    }
+
+    /// Select all nodes in graph
+    pub fn select_all<N, E>(&mut self, graph: &Graph<N, E>)
+    where
+        N: Clone,
+        E: Clone,
+    {
+        self.selection_manager.select_all(graph);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+    }
+
+    /// Get bounds of all selected nodes for rendering selection indicators
+    pub fn get_selected_bounds<N, E>(&self, graph: &Graph<N, E>) -> Vec<leptos_flow_core::Rect>
+    where
+        N: Clone,
+        E: Clone,
+    {
+        let mut bounds = Vec::new();
+
+        for node_id in self.selection_manager.selected_nodes() {
+            if let Some(node) = graph.get_node(node_id) {
+                // Calculate node bounds
+                let rect = leptos_flow_core::Rect::new(
+                    node.position.x,
+                    node.position.y,
+                    node.size.width,
+                    node.size.height,
+                );
+                bounds.push(rect);
+            }
+        }
+
+        bounds
+    }
+
+    /// Select a group (replacing current selection)
+    pub fn select_group(&mut self, group_manager: &GroupManager, group_id: &GroupId) {
+        self.selection_manager.select_group(group_manager, group_id);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+    }
+
+    /// Select node with optional group selection
+    pub fn select_node_with_group(&mut self, group_manager: &GroupManager, node_id: NodeId, select_whole_group: bool) {
+        self.selection_manager.select_node_with_group(group_manager, node_id, select_whole_group);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+    }
+
+    /// Get selected groups
+    pub fn get_selected_groups(&self, group_manager: &GroupManager) -> std::collections::HashSet<GroupId> {
+        self.selection_manager.get_selected_groups(group_manager)
     }
 
     /// Select an edge (replacing current selection)
@@ -102,6 +228,46 @@ impl FlowState {
             None
         }
     }
+
+    /// Start drag with handle for precise manipulation
+    pub fn start_drag_with_handle(&mut self, mouse_pos: Position, _handle: crate::drag::DragHandle) {
+        self.start_drag(mouse_pos);
+    }
+
+    // Connection-related methods for edge creation workflow
+
+    /// Check if we're in connection mode (dragging to create an edge)
+    pub fn is_connection_mode(&self) -> bool {
+        self.connection_source.is_some()
+    }
+
+    /// Set connection mode
+    pub fn set_connection_mode(&mut self, enabled: bool) {
+        if !enabled {
+            self.connection_source = None;
+            self.connection_start_position = None;
+        }
+    }
+
+    /// Get the source node for connection
+    pub fn connection_source(&self) -> Option<&NodeId> {
+        self.connection_source.as_ref()
+    }
+
+    /// Set the source node for connection
+    pub fn set_connection_source(&mut self, source: Option<NodeId>) {
+        self.connection_source = source;
+    }
+
+    /// Get the start position for connection
+    pub fn connection_start_position(&self) -> Option<Position> {
+        self.connection_start_position
+    }
+
+    /// Set the start position for connection
+    pub fn set_connection_start_position(&mut self, position: Option<Position>) {
+        self.connection_start_position = position;
+    }
 }
 
 /// Viewport state for pan and zoom operations
@@ -117,7 +283,7 @@ pub struct ViewportState {
 impl Default for ViewportState {
     fn default() -> Self {
         Self {
-            viewport: Viewport::new(Position::new(0.0, 0.0), 1.0),
+            viewport: Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0),
             min_zoom: 0.1,
             max_zoom: 5.0,
             zoom_speed: 0.1,
@@ -174,7 +340,7 @@ impl ViewportState {
 
     /// Reset viewport to default
     pub fn reset(&mut self) {
-        self.viewport = Viewport::new(Position::new(0.0, 0.0), 1.0);
+        self.viewport = Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0);
     }
 
     /// Fit the given bounds in the viewport
@@ -254,7 +420,7 @@ where
     /// Remove a node from the graph
     pub fn remove_node(&self, node_id: &NodeId) {
         self.graph_signal.update(|graph| {
-            graph.remove_node(node_id);
+            let _ = graph.remove_node(node_id);
         });
     }
 
@@ -269,14 +435,14 @@ where
     /// Remove an edge from the graph
     pub fn remove_edge(&self, edge_id: &EdgeId) {
         self.graph_signal.update(|graph| {
-            graph.remove_edge(edge_id);
+            let _ = graph.remove_edge(edge_id);
         });
     }
 
     /// Move a node to a new position
     pub fn move_node(&self, node_id: &NodeId, new_position: Position) {
         self.graph_signal.update(|graph| {
-            if let Some(node) = graph.node_mut(node_id) {
+            if let Some(node) = graph.get_node_mut(node_id) {
                 node.set_position(new_position);
             }
         });
@@ -291,7 +457,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use leptos_flow_core::{Size, NodeBuilder};
+    use leptos_flow_core::prelude::{Size, NodeBuilder};
 
     #[test]
     fn test_flow_state_selection() {

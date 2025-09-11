@@ -3,10 +3,10 @@
 use wasm_bindgen_test::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
-use leptos_flow_core::{Graph, Node, Edge, Position, Viewport};
+use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect};
 use leptos_flow_core::types::{NodeId, EdgeId};
 use crate::canvas2d::Canvas2DRenderer;
-use crate::traits::{Renderer, NodeStyle, EdgeStyle, BackgroundConfig, BackgroundVariant};
+use crate::traits::{Renderer, NodeStyle, EdgeStyle, BackgroundConfig, BackgroundVariant, SelectionStyle};
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
@@ -98,4 +98,22 @@ fn test_render_background() {
     };
 
     assert!(renderer.render_background(&config, &viewport).is_ok());
+}
+
+#[wasm_bindgen_test]
+fn test_render_selection() {
+    let canvas = create_test_canvas();
+    let mut renderer = Canvas2DRenderer::new(&canvas).unwrap();
+
+    // Create selection bounds for testing
+    let selected_bounds = vec![
+        Rect::new(100.0, 100.0, 50.0, 30.0),
+        Rect::new(200.0, 150.0, 60.0, 40.0),
+    ];
+
+    let style = SelectionStyle::default();
+
+    // Should render selection indicators without errors
+    let result = renderer.render_selection(&selected_bounds, &style);
+    assert!(result.is_ok(), "Selection rendering should succeed");
 }

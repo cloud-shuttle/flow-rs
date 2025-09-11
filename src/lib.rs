@@ -30,16 +30,16 @@ mod tests {
 
     #[test]
     fn test_basic_graph_creation() {
-        let mut graph = Graph::new();
+        let mut graph: Graph<(), ()> = Graph::new();
 
         let node1 = Node::builder("node1")
-            .position(Position::new(0.0, 0.0))
-            .size(Size::new(100.0, 50.0))
+            .position(0.0, 0.0)
+            .size(100.0, 50.0)
             .build();
 
         let node2 = Node::builder("node2")
-            .position(Position::new(200.0, 100.0))
-            .size(Size::new(100.0, 50.0))
+            .position(200.0, 100.0)
+            .size(100.0, 50.0)
             .build();
 
         graph.add_node(node1).unwrap();

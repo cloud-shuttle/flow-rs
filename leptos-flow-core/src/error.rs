@@ -37,6 +37,9 @@ pub enum FlowError {
 
     #[error("Serialization error: {message}")]
     Serialization { message: String },
+
+    #[error("Invalid operation: {message}")]
+    InvalidOperation { message: String },
 }
 
 impl FlowError {
@@ -77,6 +80,13 @@ impl FlowError {
     /// Create a layout error
     pub fn layout(message: impl Into<String>) -> Self {
         Self::Layout {
+            message: message.into(),
+        }
+    }
+
+    /// Create an invalid operation error
+    pub fn invalid_operation(message: impl Into<String>) -> Self {
+        Self::InvalidOperation {
             message: message.into(),
         }
     }

@@ -5,7 +5,9 @@ members = [
     "leptos-flow-leptos",
     "leptos-flow-wasm",
     "examples/simple-flow",
+    "examples/leptos-demo",
 ]
+
 
 [workspace.package]
 version = "0.1.0"

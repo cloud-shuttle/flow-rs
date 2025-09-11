@@ -1,0 +1,41 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Timeout",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 48.158041583,
+          "process_status": "Success",
+          "argv": [
+            "/Users/peterhanssens/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=leptos-flow-core@0.1.0"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 15.021047125,
+          "process_status": "Timeout",
+          "argv": [
+            "/Users/peterhanssens/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=leptos-flow-core@0.1.0"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 0,
+  "missed": 0,
+  "caught": 0,
+  "timeout": 0,
+  "unviable": 0,
+  "success": 0
+}

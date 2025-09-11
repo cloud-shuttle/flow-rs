@@ -37,6 +37,22 @@ pub enum FlowEvent {
         position: Position,
         target: DragTarget,
     },
+    /// Connection operation started
+    ConnectionStart {
+        source_node: NodeId,
+        position: Position,
+    },
+    /// Connection operation updated
+    ConnectionUpdate {
+        position: Position,
+    },
+    /// Connection operation completed
+    ConnectionComplete {
+        source_node: NodeId,
+        target_node: NodeId,
+    },
+    /// Connection operation cancelled
+    ConnectionCancel,
 }
 
 /// Node-specific events
@@ -344,7 +360,7 @@ pub mod utils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use leptos_flow_core::{NodeBuilder, EdgeBuilder, Size};
+    use leptos_flow_core::prelude::{NodeBuilder, EdgeBuilder, Size};
 
     #[test]
     fn test_keyboard_modifiers() {
@@ -387,7 +403,7 @@ mod tests {
     #[test]
     fn test_event_dispatcher() {
         let mut dispatcher = EventDispatcher::<i32>::new();
-        let mut received = Vec::new();
+        let mut received: Vec<i32> = Vec::new();
 
         dispatcher.add_handler(|x: i32| {
             // Handler would normally do something with the event

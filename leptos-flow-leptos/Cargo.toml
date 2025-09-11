@@ -11,12 +11,13 @@ keywords.workspace = true
 categories.workspace = true
 
 [features]
-default = []
+default = ["web-sys"]
 debug = ["tracing"]
+web-sys = []
 
 [dependencies]
 # Core dependencies
-leptos-flow-core = { version = "0.1.0", path = "../leptos-flow-core" }
+leptos-flow-core = { version = "0.1.0", path = "../leptos-flow-core", features = ["serde"] }
 leptos-flow-renderer = { version = "0.1.0", path = "../leptos-flow-renderer" }
 
 # Leptos ecosystem

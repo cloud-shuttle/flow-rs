@@ -1,0 +1,11 @@
+[package]
+name = "leptos-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+leptos = { version = "0.6", features = ["csr"] }
+leptos-flow-core = { path = "../../leptos-flow-core" }
+leptos-flow-leptos = { path = "../../leptos-flow-leptos" }
+leptos-flow-renderer = { path = "../../leptos-flow-renderer" }
+console_error_panic_hook = "0.1"

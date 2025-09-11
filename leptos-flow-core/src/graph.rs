@@ -774,7 +774,7 @@ mod tests {
 
     #[test]
     fn test_graph_operations() {
-        let mut graph = Graph::new();
+        let mut graph: Graph<(), ()> = Graph::new();
 
         let node1 = Node::simple("node1", Position::new(0.0, 0.0));
         let node2 = Node::simple("node2", Position::new(100.0, 100.0));
@@ -794,7 +794,7 @@ mod tests {
 
     #[test]
     fn test_graph_cascade_delete() {
-        let mut graph = Graph::new();
+        let mut graph: Graph<(), ()> = Graph::new();
 
         graph.add_node(Node::simple("node1", Position::zero())).unwrap();
         graph.add_node(Node::simple("node2", Position::zero())).unwrap();
@@ -810,7 +810,7 @@ mod tests {
 
     #[test]
     fn test_graph_bounds() {
-        let mut graph = Graph::new();
+        let mut graph: Graph<(), ()> = Graph::new();
 
         graph.add_node(
             Node::builder("node1")

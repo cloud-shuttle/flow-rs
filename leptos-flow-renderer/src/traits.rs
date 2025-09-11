@@ -1,6 +1,6 @@
 //! Renderer trait definitions and shared types
 
-use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect};
+use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId};
 use crate::error::{RendererError, Result};
 
 /// Supported rendering backends
@@ -198,6 +198,17 @@ pub trait Renderer {
 
     /// Render a complete graph
     fn render_graph<N, E>(&mut self, graph: &Graph<N, E>, viewport: &Viewport) -> Result<RenderStats>
+    where
+        N: Clone + 'static,
+        E: Clone + 'static;
+
+    /// Render a complete graph with selection state
+    fn render_graph_with_selection<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        viewport: &Viewport,
+        selected_nodes: &[NodeId]
+    ) -> Result<RenderStats>
     where
         N: Clone + 'static,
         E: Clone + 'static;

@@ -14,6 +14,9 @@ pub mod performance;
 #[cfg(all(test, feature = "canvas2d"))]
 mod canvas2d_tests;
 
+#[cfg(test)]
+pub mod tests;
+
 #[cfg(feature = "webgl2")]
 pub mod webgl2;
 

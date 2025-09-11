@@ -2,7 +2,7 @@
 
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
-use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect};
+use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId};
 use crate::traits::{
     Renderer, CustomNodeRenderer, CustomEdgeRenderer, BatchRenderer,
     RendererCapabilities, RenderStats, NodeStyle, EdgeStyle, SelectionStyle, BackgroundConfig, BackgroundVariant
@@ -419,6 +419,84 @@ impl Renderer for Canvas2DRenderer {
             let node_bounds = node.bounds();
             if viewport.intersects_rect(node_bounds) {
                 let style = NodeStyle::default();
+                self.render_custom_node(node, &style, viewport)?;
+                self.stats.nodes_rendered += 1;
+            } else {
+                self.stats.nodes_culled += 1;
+            }
+        }
+
+        self.context.restore();
+
+        // Calculate frame time
+        let end_time = web_sys::window()
+            .and_then(|w| w.performance())
+            .map(|p| p.now())
+            .unwrap_or(0.0);
+
+        self.stats.frame_time_ms = end_time - start_time;
+
+        Ok(self.stats.clone())
+    }
+
+    fn render_graph_with_selection<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        viewport: &Viewport,
+        selected_nodes: &[NodeId]
+    ) -> Result<RenderStats>
+    where
+        N: Clone + 'static,
+        E: Clone + 'static,
+    {
+        let start_time = web_sys::window()
+            .and_then(|w| w.performance())
+            .map(|p| p.now())
+            .unwrap_or(0.0);
+
+        self.set_viewport(viewport);
+
+        // Create a set of selected node IDs for fast lookup
+        let selected_set: std::collections::HashSet<NodeId> = selected_nodes.iter().cloned().collect();
+
+        // Render edges first (behind nodes)
+        for edge in graph.edges() {
+            if let (Some(source), Some(target)) = (graph.get_node(&edge.source), graph.get_node(&edge.target)) {
+                let source_pos = source.position;
+                let target_pos = target.position;
+
+                // Simple visibility check
+                let edge_bounds = Rect::from_points(source_pos, target_pos);
+                if viewport.intersects_rect(edge_bounds) {
+                    let style = EdgeStyle::default();
+                    self.draw_bezier_edge(source_pos, target_pos, &style)?;
+                    self.stats.edges_rendered += 1;
+                    self.stats.draw_calls += 1;
+                } else {
+                    self.stats.edges_culled += 1;
+                }
+            }
+        }
+
+        // Render nodes with selection styling
+        for node in graph.nodes() {
+            let node_bounds = node.bounds();
+            if viewport.intersects_rect(node_bounds) {
+                let is_selected = selected_set.contains(&node.id);
+                let style = if is_selected {
+                    NodeStyle {
+                        background_color: Some("#e3f2fd".to_string()), // Light blue for selected
+                        border_color: Some("#2196f3".to_string()),     // Blue border for selected
+                        border_width: Some(2.0),                       // Thicker border for selected
+                        border_radius: Some(4.0),
+                        shadow_color: Some("#2196f3".to_string()),     // Blue shadow for selected
+                        shadow_offset: Some(Position::new(0.0, 2.0)),
+                        shadow_blur: Some(4.0),
+                        opacity: Some(1.0),
+                    }
+                } else {
+                    NodeStyle::default()
+                };
                 self.render_custom_node(node, &style, viewport)?;
                 self.stats.nodes_rendered += 1;
             } else {
