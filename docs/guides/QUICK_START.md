@@ -9,8 +9,9 @@ Get up and running with Leptos Flow in under 10 minutes. This guide walks throug
 ### Prerequisites
 
 - Rust 1.70+ with `wasm32-unknown-unknown` target
-- Node.js 18+ (for development tools)
-- A Leptos project (0.6+)
+- Node.js 18+ and pnpm (for development tools)
+- A Leptos project (0.6.15+)
+- Modern browser with WebAssembly support
 
 ### Add Dependencies
 
@@ -18,12 +19,14 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-leptos = "0.6"
-leptos-flow = "0.1"
+leptos = "0.6.15"
+leptos-flow-core = "0.1"
+leptos-flow-leptos = "0.1"
+leptos-flow-renderer = "0.1"
 
 # Optional: For advanced rendering
 [features]
-webgpu = ["leptos-flow/webgpu"]
+webgpu = ["leptos-flow-renderer/webgpu"]
 ```
 
 ### Install Development Tools

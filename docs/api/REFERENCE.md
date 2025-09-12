@@ -6,6 +6,51 @@ This document provides a comprehensive API reference for Leptos Flow. For detail
 
 ## Core Types
 
+### SpatialIndex
+
+High-performance spatial indexing for efficient node queries with comprehensive safety features.
+
+```rust
+pub struct SpatialIndex {
+    // Internal grid-based spatial indexing
+    // MAX_GRID_CELLS limit (10,000) for performance safety
+    // Bounds checking to prevent infinite loops
+}
+```
+
+#### Methods
+
+##### `SpatialIndex::new() -> SpatialIndex`
+
+Creates a new spatial index with default cell size.
+
+##### `SpatialIndex::with_cell_size(cell_size: f64) -> SpatialIndex`
+
+Creates a new spatial index with custom cell size.
+
+##### `spatial_index.insert(node: &Node) -> Result<(), FlowError>`
+
+Inserts a node into the spatial index with bounds checking.
+
+##### `spatial_index.query_rect(bounds: &Rect) -> Vec<NodeId>`
+
+Queries nodes within rectangular bounds with safety limits.
+
+##### `spatial_index.query_radius(center: Position, radius: f64) -> Vec<NodeId>`
+
+Queries nodes within circular radius with special handling for zero radius.
+
+##### `spatial_index.nearest(point: Position) -> Option<NodeId>`
+
+Finds the nearest node to a point with brute force fallback for extreme cases.
+
+#### Safety Features
+
+- **Infinite Loop Prevention**: MAX_GRID_CELLS limit prevents resource exhaustion
+- **Bounds Checking**: Validates input bounds to prevent NaN/infinite values
+- **Graceful Degradation**: Returns empty results for extreme cases instead of hanging
+- **Timeout Protection**: Comprehensive test timeout handling
+
 ### Node<T>
 
 Represents a node in the flow graph.

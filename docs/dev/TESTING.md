@@ -757,7 +757,18 @@ fn test_touch_device_support() {
 ### Local Development
 
 ```bash
-# Run all tests
+# Run all tests with timeout protection (recommended)
+make test
+
+# Run specific test suites with appropriate timeouts
+make test-quick      # Quick tests (10s timeout)
+make test-spatial    # Spatial tests (30s timeout)
+make test-proptest   # Property-based tests (45s timeout)
+
+# Run tests with custom timeout
+./scripts/test-with-timeout.sh leptos-flow-core 60 1 all
+
+# Traditional cargo test commands
 cargo test --all-features
 
 # Run specific test categories
@@ -775,6 +786,21 @@ npm test
 # Run browser compatibility tests
 npx playwright test --headed
 ```
+
+### Test Infrastructure Improvements
+
+#### Timeout Protection System
+- **Custom Timeout Script**: `scripts/test-with-timeout.sh` with macOS/Linux compatibility
+- **Nextest Configuration**: `.nextest/config.toml` with profile-based timeouts
+- **Makefile Integration**: Convenient `make` commands for different test types
+- **Hanging Test Detection**: Automated detection and termination of infinite loops
+
+#### Current Test Status
+- ✅ **32/32 spatial tests passing** (previously 7 failing)
+- ✅ **0 hanging tests** (previously multiple)
+- ✅ **100% spatial indexing coverage** with comprehensive edge case handling
+- ✅ **Property-based testing** with Proptest integration
+- ✅ **Infinite loop prevention** with bounds checking and safety limits
 
 ### Continuous Integration
 

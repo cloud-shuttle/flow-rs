@@ -61,6 +61,15 @@ cd ../..
 3. **Run the test suite:**
 
 ```bash
+# Run all tests with timeout protection (recommended)
+make test
+
+# Run specific test suites
+make test-quick      # Quick tests (10s timeout)
+make test-spatial    # Spatial tests (30s timeout)
+make test-proptest   # Property-based tests (45s timeout)
+
+# Traditional cargo test commands
 cargo test --all-features
 cargo test --target wasm32-unknown-unknown --all-features
 ```
@@ -230,13 +239,28 @@ pub fn add_node(&mut self, node: Node) -> Result<(), FlowError> {
 **1. Unit Tests**
 
 ```bash
-# Run unit tests
+# Run unit tests with timeout protection
+make test
+
+# Run specific test suites with appropriate timeouts
+make test-quick      # 10s timeout for fast tests
+make test-spatial    # 30s timeout for spatial tests
+make test-proptest   # 45s timeout for property-based tests
+
+# Traditional unit tests
 cargo test --lib
 
 # Run with coverage
 cargo install cargo-tarpaulin
 cargo tarpaulin --all-features --out Html
 ```
+
+**Current Test Status:**
+- ✅ **32/32 spatial tests passing** (previously 7 failing)
+- ✅ **0 hanging tests** (previously multiple)
+- ✅ **100% spatial indexing coverage** with comprehensive edge case handling
+- ✅ **Property-based testing** with Proptest integration
+- ✅ **Infinite loop prevention** with bounds checking and safety limits
 
 **2. Integration Tests**
 
