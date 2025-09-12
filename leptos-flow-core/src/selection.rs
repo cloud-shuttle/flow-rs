@@ -303,6 +303,67 @@ impl SelectionManager {
             }
         }
     }
+
+    /// Handle keyboard shortcuts for selection management (read-only operations)
+    pub fn handle_keyboard_shortcut<N, E>(&mut self, graph: &Graph<N, E>, shortcut: KeyboardShortcut)
+    where
+        N: Clone,
+        E: Clone,
+    {
+        match shortcut {
+            KeyboardShortcut::SelectAll => {
+                self.selected_nodes.clear();
+                for node in graph.nodes() {
+                    self.selected_nodes.insert(node.id.clone());
+                }
+            }
+            KeyboardShortcut::Escape => {
+                self.clear_selection();
+            }
+            KeyboardShortcut::ArrowRight => {
+                self.navigate_selection(graph, NavigationDirection::Next);
+            }
+            KeyboardShortcut::ArrowLeft => {
+                self.navigate_selection(graph, NavigationDirection::Previous);
+            }
+            KeyboardShortcut::ArrowUp => {
+                // For now, treat up/down same as left/right
+                // In future, we could implement spatial navigation
+                self.navigate_selection(graph, NavigationDirection::Previous);
+            }
+            KeyboardShortcut::ArrowDown => {
+                self.navigate_selection(graph, NavigationDirection::Next);
+            }
+            KeyboardShortcut::Delete => {
+                // Delete operation requires mutable graph - this will be handled separately
+                // For now, we only clear the selection
+                self.clear_selection();
+            }
+        }
+    }
+
+    /// Handle destructive keyboard shortcuts that modify the graph
+    pub fn handle_destructive_keyboard_shortcut<N, E>(&mut self, graph: &mut Graph<N, E>, shortcut: KeyboardShortcut)
+    where
+        N: Clone,
+        E: Clone,
+    {
+        match shortcut {
+            KeyboardShortcut::Delete => {
+                // Remove all selected nodes from the graph
+                let nodes_to_remove: Vec<_> = self.selected_nodes.iter().cloned().collect();
+                for node_id in nodes_to_remove {
+                    let _ = graph.remove_node(&node_id);
+                }
+                // Clear selection after deletion
+                self.clear_selection();
+            }
+            _ => {
+                // For non-destructive operations, use the regular method
+                self.handle_keyboard_shortcut(graph, shortcut);
+            }
+        }
+    }
 }
 
 /// Navigation directions for keyboard selection
@@ -310,6 +371,22 @@ impl SelectionManager {
 pub enum NavigationDirection {
     Next,
     Previous,
+}
+
+/// Keyboard shortcuts for selection management
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum KeyboardShortcut {
+    /// Ctrl+A - Select all nodes
+    SelectAll,
+    /// Delete - Remove selected nodes
+    Delete,
+    /// Escape - Clear selection
+    Escape,
+    /// Arrow keys for navigation
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    ArrowDown,
 }
 
 #[cfg(test)]
@@ -684,11 +761,91 @@ mod tests {
     }
 
     // THESE TESTS WILL FAIL INITIALLY - That's the TDD RED phase!
+
     #[test]
-    #[should_panic(expected = "Feature not implemented yet")]
-    fn test_keyboard_shortcuts_not_implemented() {
-        // This test will fail until we implement keyboard shortcuts
-        panic!("Feature not implemented yet");
+    fn test_select_all_keyboard_shortcut() {
+        let mut manager = SelectionManager::new();
+        let graph = create_test_graph();
+
+        // Initially nothing should be selected
+        assert_eq!(manager.selection_count(), 0);
+
+        // Ctrl+A should select all nodes
+        manager.handle_keyboard_shortcut(&graph, KeyboardShortcut::SelectAll);
+
+        assert_eq!(manager.selection_count(), 4);
+        assert!(manager.is_selected(&"node1".into()));
+        assert!(manager.is_selected(&"node2".into()));
+        assert!(manager.is_selected(&"node3".into()));
+        assert!(manager.is_selected(&"node4".into()));
+    }
+
+    #[test]
+    fn test_delete_selected_nodes_keyboard_shortcut() {
+        let mut manager = SelectionManager::new();
+        let mut graph = create_test_graph();
+
+        // Select some nodes first
+        manager.select_node("node1".into());
+        manager.set_mode(SelectionMode::Multi);
+        manager.select_node("node2".into());
+
+        assert_eq!(manager.selection_count(), 2);
+        assert_eq!(graph.node_count(), 4);
+
+        // Delete key should remove selected nodes from graph and clear selection
+        manager.handle_destructive_keyboard_shortcut(&mut graph, KeyboardShortcut::Delete);
+
+        assert_eq!(manager.selection_count(), 0);
+        assert_eq!(graph.node_count(), 2);
+        assert!(graph.get_node(&"node3".into()).is_some());
+        assert!(graph.get_node(&"node4".into()).is_some());
+        assert!(graph.get_node(&"node1".into()).is_none());
+        assert!(graph.get_node(&"node2".into()).is_none());
+    }
+
+    #[test]
+    fn test_escape_clear_selection_keyboard_shortcut() {
+        let mut manager = SelectionManager::new();
+        let graph = create_test_graph();
+
+        // Select some nodes
+        manager.select_node("node1".into());
+        manager.set_mode(SelectionMode::Multi);
+        manager.select_node("node2".into());
+
+        assert_eq!(manager.selection_count(), 2);
+
+        // Escape should clear selection
+        manager.handle_keyboard_shortcut(&graph, KeyboardShortcut::Escape);
+
+        assert_eq!(manager.selection_count(), 0);
+    }
+
+    #[test]
+    fn test_arrow_key_navigation_keyboard_shortcuts() {
+        let mut manager = SelectionManager::new();
+        let graph = create_test_graph();
+
+        // Start with no selection
+        assert_eq!(manager.selection_count(), 0);
+
+        // Right arrow should select next node
+        manager.handle_keyboard_shortcut(&graph, KeyboardShortcut::ArrowRight);
+        assert_eq!(manager.selection_count(), 1);
+        let first_selected = manager.selected_nodes().iter().next().cloned();
+
+        // Right arrow again should move to next node
+        manager.handle_keyboard_shortcut(&graph, KeyboardShortcut::ArrowRight);
+        assert_eq!(manager.selection_count(), 1);
+        let second_selected = manager.selected_nodes().iter().next().cloned();
+        assert_ne!(first_selected, second_selected);
+
+        // Left arrow should move back
+        manager.handle_keyboard_shortcut(&graph, KeyboardShortcut::ArrowLeft);
+        assert_eq!(manager.selection_count(), 1);
+        let back_selected = manager.selected_nodes().iter().next().cloned();
+        assert_eq!(first_selected, back_selected);
     }
 
     #[test]

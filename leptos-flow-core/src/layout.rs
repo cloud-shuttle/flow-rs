@@ -420,6 +420,9 @@ impl<N, E> LayoutAlgorithm<N, E> for GridLayout {
             (node_count as f64).sqrt().ceil() as usize
         });
 
+        // Ensure columns is at least 1 to avoid division by zero
+        let columns = columns.max(1);
+
         // Position nodes in grid
         for (i, node) in nodes.into_iter().enumerate() {
             let row = i / columns;

@@ -3,7 +3,7 @@
 //! Tests that verify keyboard interactions work correctly for node selection
 
 use leptos::*;
-use leptos_flow_core::{Graph, Node, Position, NodeId, NavigationDirection};
+use leptos_flow_core::{Graph, Node, Position, NodeId, NavigationDirection, KeyboardShortcut};
 use crate::signals::FlowState;
 use wasm_bindgen_test::*;
 
@@ -94,21 +94,92 @@ fn test_keyboard_multi_select_toggle() {
     assert_eq!(state.selected_nodes.len(), 0);
 }
 
-// FAILING TESTS - These will be completed in future TDD cycles
-
 #[wasm_bindgen_test]
-#[should_panic(expected = "Directional navigation not implemented")]
-fn test_keyboard_arrow_navigation_not_implemented() {
-    // This test will fail until we implement directional navigation (Up, Down, Left, Right)
-    panic!("Directional navigation not implemented");
+fn test_keyboard_shortcut_select_all() {
+    // Test: Using keyboard shortcut system for select all
+    let mut state = FlowState::new();
+    let graph = create_test_graph();
+
+    // Initially no nodes selected
+    assert_eq!(state.selected_nodes.len(), 0);
+
+    // Use keyboard shortcut system
+    state.handle_keyboard_shortcut(&graph, KeyboardShortcut::SelectAll);
+
+    assert_eq!(state.selected_nodes.len(), 4);
+    assert!(state.is_node_selected(&NodeId::new("node1")));
+    assert!(state.is_node_selected(&NodeId::new("node2")));
+    assert!(state.is_node_selected(&NodeId::new("node3")));
+    assert!(state.is_node_selected(&NodeId::new("node4")));
 }
 
 #[wasm_bindgen_test]
-#[should_panic(expected = "Delete key handling not implemented")]
-fn test_keyboard_delete_not_implemented() {
-    // This test will fail until we implement delete key handling
-    panic!("Delete key handling not implemented");
+fn test_keyboard_shortcut_arrow_navigation() {
+    // Test: Arrow key navigation using keyboard shortcuts
+    let mut state = FlowState::new();
+    let graph = create_test_graph();
+
+    // Start with no selection
+    assert_eq!(state.selected_nodes.len(), 0);
+
+    // Arrow right should select next node
+    state.handle_keyboard_shortcut(&graph, KeyboardShortcut::ArrowRight);
+    assert_eq!(state.selected_nodes.len(), 1);
+    let first_selected = state.selected_nodes[0].clone();
+
+    // Arrow right again should move to next node
+    state.handle_keyboard_shortcut(&graph, KeyboardShortcut::ArrowRight);
+    assert_eq!(state.selected_nodes.len(), 1);
+    let second_selected = state.selected_nodes[0].clone();
+    assert_ne!(first_selected, second_selected);
+
+    // Arrow left should go back
+    state.handle_keyboard_shortcut(&graph, KeyboardShortcut::ArrowLeft);
+    assert_eq!(state.selected_nodes.len(), 1);
+    let back_selected = state.selected_nodes[0].clone();
+    assert_eq!(first_selected, back_selected);
 }
+
+#[wasm_bindgen_test]
+fn test_keyboard_shortcut_escape() {
+    // Test: Escape key using keyboard shortcuts
+    let mut state = FlowState::new();
+    let graph = create_test_graph();
+
+    // Select some nodes first
+    state.select_node(NodeId::new("node1"));
+    state.add_node_to_selection(NodeId::new("node2"));
+    assert_eq!(state.selected_nodes.len(), 2);
+
+    // Escape should clear selection
+    state.handle_keyboard_shortcut(&graph, KeyboardShortcut::Escape);
+    assert_eq!(state.selected_nodes.len(), 0);
+}
+
+#[wasm_bindgen_test]
+fn test_keyboard_shortcut_delete() {
+    // Test: Delete key handling using keyboard shortcuts
+    let mut state = FlowState::new();
+    let mut graph = create_test_graph();
+
+    // Select some nodes
+    state.select_node(NodeId::new("node1"));
+    state.add_node_to_selection(NodeId::new("node2"));
+    assert_eq!(state.selected_nodes.len(), 2);
+    assert_eq!(graph.node_count(), 4);
+
+    // Delete should remove selected nodes from graph and clear selection
+    state.handle_destructive_keyboard_shortcut(&mut graph, KeyboardShortcut::Delete);
+
+    assert_eq!(state.selected_nodes.len(), 0);
+    assert_eq!(graph.node_count(), 2);
+    assert!(graph.get_node(&NodeId::new("node3")).is_some());
+    assert!(graph.get_node(&NodeId::new("node4")).is_some());
+    assert!(graph.get_node(&NodeId::new("node1")).is_none());
+    assert!(graph.get_node(&NodeId::new("node2")).is_none());
+}
+
+// FAILING TESTS - Future functionality
 
 #[wasm_bindgen_test]
 #[should_panic(expected = "Copy/paste shortcuts not implemented")]

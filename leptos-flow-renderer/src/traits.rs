@@ -2,6 +2,7 @@
 
 use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId};
 use crate::error::Result;
+use js_sys;
 
 /// Supported rendering backends
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -146,6 +147,190 @@ impl Default for SelectionStyle {
     }
 }
 
+/// Animated selection style with timing and effects
+#[derive(Debug, Clone, PartialEq)]
+pub struct AnimatedSelectionStyle {
+    pub base_style: SelectionStyle,
+    pub animation_duration_ms: f64,
+    pub pulse_enabled: bool,
+    pub fade_in_enabled: bool,
+    pub performance_mode: bool,
+    pub batch_rendering: bool,
+    // Animation state
+    pub is_animating: bool,
+    pub animation_start_time: Option<f64>,
+    pub animation_progress: f64,
+}
+
+impl AnimatedSelectionStyle {
+    pub fn new() -> Self {
+        Self {
+            base_style: SelectionStyle::default(),
+            animation_duration_ms: 300.0,
+            pulse_enabled: false,
+            fade_in_enabled: false,
+            performance_mode: false,
+            batch_rendering: false,
+            is_animating: false,
+            animation_start_time: None,
+            animation_progress: 0.0,
+        }
+    }
+
+    pub fn with_animation_duration(mut self, duration_ms: f64) -> Self {
+        self.animation_duration_ms = duration_ms;
+        self
+    }
+
+    pub fn with_pulse_enabled(mut self, enabled: bool) -> Self {
+        self.pulse_enabled = enabled;
+        self
+    }
+
+    pub fn with_fade_in_enabled(mut self, enabled: bool) -> Self {
+        self.fade_in_enabled = enabled;
+        self
+    }
+
+    pub fn with_performance_mode(mut self, enabled: bool) -> Self {
+        self.performance_mode = enabled;
+        self
+    }
+
+    pub fn with_batch_rendering(mut self, enabled: bool) -> Self {
+        self.batch_rendering = enabled;
+        self
+    }
+
+    pub fn animation_duration_ms(&self) -> f64 {
+        self.animation_duration_ms
+    }
+
+    pub fn pulse_enabled(&self) -> bool {
+        self.pulse_enabled
+    }
+
+    pub fn fade_in_enabled(&self) -> bool {
+        self.fade_in_enabled
+    }
+
+    pub fn is_animating(&self) -> bool {
+        self.is_animating
+    }
+
+    pub fn animation_progress(&self) -> f64 {
+        self.animation_progress
+    }
+
+    pub fn start_animation(&mut self) {
+        self.is_animating = true;
+        self.animation_start_time = Some(js_sys::Date::now());
+        self.animation_progress = 0.0;
+    }
+
+    pub fn update_animation(&mut self, elapsed_ms: f64) {
+        if !self.is_animating {
+            return;
+        }
+
+        self.animation_progress = (elapsed_ms / self.animation_duration_ms).min(1.0);
+
+        if self.animation_progress >= 1.0 {
+            self.is_animating = false;
+            self.animation_progress = 1.0;
+        }
+    }
+}
+
+impl Default for AnimatedSelectionStyle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Multi-selection indicators style
+#[derive(Debug, Clone, PartialEq)]
+pub struct MultiSelectionStyle {
+    pub connection_lines: bool,
+    pub selection_count_indicator: bool,
+    pub connection_color: String,
+    pub connection_width: f64,
+    pub count_background_color: String,
+    pub count_text_color: String,
+}
+
+impl MultiSelectionStyle {
+    pub fn new() -> Self {
+        Self {
+            connection_lines: false,
+            selection_count_indicator: false,
+            connection_color: "#1a73e8".to_string(),
+            connection_width: 1.0,
+            count_background_color: "#1a73e8".to_string(),
+            count_text_color: "#ffffff".to_string(),
+        }
+    }
+
+    pub fn with_connection_lines(mut self, enabled: bool) -> Self {
+        self.connection_lines = enabled;
+        self
+    }
+
+    pub fn with_selection_count_indicator(mut self, enabled: bool) -> Self {
+        self.selection_count_indicator = enabled;
+        self
+    }
+}
+
+impl Default for MultiSelectionStyle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Selection hover effects style
+#[derive(Debug, Clone, PartialEq)]
+pub struct SelectionHoverStyle {
+    pub hover_highlight_color: String,
+    pub hover_scale_factor: f64,
+    pub hover_glow_enabled: bool,
+    pub hover_glow_color: String,
+    pub hover_glow_blur: f64,
+}
+
+impl SelectionHoverStyle {
+    pub fn new() -> Self {
+        Self {
+            hover_highlight_color: "#ffeb3b".to_string(),
+            hover_scale_factor: 1.0,
+            hover_glow_enabled: false,
+            hover_glow_color: "#ffeb3b".to_string(),
+            hover_glow_blur: 8.0,
+        }
+    }
+
+    pub fn with_hover_highlight_color(mut self, color: String) -> Self {
+        self.hover_highlight_color = color;
+        self
+    }
+
+    pub fn with_hover_scale_factor(mut self, scale: f64) -> Self {
+        self.hover_scale_factor = scale;
+        self
+    }
+
+    pub fn with_hover_glow_enabled(mut self, enabled: bool) -> Self {
+        self.hover_glow_enabled = enabled;
+        self
+    }
+}
+
+impl Default for SelectionHoverStyle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Background pattern configuration
 #[derive(Debug, Clone, PartialEq)]
 pub struct BackgroundConfig {
@@ -237,6 +422,37 @@ pub trait Renderer {
         selected_bounds: &[Rect],
         style: &SelectionStyle,
     ) -> Result<()>;
+
+    /// Render animated selection indicators
+    fn render_animated_selection(
+        &mut self,
+        selected_bounds: &[Rect],
+        style: &AnimatedSelectionStyle,
+    ) -> Result<()>;
+
+    /// Render multi-selection indicators
+    fn render_multi_selection(
+        &mut self,
+        selected_bounds: &[Rect],
+        style: &MultiSelectionStyle,
+    ) -> Result<()>;
+
+    /// Render selection hover effects
+    fn render_selection_hover(
+        &mut self,
+        bounds: &Rect,
+        hover_position: &Position,
+        style: &SelectionHoverStyle,
+    ) -> Result<()>;
+
+    /// Check if hover is active for given bounds
+    fn is_hover_active(&self, bounds: &Rect) -> bool;
+
+    /// Get current selection count
+    fn get_selection_count(&self) -> usize;
+
+    /// Check if multi-selection is active
+    fn is_multi_selection_active(&self) -> bool;
 
     /// Render background pattern
     fn render_background(&mut self, config: &BackgroundConfig, viewport: &Viewport) -> Result<()>;

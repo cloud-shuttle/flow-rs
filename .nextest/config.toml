@@ -1,0 +1,47 @@
+# Nextest configuration for better test management and timeouts
+[profile.default]
+# Test timeout configuration
+test-timeout = "60s"
+slow-timeout = "120s"
+leak-timeout = "5s"
+
+# Parallel execution
+jobs = 1  # Run tests sequentially to avoid resource conflicts
+
+# Retry configuration
+retries = 1
+retry-backoff = "exponential"
+retry-backoff-base = 2
+retry-backoff-max = "60s"
+
+# Output configuration
+failure-output = "immediate-final"
+success-output = "immediate-final"
+status-level = "pass"
+
+# Test filtering
+[profile.default.overrides]
+# Spatial tests tend to hang - give them more time but kill if they exceed
+matchers = [
+    { name = "spatial", test-timeout = "30s" },
+    { name = "proptest", test-timeout = "45s" },
+    { name = "layout", test-timeout = "30s" },
+    { name = "performance", test-timeout = "300s" },
+]
+
+# Performance test profile
+[profile.performance]
+test-timeout = "300s"
+slow-timeout = "600s"
+jobs = 1
+
+# Quick test profile for development
+[profile.quick]
+test-timeout = "10s"
+slow-timeout = "20s"
+jobs = 4
+matchers = [
+    { name = "spatial", test-timeout = "5s" },
+    { name = "proptest", test-timeout = "5s" },
+    { name = "layout", test-timeout = "5s" },
+]

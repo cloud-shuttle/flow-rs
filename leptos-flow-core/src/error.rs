@@ -17,8 +17,8 @@ pub enum FlowError {
     #[error("Duplicate edge ID: '{id}'")]
     DuplicateEdgeId { id: String },
 
-    #[error("Invalid connection: {reason}")]
-    InvalidConnection { reason: String },
+    #[error("Invalid connection: {message}")]
+    InvalidConnection { message: String },
 
     #[error("Self connection not allowed")]
     SelfConnection,
@@ -40,6 +40,16 @@ pub enum FlowError {
 
     #[error("Invalid operation: {message}")]
     InvalidOperation { message: String },
+
+    #[error("Handle not found: {handle_id}")]
+    HandleNotFound { handle_id: String },
+
+    #[error("Connection limit exceeded for handle '{handle_id}': {current}/{limit}")]
+    ConnectionLimitExceeded {
+        handle_id: String,
+        current: usize,
+        limit: usize,
+    },
 }
 
 impl FlowError {
@@ -64,9 +74,9 @@ impl FlowError {
     }
 
     /// Create an invalid connection error
-    pub fn invalid_connection(reason: impl Into<String>) -> Self {
+    pub fn invalid_connection(message: impl Into<String>) -> Self {
         Self::InvalidConnection {
-            reason: reason.into(),
+            message: message.into(),
         }
     }
 
@@ -88,6 +98,22 @@ impl FlowError {
     pub fn invalid_operation(message: impl Into<String>) -> Self {
         Self::InvalidOperation {
             message: message.into(),
+        }
+    }
+
+    /// Create a handle not found error
+    pub fn handle_not_found(handle_id: impl Into<String>) -> Self {
+        Self::HandleNotFound {
+            handle_id: handle_id.into(),
+        }
+    }
+
+    /// Create a connection limit exceeded error
+    pub fn connection_limit_exceeded(handle_id: impl Into<String>, current: usize, limit: usize) -> Self {
+        Self::ConnectionLimitExceeded {
+            handle_id: handle_id.into(),
+            current,
+            limit,
         }
     }
 }

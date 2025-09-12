@@ -5,7 +5,9 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 use leptos_flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId};
 use crate::traits::{
     Renderer, CustomNodeRenderer, CustomEdgeRenderer, BatchRenderer,
-    RendererCapabilities, RenderStats, NodeStyle, EdgeStyle, SelectionStyle, BackgroundConfig, BackgroundVariant
+    RendererCapabilities, RenderStats, NodeStyle, EdgeStyle, SelectionStyle,
+    AnimatedSelectionStyle, MultiSelectionStyle, SelectionHoverStyle,
+    BackgroundConfig, BackgroundVariant
 };
 use crate::error::{RendererError, Result};
 use crate::performance::{PerformanceManager, PerformanceSettings};
@@ -21,6 +23,10 @@ pub struct Canvas2DRenderer {
     width: u32,
     height: u32,
     performance_manager: PerformanceManager,
+    // Animation state
+    selection_count: usize,
+    multi_selection_active: bool,
+    hover_active_bounds: Option<Rect>,
 }
 
 #[derive(Debug, Clone)]
@@ -327,6 +333,32 @@ impl Canvas2DRenderer {
         self.context.set_global_alpha(1.0);
         Ok(())
     }
+
+    /// Helper function to parse color components and apply alpha
+    fn parse_color_components(color: &str, _alpha: f64) -> String {
+        // Simple color parsing for animation effects
+        if color.starts_with('#') {
+            let hex = color.trim_start_matches('#');
+            match hex.len() {
+                3 => {
+                    let r = u8::from_str_radix(&hex[0..1], 16).unwrap_or(0) * 17;
+                    let g = u8::from_str_radix(&hex[1..2], 16).unwrap_or(0) * 17;
+                    let b = u8::from_str_radix(&hex[2..3], 16).unwrap_or(0) * 17;
+                    format!("{}, {}, {}", r, g, b)
+                }
+                6 => {
+                    let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+                    let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+                    let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+                    format!("{}, {}, {}", r, g, b)
+                }
+                _ => "0, 0, 0".to_string(),
+            }
+        } else {
+            // Fallback for named colors or other formats
+            "0, 0, 0".to_string()
+        }
+    }
 }
 
 impl Renderer for Canvas2DRenderer {
@@ -347,6 +379,10 @@ impl Renderer for Canvas2DRenderer {
             width,
             height,
             performance_manager: PerformanceManager::new(PerformanceSettings::balanced()),
+            // Animation state
+            selection_count: 0,
+            multi_selection_active: false,
+            hover_active_bounds: None,
         })
     }
 
@@ -580,6 +616,203 @@ impl Renderer for Canvas2DRenderer {
 
         self.context.restore();
         Ok(())
+    }
+
+    fn render_animated_selection(&mut self, selected_bounds: &[Rect], style: &AnimatedSelectionStyle) -> Result<()> {
+        if selected_bounds.is_empty() {
+            return Ok(());
+        }
+
+        self.context.save();
+
+        // Update animation progress
+        let current_time = js_sys::Date::now();
+        let elapsed = if let Some(start_time) = style.animation_start_time {
+            current_time - start_time
+        } else {
+            0.0
+        };
+
+        // Calculate animation progress (0.0 to 1.0)
+        let progress = (elapsed / style.animation_duration_ms).min(1.0);
+
+        // Apply animation effects
+        let mut animated_style = style.base_style.clone();
+
+        if style.fade_in_enabled {
+            // Fade in effect
+            let alpha = progress;
+            let color_components = Self::parse_color_components(&style.base_style.color, alpha);
+            animated_style.color = format!("rgba({}, {})", color_components, alpha);
+        }
+
+        if style.pulse_enabled {
+            // Pulse effect - scale the selection rectangle
+            let pulse_scale = 1.0 + (progress * 0.1 * (1.0 - progress)); // Subtle pulse
+            let pulse_width = style.base_style.width * pulse_scale;
+            animated_style.width = pulse_width;
+        }
+
+        // Render with animated style
+        self.context.set_stroke_style(&animated_style.color.clone().into());
+        self.context.set_line_width(animated_style.width);
+
+        if let Some(dasharray) = &animated_style.dasharray {
+            let dashes: Vec<f64> = dasharray
+                .split(',')
+                .filter_map(|s| s.trim().parse().ok())
+                .collect();
+
+            if !dashes.is_empty() {
+                let js_array = js_sys::Array::new();
+                for dash in dashes {
+                    js_array.push(&dash.into());
+                }
+                let _ = self.context.set_line_dash(&js_array);
+            }
+        }
+
+        for bounds in selected_bounds {
+            self.context.stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
+
+            // Add animated glow effect
+            if let (Some(glow_color), Some(glow_blur)) = (&animated_style.glow_color, animated_style.glow_blur) {
+                let animated_glow_blur = glow_blur * progress; // Glow grows with animation
+                self.context.save();
+                self.context.set_shadow_color(glow_color);
+                self.context.set_shadow_blur(animated_glow_blur);
+                self.context.stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
+                self.context.restore();
+            }
+        }
+
+        self.context.restore();
+        Ok(())
+    }
+
+    fn render_multi_selection(&mut self, selected_bounds: &[Rect], style: &MultiSelectionStyle) -> Result<()> {
+        if selected_bounds.len() < 2 {
+            return Ok(());
+        }
+
+        self.context.save();
+
+        // Update selection count
+        self.selection_count = selected_bounds.len();
+        self.multi_selection_active = true;
+
+        // Render connection lines between selected items
+        if style.connection_lines {
+            self.context.set_stroke_style(&style.connection_color.clone().into());
+            self.context.set_line_width(style.connection_width);
+            self.context.set_global_alpha(0.5);
+
+            for i in 0..selected_bounds.len() {
+                for j in (i + 1)..selected_bounds.len() {
+                    let bounds1 = &selected_bounds[i];
+                    let bounds2 = &selected_bounds[j];
+
+                    // Draw line between centers
+                    let center1_x = bounds1.x + bounds1.width / 2.0;
+                    let center1_y = bounds1.y + bounds1.height / 2.0;
+                    let center2_x = bounds2.x + bounds2.width / 2.0;
+                    let center2_y = bounds2.y + bounds2.height / 2.0;
+
+                    self.context.begin_path();
+                    self.context.move_to(center1_x, center1_y);
+                    self.context.line_to(center2_x, center2_y);
+                    self.context.stroke();
+                }
+            }
+        }
+
+        // Render selection count indicator
+        if style.selection_count_indicator && selected_bounds.len() > 1 {
+            // Find the center of all selected bounds
+            let mut center_x = 0.0;
+            let mut center_y = 0.0;
+            for bounds in selected_bounds {
+                center_x += bounds.x + bounds.width / 2.0;
+                center_y += bounds.y + bounds.height / 2.0;
+            }
+            center_x /= selected_bounds.len() as f64;
+            center_y /= selected_bounds.len() as f64;
+
+            // Draw count indicator circle
+            let radius = 20.0;
+            self.context.set_fill_style(&style.count_background_color.clone().into());
+            self.context.set_global_alpha(0.9);
+            self.context.begin_path();
+            self.context.arc(center_x, center_y, radius, 0.0, 2.0 * std::f64::consts::PI)
+                .map_err(|_| RendererError::rendering_failed("Failed to draw count indicator"))?;
+            self.context.fill();
+
+            // Draw count text
+            self.context.set_fill_style(&style.count_text_color.clone().into());
+            self.context.set_font("14px Arial");
+            self.context.set_text_align("center");
+            self.context.set_text_baseline("middle");
+            let count_text = selected_bounds.len().to_string();
+            self.context.fill_text(&count_text, center_x, center_y)
+                .map_err(|_| RendererError::rendering_failed("Failed to draw count text"))?;
+        }
+
+        self.context.restore();
+        Ok(())
+    }
+
+    fn render_selection_hover(&mut self, bounds: &Rect, hover_position: &Position, style: &SelectionHoverStyle) -> Result<()> {
+        self.context.save();
+
+        // Check if hover position is within bounds
+        if bounds.contains_point(*hover_position) {
+            self.hover_active_bounds = Some(*bounds);
+
+            // Apply hover effects
+            if style.hover_scale_factor != 1.0 {
+                // Scale the bounds for hover effect
+                let scale = style.hover_scale_factor;
+                let scaled_width = bounds.width * scale;
+                let scaled_height = bounds.height * scale;
+                let offset_x = (bounds.width - scaled_width) / 2.0;
+                let offset_y = (bounds.height - scaled_height) / 2.0;
+
+                self.context.set_stroke_style(&style.hover_highlight_color.clone().into());
+                self.context.set_line_width(2.0);
+                self.context.stroke_rect(
+                    bounds.x + offset_x,
+                    bounds.y + offset_y,
+                    scaled_width,
+                    scaled_height
+                );
+            }
+
+            // Add hover glow effect
+            if style.hover_glow_enabled {
+                self.context.set_shadow_color(&style.hover_glow_color);
+                self.context.set_shadow_blur(style.hover_glow_blur);
+                self.context.set_stroke_style(&style.hover_highlight_color.clone().into());
+                self.context.set_line_width(2.0);
+                self.context.stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
+            }
+        } else {
+            self.hover_active_bounds = None;
+        }
+
+        self.context.restore();
+        Ok(())
+    }
+
+    fn is_hover_active(&self, bounds: &Rect) -> bool {
+        self.hover_active_bounds.as_ref() == Some(bounds)
+    }
+
+    fn get_selection_count(&self) -> usize {
+        self.selection_count
+    }
+
+    fn is_multi_selection_active(&self) -> bool {
+        self.multi_selection_active
     }
 
     fn render_background(&mut self, config: &BackgroundConfig, viewport: &Viewport) -> Result<()> {

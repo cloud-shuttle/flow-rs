@@ -641,41 +641,11 @@ mod tests {
         let mut group_manager = GroupManager::new();
 
         // Add nodes with different positions and sizes
-        let node1 = Node {
-            id: NodeId::new("node1"),
-            position: Position::new(100.0, 100.0),
-            size: Size::new(50.0, 30.0),
-            data: (),
-            node_type: None,
-            selected: false,
-            dragging: false,
-            selectable: true,
-            connectable: true,
-            deletable: true,
-            drag_handle: None,
-            parent_node: None,
-            z_index: None,
-            hidden: false,
-            measured: None,
-        };
+        let mut node1 = Node::simple("node1", Position::new(100.0, 100.0));
+        node1.set_size(Size::new(50.0, 30.0));
 
-        let node2 = Node {
-            id: NodeId::new("node2"),
-            position: Position::new(200.0, 150.0),
-            size: Size::new(40.0, 25.0),
-            data: (),
-            node_type: None,
-            selected: false,
-            dragging: false,
-            selectable: true,
-            connectable: true,
-            deletable: true,
-            drag_handle: None,
-            parent_node: None,
-            z_index: None,
-            hidden: false,
-            measured: None,
-        };
+        let mut node2 = Node::simple("node2", Position::new(200.0, 150.0));
+        node2.set_size(Size::new(40.0, 25.0));
 
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();

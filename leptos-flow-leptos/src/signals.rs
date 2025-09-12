@@ -3,7 +3,7 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use leptos_flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Viewport, SelectionManager, SelectionMode, NavigationDirection, GroupManager, GroupId};
+use leptos_flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Viewport, SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut, GroupManager, GroupId};
 use leptos_flow_renderer::traits::RenderStats;
 
 #[cfg(feature = "canvas2d")]
@@ -147,6 +147,28 @@ impl FlowState {
     {
         self.selection_manager.select_all(graph);
         // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+    }
+
+    /// Handle keyboard shortcuts using the new keyboard shortcut system
+    pub fn handle_keyboard_shortcut<N, E>(&mut self, graph: &Graph<N, E>, shortcut: KeyboardShortcut)
+    where
+        N: Clone,
+        E: Clone,
+    {
+        self.selection_manager.handle_keyboard_shortcut(graph, shortcut);
+        // Sync legacy fields
+        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+    }
+
+    /// Handle destructive keyboard shortcuts that modify the graph
+    pub fn handle_destructive_keyboard_shortcut<N, E>(&mut self, graph: &mut Graph<N, E>, shortcut: KeyboardShortcut)
+    where
+        N: Clone,
+        E: Clone,
+    {
+        self.selection_manager.handle_destructive_keyboard_shortcut(graph, shortcut);
+        // Sync legacy fields after modification
         self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
     }
 

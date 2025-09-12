@@ -6,7 +6,7 @@ use leptos::*;
 use wasm_bindgen::{JsCast, closure::Closure};
 use web_sys::{KeyboardEvent, EventTarget};
 
-use leptos_flow_core::{Graph, NavigationDirection};
+use leptos_flow_core::{Graph, NavigationDirection, KeyboardShortcut};
 use crate::signals::{FlowState, ViewportState};
 
 /// Keyboard modifiers state
@@ -41,72 +41,75 @@ where
         let modifiers = KeyboardModifiers::from_event(&event);
         let key = event.key();
 
-        match key.as_str() {
+        let shortcut = match key.as_str() {
             // Select All (Ctrl+A)
             "a" | "A" if modifiers.ctrl => {
                 event.prevent_default();
-                flow_state.update(|state| {
-                    let graph_val = graph.get_untracked();
-                    state.select_all(&graph_val);
-                });
+                Some(KeyboardShortcut::SelectAll)
+            }
+
+            // Delete selected nodes
+            "Delete" | "Backspace" => {
+                event.prevent_default();
+                Some(KeyboardShortcut::Delete)
             }
 
             // Clear selection (Escape)
             "Escape" => {
-                flow_state.update(|state| {
-                    state.clear_selection();
-                });
+                Some(KeyboardShortcut::Escape)
             }
 
             // Navigation (Arrow keys)
             "ArrowRight" => {
                 event.prevent_default();
-                flow_state.update(|state| {
-                    let graph_val = graph.get_untracked();
-                    state.navigate_selection(&graph_val, NavigationDirection::Next);
-                });
+                Some(KeyboardShortcut::ArrowRight)
             }
 
             "ArrowLeft" => {
                 event.prevent_default();
-                flow_state.update(|state| {
-                    let graph_val = graph.get_untracked();
-                    state.navigate_selection(&graph_val, NavigationDirection::Previous);
-                });
+                Some(KeyboardShortcut::ArrowLeft)
             }
 
             "ArrowDown" => {
                 event.prevent_default();
-                flow_state.update(|state| {
-                    let graph_val = graph.get_untracked();
-                    state.navigate_selection(&graph_val, NavigationDirection::Next);
-                });
+                Some(KeyboardShortcut::ArrowDown)
             }
 
             "ArrowUp" => {
                 event.prevent_default();
-                flow_state.update(|state| {
-                    let graph_val = graph.get_untracked();
-                    state.navigate_selection(&graph_val, NavigationDirection::Previous);
-                });
+                Some(KeyboardShortcut::ArrowUp)
             }
 
-            // Tab navigation
+            // Tab navigation (legacy support)
             "Tab" => {
                 event.prevent_default();
-                flow_state.update(|state| {
-                    let graph_val = graph.get_untracked();
-                    let direction = if modifiers.shift {
-                        NavigationDirection::Previous
-                    } else {
-                        NavigationDirection::Next
-                    };
-                    state.navigate_selection(&graph_val, direction);
-                });
+                if modifiers.shift {
+                    Some(KeyboardShortcut::ArrowLeft)
+                } else {
+                    Some(KeyboardShortcut::ArrowRight)
+                }
             }
 
-            _ => {
-                // Other keys pass through
+            _ => None,
+        };
+
+        if let Some(shortcut) = shortcut {
+            match shortcut {
+                KeyboardShortcut::Delete => {
+                    // Handle destructive operation that modifies the graph
+                    graph.update(|graph_val| {
+                        flow_state.update(|state| {
+                            state.handle_destructive_keyboard_shortcut(graph_val, shortcut);
+                        });
+                    });
+                }
+                _ => {
+                    // Handle non-destructive operations
+                    flow_state.update(|state| {
+                        let graph_val = graph.get_untracked();
+                        state.handle_keyboard_shortcut(&graph_val, shortcut);
+                    });
+                }
             }
         }
     }

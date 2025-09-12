@@ -65,3 +65,7 @@ playwright/.cache/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Coverage reports
+coverage/
+tarpaulin-report.html

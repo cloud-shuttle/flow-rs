@@ -5,9 +5,10 @@
 use wasm_bindgen_test::*;
 use leptos_flow_core::{Graph, Node, Position, Rect};
 use crate::canvas2d::Canvas2DRenderer;
-use crate::traits::{Renderer, SelectionStyle};
+use crate::traits::{Renderer, SelectionStyle, AnimatedSelectionStyle, MultiSelectionStyle, SelectionHoverStyle};
 use web_sys::HtmlCanvasElement;
 use wasm_bindgen::JsCast;
+use js_sys;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
@@ -138,24 +139,148 @@ fn test_render_large_selection() {
     assert!(result.is_ok(), "Large selection rendering should succeed");
 }
 
-// FAILING TESTS - These will be completed in future TDD cycles
+// TDD FAILING TESTS - These define our new selection animation features
+
 #[wasm_bindgen_test]
-#[should_panic(expected = "Selection animations not implemented")]
-fn test_selection_animation_not_implemented() {
-    // This test will fail until we implement selection animations
-    panic!("Selection animations not implemented");
+fn test_animated_selection_style_creation() {
+    // Test creating animated selection styles with timing
+    let animated_style = AnimatedSelectionStyle::new()
+        .with_animation_duration(300.0)  // 300ms
+        .with_pulse_enabled(true)
+        .with_fade_in_enabled(true);
+
+    assert_eq!(animated_style.animation_duration_ms(), 300.0);
+    assert!(animated_style.pulse_enabled());
+    assert!(animated_style.fade_in_enabled());
+    assert!(!animated_style.is_animating()); // not started yet
 }
 
 #[wasm_bindgen_test]
-#[should_panic(expected = "Multi-selection indicators not implemented")]
-fn test_multi_selection_indicators_not_implemented() {
-    // This test will fail until we implement special multi-selection indicators
-    panic!("Multi-selection indicators not implemented");
+fn test_selection_animation_state_machine() {
+    // Test selection animation state transitions
+    let mut animated_style = AnimatedSelectionStyle::new();
+
+    // Initially not animating
+    assert!(!animated_style.is_animating());
+
+    // Start animation
+    animated_style.start_animation();
+    assert!(animated_style.is_animating());
+
+    // Update animation progress
+    animated_style.update_animation(150.0); // 50% through 300ms animation
+    assert_eq!(animated_style.animation_progress(), 0.5);
+
+    // Finish animation
+    animated_style.update_animation(300.0);
+    assert!(!animated_style.is_animating());
+    assert_eq!(animated_style.animation_progress(), 1.0);
 }
 
 #[wasm_bindgen_test]
-#[should_panic(expected = "Selection hover effects not implemented")]
-fn test_selection_hover_effects_not_implemented() {
-    // This test will fail until we implement hover effects for selection
-    panic!("Selection hover effects not implemented");
+fn test_render_animated_selection() {
+    // Test rendering animated selection with Canvas2D
+    let canvas = create_test_canvas();
+    let mut renderer = Canvas2DRenderer::new(canvas);
+    let graph = create_test_graph();
+
+    // Create animated selection style
+    let mut animated_style = AnimatedSelectionStyle::new()
+        .with_pulse_enabled(true)
+        .with_animation_duration(200.0);
+
+    // Start animation
+    animated_style.start_animation();
+    animated_style.update_animation(100.0); // 50% progress
+
+    // Get node bounds for rendering
+    let bounds = vec![
+        Rect::new(100.0, 100.0, 80.0, 40.0), // node1 bounds
+        Rect::new(200.0, 150.0, 80.0, 40.0), // node2 bounds
+    ];
+
+    // Render animated selection - should not panic
+    let result = renderer.render_animated_selection(&bounds, &animated_style);
+    assert!(result.is_ok());
+}
+
+#[wasm_bindgen_test]
+fn test_multi_selection_indicators() {
+    // Test special indicators for multi-selection
+    let canvas = create_test_canvas();
+    let mut renderer = Canvas2DRenderer::new(canvas);
+
+    let bounds = vec![
+        Rect::new(100.0, 100.0, 80.0, 40.0),
+        Rect::new(200.0, 150.0, 80.0, 40.0),
+        Rect::new(300.0, 200.0, 80.0, 40.0),
+    ];
+
+    let multi_style = MultiSelectionStyle::new()
+        .with_connection_lines(true)
+        .with_selection_count_indicator(true);
+
+    // Render multi-selection indicators
+    let result = renderer.render_multi_selection(&bounds, &multi_style);
+    assert!(result.is_ok());
+
+    // Check that multi-selection state is tracked
+    assert_eq!(renderer.get_selection_count(), 3);
+    assert!(renderer.is_multi_selection_active());
+}
+
+#[wasm_bindgen_test]
+fn test_selection_hover_effects() {
+    // Test hover effects on selectable elements
+    let canvas = create_test_canvas();
+    let mut renderer = Canvas2DRenderer::new(canvas);
+
+    let hover_style = SelectionHoverStyle::new()
+        .with_hover_highlight_color("#ffeb3b".to_string())
+        .with_hover_scale_factor(1.05)
+        .with_hover_glow_enabled(true);
+
+    let node_bounds = Rect::new(100.0, 100.0, 80.0, 40.0);
+    let hover_position = Position::new(140.0, 120.0); // Inside node
+
+    // Render hover effects
+    let result = renderer.render_selection_hover(&node_bounds, &hover_position, &hover_style);
+    assert!(result.is_ok());
+
+    // Check hover state
+    assert!(renderer.is_hover_active(&node_bounds));
+}
+
+#[wasm_bindgen_test]
+fn test_animation_performance_optimization() {
+    // Test that animations are optimized for large selections
+    let canvas = create_test_canvas();
+    let mut renderer = Canvas2DRenderer::new(canvas);
+
+    // Create large selection (100 nodes)
+    let mut bounds = Vec::new();
+    for i in 0..100 {
+        bounds.push(Rect::new(
+            (i % 10) as f64 * 100.0,
+            (i / 10) as f64 * 60.0,
+            80.0,
+            40.0
+        ));
+    }
+
+    let animated_style = AnimatedSelectionStyle::new()
+        .with_performance_mode(true) // Enable optimizations
+        .with_batch_rendering(true);
+
+    // Should render efficiently without dropping frames
+    let start_time = js_sys::Date::now();
+    let result = renderer.render_animated_selection(&bounds, &animated_style);
+    let end_time = js_sys::Date::now();
+
+    assert!(result.is_ok());
+    assert!((end_time - start_time) < 16.0); // < 16ms for 60fps
+
+    // Check that batching was used
+    let stats = renderer.get_stats();
+    assert!(stats.draw_calls < bounds.len()); // Fewer draw calls than nodes
 }

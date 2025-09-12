@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{FlowError, Result};
 use crate::types::{Position, Size, Rect, NodeId, EdgeId};
+use crate::handle::{Handle, HandleId, HandleManager};
 
 /// Node in a flow graph
 #[derive(Debug, Clone, PartialEq)]
@@ -33,13 +34,18 @@ pub struct Node<T = ()> {
     // Computed properties (not serialized)
     #[cfg_attr(feature = "serde", serde(skip))]
     pub measured: Option<Size>,
+
+    // Handle management
+    #[cfg_attr(feature = "serde", serde(skip))]
+    handle_manager: HandleManager,
 }
 
 impl<T: Clone> Node<T> {
     /// Create a new node
     pub fn new(id: impl Into<NodeId>, position: Position, data: T) -> Self {
+        let node_id = id.into();
         Self {
-            id: id.into(),
+            id: node_id.clone(),
             position,
             size: Size::default(),
             data,
@@ -54,6 +60,7 @@ impl<T: Clone> Node<T> {
             z_index: None,
             hidden: false,
             measured: None,
+            handle_manager: HandleManager::new(node_id),
         }
     }
 
@@ -103,7 +110,7 @@ impl<T: Clone> Node<T> {
     /// Convert to a different data type
     pub fn map_data<U>(self, f: impl FnOnce(T) -> U) -> Node<U> {
         Node {
-            id: self.id,
+            id: self.id.clone(),
             position: self.position,
             size: self.size,
             data: f(self.data),
@@ -118,7 +125,45 @@ impl<T: Clone> Node<T> {
             z_index: self.z_index,
             hidden: self.hidden,
             measured: self.measured,
+            handle_manager: HandleManager::new(self.id),
         }
+    }
+}
+
+impl<T> Node<T> {
+    /// Add a handle to this node
+    pub fn add_handle(&mut self, handle: Handle) -> Result<()> {
+        self.handle_manager.add_handle(handle)
+    }
+
+    /// Remove a handle from this node
+    pub fn remove_handle(&mut self, handle_id: &HandleId) -> Result<Handle> {
+        self.handle_manager.remove_handle(handle_id)
+    }
+
+    /// Get a handle by ID
+    pub fn get_handle(&self, handle_id: &HandleId) -> Option<&Handle> {
+        self.handle_manager.get_handle(handle_id)
+    }
+
+    /// Get all handles on this node
+    pub fn handles(&self) -> &[Handle] {
+        self.handle_manager.handles()
+    }
+
+    /// Find handle at position relative to this node
+    pub fn handle_at_position(&self, point: Position, handle_size: f64) -> Option<&Handle> {
+        self.handle_manager.handle_at_position(point, self.position, self.size, handle_size)
+    }
+
+    /// Get source handles
+    pub fn source_handles(&self) -> impl Iterator<Item = &Handle> {
+        self.handle_manager.source_handles()
+    }
+
+    /// Get target handles
+    pub fn target_handles(&self) -> impl Iterator<Item = &Handle> {
+        self.handle_manager.target_handles()
     }
 }
 
@@ -326,6 +371,18 @@ impl<T> Edge<T> {
             z_index: self.z_index,
             label: self.label,
         }
+    }
+
+    /// Set source handle
+    pub fn with_source_handle(mut self, handle_id: impl Into<String>) -> Self {
+        self.source_handle = Some(handle_id.into());
+        self
+    }
+
+    /// Set target handle
+    pub fn with_target_handle(mut self, handle_id: impl Into<String>) -> Self {
+        self.target_handle = Some(handle_id.into());
+        self
     }
 }
 
@@ -707,6 +764,222 @@ impl<N, E> Graph<N, E> {
 
         Some(Rect::new(min_x, min_y, max_x - min_x, max_y - min_y))
     }
+
+    /// Add an edge with handle validation
+    pub fn add_handle_edge(&mut self, edge: Edge<E>) -> Result<()> {
+        // Validate that source and target nodes exist
+        let source_node = self.get_node(&edge.source)
+            .ok_or_else(|| FlowError::node_not_found(edge.source.as_str()))?;
+        let target_node = self.get_node(&edge.target)
+            .ok_or_else(|| FlowError::node_not_found(edge.target.as_str()))?;
+
+        // Validate handle references if specified
+        if let Some(source_handle_id) = &edge.source_handle {
+            let source_handle_id = HandleId::new(source_handle_id.clone());
+            let source_handle = source_node.get_handle(&source_handle_id)
+                .ok_or_else(|| FlowError::handle_not_found(source_handle_id.as_str()))?;
+
+            // Check connection limit
+            if !self.can_handle_accept_connection(&edge.source, &source_handle_id) {
+                let current_count = self.get_handle_connection_count(&edge.source, &source_handle_id);
+                let limit = source_handle.connection_limit.unwrap_or(usize::MAX);
+                return Err(FlowError::connection_limit_exceeded(
+                    source_handle_id.as_str(),
+                    current_count,
+                    limit
+                ));
+            }
+
+            if let Some(target_handle_id) = &edge.target_handle {
+                let target_handle_id = HandleId::new(target_handle_id.clone());
+                let target_handle = target_node.get_handle(&target_handle_id)
+                    .ok_or_else(|| FlowError::handle_not_found(target_handle_id.as_str()))?;
+
+                // Check handle compatibility
+                if !source_handle.can_connect_to(target_handle) {
+                    return Err(FlowError::invalid_connection(
+                        "Handle types or connection types are incompatible"
+                    ));
+                }
+            }
+        }
+
+        // If validation passes, add the edge normally
+        self.add_edge(edge)
+    }
+
+
+    /// Get connection count for a specific handle
+    fn get_handle_connection_count(&self, node_id: &NodeId, handle_id: &HandleId) -> usize {
+        let handle_id_str = handle_id.as_str();
+        self.edges.values()
+            .filter(|edge| {
+                (&edge.source == node_id && edge.source_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str)) ||
+                (&edge.target == node_id && edge.target_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str))
+            })
+            .count()
+    }
+
+    /// Get all edges connected to a specific handle
+    ///
+    /// This method provides accurate connection counting by examining all edges
+    /// in the graph that reference the specified handle.
+    pub fn get_handle_connections(&self, node_id: &NodeId, handle_id: &HandleId) -> Vec<&Edge<E>> {
+        let handle_id_str = handle_id.as_str();
+        self.edges.values()
+            .filter(|edge| {
+                (&edge.source == node_id && edge.source_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str)) ||
+                (&edge.target == node_id && edge.target_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str))
+            })
+            .collect()
+    }
+
+    /// Check if a handle can accept new connections (respects connection limits)
+    ///
+    /// This method provides accurate connection limit validation by counting
+    /// current connections and comparing against the handle's limit.
+    pub fn can_handle_accept_connection(&self, node_id: &NodeId, handle_id: &HandleId) -> bool {
+        if let Some(node) = self.get_node(node_id) {
+            if let Some(handle) = node.get_handle(handle_id) {
+                if let Some(limit) = handle.connection_limit {
+                    let current_connections = self.get_handle_connections(node_id, handle_id).len();
+                    return current_connections < limit;
+                }
+            }
+        }
+        true // No limit or handle doesn't exist - allow connection
+    }
+
+    /// Find handle at position in the graph
+    pub fn handle_at_position(&self, point: Position, handle_size: f64) -> Option<(&NodeId, &Handle)> {
+        for node in self.nodes.values() {
+            if let Some(handle) = node.handle_at_position(point, handle_size) {
+                return Some((&node.id, handle));
+            }
+        }
+        None
+    }
+
+    /// Get all handles of a specific type in the graph
+    pub fn get_handles_by_type(&self, handle_type: crate::handle::HandleType) -> Vec<(&NodeId, &Handle)> {
+        let mut handles = Vec::new();
+        for node in self.nodes.values() {
+            for handle in node.handles() {
+                if handle.handle_type == handle_type {
+                    handles.push((&node.id, handle));
+                }
+            }
+        }
+        handles
+    }
+
+    /// Drag & Drop Operations
+
+    /// Apply drag operation to selected nodes
+    pub fn apply_node_drag(&mut self, selected_nodes: &std::collections::HashSet<NodeId>, delta: Position) -> Result<()> {
+        self.apply_node_drag_with_transform(selected_nodes, delta, |pos, _| pos)
+    }
+
+    /// Apply drag operation with bounds constraint
+    pub fn apply_node_drag_with_bounds(
+        &mut self,
+        selected_nodes: &std::collections::HashSet<NodeId>,
+        delta: Position,
+        bounds: Option<crate::types::Rect>
+    ) -> Result<()> {
+        self.apply_node_drag_with_transform(selected_nodes, delta, |new_pos, node| {
+            if let Some(bounds) = bounds {
+                Position::new(
+                    new_pos.x.max(bounds.x).min(bounds.x + bounds.width - node.size.width),
+                    new_pos.y.max(bounds.y).min(bounds.y + bounds.height - node.size.height),
+                )
+            } else {
+                new_pos
+            }
+        })
+    }
+
+    /// Apply drag operation with grid snapping
+    pub fn apply_node_drag_with_snap(
+        &mut self,
+        selected_nodes: &std::collections::HashSet<NodeId>,
+        delta: Position,
+        grid_size: f64
+    ) -> Result<()> {
+        self.apply_node_drag_with_transform(selected_nodes, delta, |new_pos, _| {
+            Position::new(
+                (new_pos.x / grid_size).round() * grid_size,
+                (new_pos.y / grid_size).round() * grid_size,
+            )
+        })
+    }
+
+    /// Apply drag operation with custom constraint function
+    pub fn apply_node_drag_with_constraint<F>(
+        &mut self,
+        selected_nodes: &std::collections::HashSet<NodeId>,
+        delta: Position,
+        constraint: F
+    ) -> Result<()>
+    where
+        F: Fn(Position) -> Position,
+    {
+        self.apply_node_drag_with_transform(selected_nodes, delta, |new_pos, _| constraint(new_pos))
+    }
+
+    /// Internal method for applying drag operations with position transformation
+    fn apply_node_drag_with_transform<F>(
+        &mut self,
+        selected_nodes: &std::collections::HashSet<NodeId>,
+        delta: Position,
+        transform: F
+    ) -> Result<()>
+    where
+        F: Fn(Position, &Node<N>) -> Position,
+    {
+        // Pre-validate all nodes exist to fail fast
+        for node_id in selected_nodes {
+            if !self.nodes.contains_key(node_id) {
+                return Err(FlowError::node_not_found(node_id.as_str()));
+            }
+        }
+
+        // Apply transformations
+        for node_id in selected_nodes {
+            if let Some(node) = self.get_node_mut(node_id) {
+                let new_pos = Position::new(node.position.x + delta.x, node.position.y + delta.y);
+                node.position = transform(new_pos, node);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Create a drag operation for undo/redo support
+    pub fn create_drag_operation(
+        &self,
+        selected_nodes: &std::collections::HashSet<NodeId>,
+        delta: Position
+    ) -> Result<crate::drag_operations::DragOperation> {
+        // Validate all nodes exist before creating operation
+        for node_id in selected_nodes {
+            if !self.nodes.contains_key(node_id) {
+                return Err(FlowError::node_not_found(node_id.as_str()));
+            }
+        }
+
+        Ok(crate::drag_operations::DragOperation::new(
+            selected_nodes.clone(),
+            delta
+        ))
+    }
+
+    /// Interactive Edge Creation
+
+    /// Create a new edge creator for this graph
+    pub fn create_edge_creator(&self) -> crate::edge_creator::EdgeCreator {
+        crate::edge_creator::EdgeCreator::new()
+    }
 }
 
 impl<N, E> Default for Graph<N, E> {
@@ -828,5 +1101,245 @@ mod tests {
 
         let bounds = graph.bounds().unwrap();
         assert_eq!(bounds, Rect::new(0.0, 0.0, 300.0, 350.0));
+    }
+}
+
+impl<N, E> Graph<N, E>
+where
+    N: Clone,
+    E: Clone,
+{
+    /// Check if the graph contains any cycles using DFS-based cycle detection
+    ///
+    /// Uses Depth-First Search with recursion stack tracking to detect back edges.
+    /// Time complexity: O(V + E), Space complexity: O(V)
+    pub fn has_cycle(&self) -> bool {
+        use std::collections::HashSet;
+
+        let mut visited = HashSet::new();
+        let mut rec_stack = HashSet::new();
+
+        // Check each node as a potential starting point
+        for node_id in self.node_ids() {
+            if !visited.contains(node_id) {
+                if self.has_cycle_dfs(node_id, &mut visited, &mut rec_stack) {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    /// DFS helper for cycle detection
+    fn has_cycle_dfs(
+        &self,
+        node_id: &NodeId,
+        visited: &mut std::collections::HashSet<NodeId>,
+        rec_stack: &mut std::collections::HashSet<NodeId>,
+    ) -> bool {
+        visited.insert(node_id.clone());
+        rec_stack.insert(node_id.clone());
+
+        // Check all neighbors (nodes this node points to)
+        for edge in self.edges() {
+            if edge.source == *node_id {
+                let neighbor = &edge.target;
+
+                // If neighbor not visited, recurse
+                if !visited.contains(neighbor) {
+                    if self.has_cycle_dfs(neighbor, visited, rec_stack) {
+                        return true;
+                    }
+                }
+                // If neighbor is in recursion stack, we found a back edge (cycle)
+                else if rec_stack.contains(neighbor) {
+                    return true;
+                }
+            }
+        }
+
+        rec_stack.remove(node_id);
+        false
+    }
+
+    /// Check if adding an edge from source to target would create a cycle
+    ///
+    /// This is useful for preventing cycles during interactive edge creation.
+    /// Time complexity: O(V + E), Space complexity: O(V)
+    pub fn creates_cycle(&self, source: &NodeId, target: &NodeId) -> bool {
+        // If nodes don't exist, no cycle can be created
+        if !self.nodes.contains_key(source) || !self.nodes.contains_key(target) {
+            return false;
+        }
+
+        // Check if target can reach source (would create cycle if we add source -> target)
+        self.can_reach(target, source)
+    }
+
+    /// Check if 'from' node can reach 'to' node through existing edges
+    fn can_reach(&self, from: &NodeId, to: &NodeId) -> bool {
+        use std::collections::{HashSet, VecDeque};
+
+        if from == to {
+            return true;
+        }
+
+        let mut visited = HashSet::new();
+        let mut queue = VecDeque::new();
+
+        queue.push_back(from.clone());
+        visited.insert(from.clone());
+
+        while let Some(current) = queue.pop_front() {
+            // Check all outgoing edges from current node
+            for edge in self.edges() {
+                if edge.source == current {
+                    let neighbor = &edge.target;
+
+                    if neighbor == to {
+                        return true;
+                    }
+
+                    if !visited.contains(neighbor) {
+                        visited.insert(neighbor.clone());
+                        queue.push_back(neighbor.clone());
+                    }
+                }
+            }
+        }
+
+        false
+    }
+
+    /// Find a cycle in the graph, returning the cycle path if found
+    ///
+    /// Returns the first cycle found, or None if the graph is acyclic.
+    /// The returned path represents the nodes in the cycle.
+    /// Time complexity: O(V + E), Space complexity: O(V)
+    pub fn find_cycle(&self) -> Option<Vec<NodeId>> {
+        use std::collections::{HashMap, HashSet};
+
+        let mut visited = HashSet::new();
+        let mut rec_stack = HashSet::new();
+        let mut parent = HashMap::new();
+
+        // Check each node as potential starting point
+        for node_id in self.node_ids() {
+            if !visited.contains(node_id) {
+                if let Some(cycle) = self.find_cycle_dfs(
+                    node_id,
+                    &mut visited,
+                    &mut rec_stack,
+                    &mut parent,
+                ) {
+                    return Some(cycle);
+                }
+            }
+        }
+
+        None
+    }
+
+    /// DFS helper for finding cycle path
+    fn find_cycle_dfs(
+        &self,
+        node_id: &NodeId,
+        visited: &mut std::collections::HashSet<NodeId>,
+        rec_stack: &mut std::collections::HashSet<NodeId>,
+        parent: &mut std::collections::HashMap<NodeId, NodeId>,
+    ) -> Option<Vec<NodeId>> {
+        visited.insert(node_id.clone());
+        rec_stack.insert(node_id.clone());
+
+        // Check all neighbors
+        for edge in self.edges() {
+            if edge.source == *node_id {
+                let neighbor = &edge.target;
+
+                // If neighbor not visited, recurse
+                if !visited.contains(neighbor) {
+                    parent.insert(neighbor.clone(), node_id.clone());
+                    if let Some(cycle) = self.find_cycle_dfs(neighbor, visited, rec_stack, parent) {
+                        return Some(cycle);
+                    }
+                }
+                // If neighbor is in recursion stack, we found a cycle
+                else if rec_stack.contains(neighbor) {
+                    // Reconstruct cycle path
+                    let mut cycle = vec![neighbor.clone()];
+                    let mut current = node_id.clone();
+
+                    // Walk back through parents until we reach the cycle start
+                    while current != *neighbor {
+                        cycle.push(current.clone());
+                        current = parent.get(&current).unwrap_or(&current).clone();
+                    }
+
+                    cycle.reverse();
+                    return Some(cycle);
+                }
+            }
+        }
+
+        rec_stack.remove(node_id);
+        None
+    }
+
+    /// Perform topological sort on the graph using Kahn's algorithm
+    ///
+    /// Returns a valid topological ordering of nodes, or Err if the graph contains cycles.
+    /// A topological sort is a linear ordering where for every directed edge (u, v),
+    /// vertex u comes before v in the ordering.
+    /// Time complexity: O(V + E), Space complexity: O(V)
+    pub fn topological_sort(&self) -> Result<Vec<NodeId>> {
+        use std::collections::{HashMap, VecDeque};
+
+        // Calculate in-degrees
+        let mut in_degree: HashMap<NodeId, usize> = HashMap::new();
+
+        // Initialize all nodes with in-degree 0
+        for node_id in self.node_ids() {
+            in_degree.insert(node_id.clone(), 0);
+        }
+
+        // Count incoming edges for each node
+        for edge in self.edges() {
+            *in_degree.entry(edge.target.clone()).or_insert(0) += 1;
+        }
+
+        // Find nodes with in-degree 0
+        let mut queue = VecDeque::new();
+        for (node_id, &degree) in &in_degree {
+            if degree == 0 {
+                queue.push_back(node_id.clone());
+            }
+        }
+
+        let mut result = Vec::new();
+
+        while let Some(node_id) = queue.pop_front() {
+            result.push(node_id.clone());
+
+            // Reduce in-degree of neighbors
+            for edge in self.edges() {
+                if edge.source == node_id {
+                    let neighbor = &edge.target;
+                    if let Some(degree) = in_degree.get_mut(neighbor) {
+                        *degree -= 1;
+                        if *degree == 0 {
+                            queue.push_back(neighbor.clone());
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we didn't process all nodes, there must be a cycle
+        if result.len() != self.node_count() {
+            return Err(FlowError::invalid_operation("Graph contains cycles - topological sort not possible"));
+        }
+
+        Ok(result)
     }
 }
