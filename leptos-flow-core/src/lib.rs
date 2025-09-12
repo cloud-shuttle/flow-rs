@@ -22,6 +22,9 @@ mod proptest;
 mod performance_tests;
 
 #[cfg(test)]
+mod api_contracts;
+
+#[cfg(test)]
 mod graph_handle_integration;
 
 #[cfg(test)]

@@ -139,7 +139,7 @@ impl Default for AutoLayoutConfigBuilder {
 /// ```rust
 /// use leptos_flow_core::{Graph, Node, AutoLayoutManager, AutoLayoutStrategy, AutoLayoutConfig};
 ///
-/// let mut graph = Graph::new();
+/// let mut graph: Graph<(), ()> = Graph::new();
 /// // Add nodes and edges...
 ///
 /// let mut manager = AutoLayoutManager::new();
