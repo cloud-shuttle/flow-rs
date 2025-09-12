@@ -28,6 +28,9 @@ mod api_contracts;
 mod documentation_tests;
 
 #[cfg(test)]
+mod api_reference_tests;
+
+#[cfg(test)]
 mod graph_handle_integration;
 
 #[cfg(test)]

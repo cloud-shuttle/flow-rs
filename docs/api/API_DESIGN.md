@@ -1,531 +1,361 @@
-# Leptos Flow API Design Specification
+# Leptos Flow Core - API Design Principles
 
 ## Overview
 
-This document defines the API surface for Leptos Flow, focusing on developer experience, type safety, and seamless integration with Leptos' reactive patterns.
+This document outlines the design principles, patterns, and guidelines that shape the `leptos-flow-core` API. These principles ensure consistency, usability, and maintainability across the entire API surface.
 
-## Design Philosophy
+## Design Principles
 
-### 1. Leptos-First Integration
+### 1. Type Safety
 
-- Native signal-based reactivity
-- Component-centric API design
-- Idiomatic Leptos patterns and conventions
-- Zero-cost abstractions with compile-time optimization
+**Principle**: Leverage Rust's type system to prevent runtime errors and provide clear contracts.
 
-### 2. Builder Pattern for Configuration
-
-- Fluent, discoverable API
-- Compile-time validation
-- Sensible defaults with customization options
-- Progressive disclosure of complexity
-
-### 3. Type-Safe Extensibility
-
-- Generic node/edge data types
-- Trait-based customization points
-- Compile-time validation of graph constraints
-- Zero-overhead abstractions
-
-## Core API Surface
-
-### 1. Declarative Component API
-
-#### Basic Flow Editor
+**Implementation**:
+- Strong typing for all IDs (`NodeId`, `EdgeId`, `GroupId`, `HandleId`)
+- Generic types for node and edge data (`Graph<N, E>`)
+- Result types for operations that can fail
+- Newtype patterns for domain-specific values
 
 ```rust
-use leptos::*;
-use leptos_flow::*;
+// Strong typing prevents mixing different ID types
+let node_id = NodeId::new("node1");
+let edge_id = EdgeId::new("edge1");
+// node_id == edge_id; // Compile-time error
 
-#[component]
-pub fn App() -> impl IntoView {
-    let (nodes, set_nodes) = create_signal(vec![
-        Node::new("1")
-            .position(100.0, 100.0)
-            .data(MyNodeData::default()),
-        Node::new("2")
-            .position(300.0, 200.0)
-            .data(MyNodeData::default()),
-    ]);
+// Generic types allow custom data
+let graph: Graph<MyNodeData, MyEdgeData> = Graph::new();
+```
 
-    let (edges, set_edges) = create_signal(vec![
-        Edge::new("e1")
-            .connect("1", "2")
-            .data(MyEdgeData::default()),
-    ]);
+### 2. Consistency
 
-    view! {
-        <FlowEditor
-            nodes=nodes
-            edges=edges
-            on_nodes_change=set_nodes
-            on_edges_change=set_edges
-            on_connect=|source, target| {
-                // Handle new connection
-            }
-            width="100%"
-            height="600px"
-        >
-            // Custom node types as child components
-            <NodeType name="custom" component=CustomNode />
-            <EdgeType name="custom" component=CustomEdge />
-        </FlowEditor>
-    }
+**Principle**: Similar operations should have similar interfaces and behavior.
+
+**Implementation**:
+- Consistent naming conventions across all types
+- Uniform error handling with `Result<T, FlowError>`
+- Standardized builder patterns for complex objects
+- Consistent method signatures for similar operations
+
+```rust
+// Consistent builder patterns
+let node = Node::builder("id").position(0.0, 0.0).build();
+let edge = Edge::builder().id("id").connect("src", "tgt").build();
+
+// Consistent error handling
+let result1 = graph.add_node(node);
+let result2 = graph.add_edge(edge);
+// Both return Result<(), FlowError>
+```
+
+### 3. Performance
+
+**Principle**: Optimize for common use cases while maintaining API clarity.
+
+**Implementation**:
+- Zero-copy operations where possible
+- Efficient data structures (HashMap for O(1) lookups)
+- Spatial indexing for fast queries
+- Minimal allocations in hot paths
+
+```rust
+// Zero-copy position updates
+node.set_position(new_position); // Moves, doesn't copy
+
+// Efficient lookups
+let node = graph.nodes().get(&node_id); // O(1) HashMap lookup
+```
+
+### 4. Usability
+
+**Principle**: Make common operations simple and intuitive.
+
+**Implementation**:
+- Builder patterns for complex object creation
+- Sensible defaults for optional parameters
+- Clear method names that describe intent
+- Comprehensive documentation with examples
+
+```rust
+// Simple creation with defaults
+let node = Node::new("id", Position::new(0.0, 0.0), ());
+
+// Complex creation with builder
+let complex_node = Node::builder("id")
+    .position(100.0, 200.0)
+    .size(150.0, 75.0)
+    .node_type("custom")
+    .build();
+```
+
+### 5. Extensibility
+
+**Principle**: Design for future growth and customization.
+
+**Implementation**:
+- Trait-based architecture for algorithms
+- Generic types for custom data
+- Pluggable components (renderers, layouts)
+- Versioned API evolution
+
+```rust
+// Extensible layout system
+trait LayoutAlgorithm<N, E> {
+    fn apply(&mut self, graph: &mut Graph<N, E>) -> Result<(), FlowError>;
+}
+
+// Custom data types
+struct MyNodeData { /* custom fields */ }
+struct MyEdgeData { /* custom fields */ }
+let graph: Graph<MyNodeData, MyEdgeData> = Graph::new();
+```
+
+## API Patterns
+
+### Builder Pattern
+
+Used for complex object creation with optional parameters.
+
+```rust
+// Node builder
+let node = Node::<()>::builder("id")
+    .position(100.0, 200.0)
+    .size(150.0, 75.0)
+    .node_type("custom")
+    .selectable(true)
+    .build();
+
+// Edge builder
+let edge = Edge::<()>::builder()
+    .id("edge1")
+    .connect("node1", "node2")
+    .build()
+    .unwrap();
+```
+
+**Benefits**:
+- Clear, readable object creation
+- Optional parameters with sensible defaults
+- Compile-time validation of required fields
+- Fluent interface for method chaining
+
+### Manager Pattern
+
+Used for managing collections of related objects.
+
+```rust
+// Selection management
+let mut selection = SelectionManager::new();
+selection.select_node(&node_id);
+selection.clear_selection();
+
+// Group management
+let mut groups = GroupManager::new();
+groups.create_group(group_id, node_ids)?;
+```
+
+**Benefits**:
+- Encapsulated state management
+- Consistent operations across related objects
+- Clear separation of concerns
+- Easy testing and mocking
+
+### Trait-Based Architecture
+
+Used for pluggable algorithms and behaviors.
+
+```rust
+// Layout algorithms
+trait LayoutAlgorithm<N, E> {
+    fn name(&self) -> &'static str;
+    fn apply(&mut self, graph: &mut Graph<N, E>) -> Result<(), FlowError>;
+    fn can_interrupt(&self) -> bool;
+}
+
+// Implementations
+struct ForceDirectedLayout { /* ... */ }
+struct GridLayout { /* ... */ }
+struct CircularLayout { /* ... */ }
+```
+
+**Benefits**:
+- Pluggable implementations
+- Easy testing with mock implementations
+- Clear contracts for algorithm behavior
+- Extensible without breaking existing code
+
+### Error Handling
+
+Consistent error handling with Result types and custom error enums.
+
+```rust
+// Custom error types
+#[derive(Debug, thiserror::Error)]
+pub enum FlowError {
+    #[error("Node not found: {0}")]
+    NodeNotFound(NodeId),
+
+    #[error("Edge not found: {0}")]
+    EdgeNotFound(EdgeId),
+
+    #[error("Invalid connection: {source} -> {target}")]
+    InvalidConnection { source: NodeId, target: NodeId },
+}
+
+// Consistent Result usage
+fn add_node(&mut self, node: Node<N>) -> Result<(), FlowError> {
+    // Implementation
 }
 ```
 
-#### Advanced Configuration
+**Benefits**:
+- Explicit error handling
+- Rich error information
+- Compile-time error checking
+- Easy error propagation
+
+## Naming Conventions
+
+### Types
+
+- **Structs**: PascalCase (`Graph`, `Node`, `Edge`)
+- **Enums**: PascalCase (`SelectionMode`, `HandleType`)
+- **Traits**: PascalCase with descriptive names (`LayoutAlgorithm`)
+- **Type aliases**: PascalCase (`NodeId`, `EdgeId`)
+
+### Methods
+
+- **Constructors**: `new()` for simple creation, `builder()` for complex creation
+- **Getters**: Property names (`position()`, `size()`, `id()`)
+- **Setters**: `set_*` prefix (`set_position()`, `set_size()`)
+- **Actions**: Verb names (`add_node()`, `remove_edge()`, `select_node()`)
+- **Queries**: Question words (`is_selected()`, `contains()`)
+
+### Parameters
+
+- **IDs**: `id` for generic IDs, `node_id`/`edge_id` for specific types
+- **Coordinates**: `x`, `y` for positions, `width`, `height` for dimensions
+- **Data**: `data` for generic data, `node_data`/`edge_data` for specific types
+
+## Versioning Strategy
+
+### Semantic Versioning
+
+We follow [Semantic Versioning](https://semver.org/) principles:
+
+- **Major (X.0.0)**: Breaking API changes
+- **Minor (X.Y.0)**: New features, backward compatible
+- **Patch (X.Y.Z)**: Bug fixes, backward compatible
+
+### Backward Compatibility
+
+**Guaranteed**:
+- Adding new methods to existing types
+- Adding new variants to enums (with default handling)
+- Adding new optional parameters to methods
+- Adding new types and traits
+
+**Not Guaranteed**:
+- Removing or renaming public APIs
+- Changing method signatures
+- Changing behavior of existing methods
+- Removing enum variants
+
+### Migration Strategy
+
+For breaking changes:
+
+1. **Deprecation**: Mark old APIs as deprecated with clear migration path
+2. **Transition Period**: Maintain deprecated APIs for at least one minor version
+3. **Migration Guide**: Provide detailed migration instructions
+4. **Tooling**: Provide automated migration tools where possible
+
+## Performance Guidelines
+
+### Memory Management
+
+- **Zero-copy**: Use move semantics instead of copying where possible
+- **Efficient Storage**: Use appropriate data structures (HashMap for O(1) lookups)
+- **Minimal Allocations**: Avoid unnecessary allocations in hot paths
+- **Spatial Optimization**: Use spatial indexing for large datasets
+
+### Algorithm Complexity
+
+- **Graph Operations**: O(1) for most operations with HashMap storage
+- **Spatial Queries**: O(log n) with spatial indexing
+- **Layout Algorithms**: Document complexity (O(n²) for force-directed, O(n) for grid)
+- **Selection Operations**: O(1) for single operations, O(n) for bulk operations
+
+### Best Practices
+
+1. **Batch Operations**: Group related operations for better performance
+2. **Lazy Evaluation**: Defer expensive operations until needed
+3. **Caching**: Cache expensive computations when appropriate
+4. **Profiling**: Use benchmarks to validate performance improvements
+
+## Testing Strategy
+
+### Unit Tests
+
+- **API Contracts**: Test all public APIs with comprehensive test coverage
+- **Edge Cases**: Test boundary conditions and error cases
+- **Property-Based Testing**: Use proptest for randomized testing
+- **Performance Tests**: Benchmark critical operations
+
+### Integration Tests
+
+- **End-to-End**: Test complete workflows
+- **Cross-Browser**: Validate behavior across different browsers
+- **Large Datasets**: Test with realistic data sizes
+- **Stress Testing**: Test under high load conditions
+
+### Documentation Tests
+
+- **Examples**: Ensure all code examples compile and run
+- **Accuracy**: Validate documentation matches implementation
+- **Completeness**: Ensure all public APIs are documented
+- **Consistency**: Maintain consistent style and format
+
+## Evolution Strategy
+
+### API Stability
+
+**Stable APIs** (guaranteed backward compatibility):
+- Core types (`Graph`, `Node`, `Edge`)
+- Basic operations (CRUD operations)
+- Error types and handling
+- Builder patterns
+
+**Experimental APIs** (may change):
+- Advanced algorithms
+- Performance optimizations
+- Integration features
+- Platform-specific functionality
+
+### Feature Flags
+
+Use feature flags for experimental or platform-specific functionality:
 
 ```rust
-view! {
-    <FlowEditor
-        nodes=nodes
-        edges=edges
-        on_nodes_change=set_nodes
-        on_edges_change=set_edges
+#[cfg(feature = "webgl-renderer")]
+pub mod webgl_renderer;
 
-        // Interaction Configuration
-        node_drag_threshold=5.0
-        selection_key=Some(SelectionKey::Shift)
-        multi_selection=true
-        delete_key=Some("Delete")
-
-        // Viewport Configuration
-        min_zoom=0.1
-        max_zoom=4.0
-        fit_view_on_init=true
-        snap_to_grid=Some(SnapToGrid::new(10))
-
-        // Visual Configuration
-        background=Background::Dots { spacing: 20, color: "#ddd" }
-        connection_mode=ConnectionMode::Loose
-        connection_line_type=ConnectionLineType::SmoothStep
-
-        // Performance Configuration
-        only_render_visible_elements=true
-        node_extent=Some(Extent::new(0, 0, 1000, 1000))
-        translate_extent=Some(Extent::infinite())
-
-        // Event Handlers
-        on_init=|flow_instance| { /* Setup */ }
-        on_nodes_change=set_nodes
-        on_edges_change=set_edges
-        on_connect=handle_connect
-        on_connect_start=|_, _| { /* Connection start */ }
-        on_connect_end=|_| { /* Connection end */ }
-        on_node_click=|node| { /* Node clicked */ }
-        on_node_double_click=|node| { /* Node double clicked */ }
-        on_edge_click=|edge| { /* Edge clicked */ }
-        on_selection_change=|selection| { /* Selection changed */ }
-        on_move_end=|event| { /* Node/selection move ended */ }
-        on_pane_click=|event| { /* Pane clicked */ }
-        on_pane_scroll=|event| { /* Pane scrolled */ }
-        on_pane_context_menu=|event| { /* Pane right clicked */ }
-    >
-        <NodeType name="input" component=InputNode />
-        <NodeType name="output" component=OutputNode />
-        <EdgeType name="default" component=DefaultEdge />
-        <EdgeType name="animated" component=AnimatedEdge />
-
-        // Optional child components
-        <Controls position=ControlPosition::TopLeft />
-        <MiniMap
-            position=MiniMapPosition::BottomRight
-            mask_color="#f0f0f0"
-            node_color="#333"
-        />
-        <Background variant=BackgroundVariant::Dots />
-    </FlowEditor>
-}
+#[cfg(feature = "performance-monitoring")]
+pub mod performance_monitor;
 ```
 
-### 2. Imperative Flow Instance API
+### Feedback Integration
 
-#### Flow Instance Methods
+- **RFC Process**: Use Request for Comments for major changes
+- **Community Input**: Gather feedback from users and contributors
+- **Usage Analytics**: Monitor API usage patterns (with privacy considerations)
+- **Breaking Change Policy**: Clear process for handling breaking changes
 
-```rust
-use leptos_flow::*;
+## Conclusion
 
-#[derive(Clone)]
-pub struct FlowInstance {
-    // Core graph operations
-    pub fn add_node(&self, node: Node) -> Result<(), FlowError>;
-    pub fn remove_node(&self, node_id: &str) -> Result<Node, FlowError>;
-    pub fn update_node(&self, node_id: &str, updates: NodeUpdate) -> Result<(), FlowError>;
-    pub fn get_node(&self, node_id: &str) -> Option<Node>;
-    pub fn get_nodes(&self) -> Vec<Node>;
+These design principles and patterns ensure that `leptos-flow-core` provides a consistent, performant, and maintainable API that serves both current needs and future growth. The focus on type safety, consistency, and usability makes the API approachable for new users while providing the power and flexibility needed for complex applications.
 
-    pub fn add_edge(&self, edge: Edge) -> Result<(), FlowError>;
-    pub fn remove_edge(&self, edge_id: &str) -> Result<Edge, FlowError>;
-    pub fn update_edge(&self, edge_id: &str, updates: EdgeUpdate) -> Result<(), FlowError>;
-    pub fn get_edge(&self, edge_id: &str) -> Option<Edge>;
-    pub fn get_edges(&self) -> Vec<Edge>;
+The trait-based architecture and generic design allow for extensive customization while maintaining a stable core API. The comprehensive testing strategy and clear versioning policy provide confidence in the API's reliability and evolution.
 
-    // Viewport operations
-    pub fn fit_view(&self, options: FitViewOptions) -> Result<(), FlowError>;
-    pub fn zoom_to(&self, zoom: f64) -> Result<(), FlowError>;
-    pub fn zoom_in(&self, options: ZoomOptions) -> Result<(), FlowError>;
-    pub fn zoom_out(&self, options: ZoomOptions) -> Result<(), FlowError>;
-    pub fn set_center(&self, x: f64, y: f64) -> Result<(), FlowError>;
-    pub fn get_zoom(&self) -> f64;
-    pub fn get_viewport(&self) -> Viewport;
-
-    // Selection operations
-    pub fn select_node(&self, node_id: &str) -> Result<(), FlowError>;
-    pub fn select_nodes(&self, node_ids: Vec<String>) -> Result<(), FlowError>;
-    pub fn select_edge(&self, edge_id: &str) -> Result<(), FlowError>;
-    pub fn select_edges(&self, edge_ids: Vec<String>) -> Result<(), FlowError>;
-    pub fn clear_selection(&self) -> Result<(), FlowError>;
-    pub fn get_selected_nodes(&self) -> Vec<Node>;
-    pub fn get_selected_edges(&self) -> Vec<Edge>;
-
-    // Spatial queries
-    pub fn get_nodes_in_rect(&self, rect: Rect) -> Vec<Node>;
-    pub fn get_intersecting_nodes(&self, point: Point, radius: Option<f64>) -> Vec<Node>;
-    pub fn screen_to_flow_position(&self, screen_pos: Point) -> Point;
-    pub fn flow_to_screen_position(&self, flow_pos: Point) -> Point;
-
-    // Layout operations
-    pub fn apply_layout(&self, algorithm: LayoutAlgorithm) -> Result<(), FlowError>;
-    pub fn stop_layout(&self) -> Result<(), FlowError>;
-
-    // Export operations
-    pub fn to_object(&self) -> FlowObject;
-    pub fn to_json(&self) -> Result<String, FlowError>;
-    pub fn export_as_svg(&self) -> Result<String, FlowError>;
-    pub fn export_as_png(&self) -> Result<Vec<u8>, FlowError>;
-}
-```
-
-### 3. Hook-Based API for Custom Behaviors
-
-#### Core Hooks
-
-```rust
-// Node management hooks
-pub fn use_nodes<T>() -> (ReadSignal<Vec<Node<T>>>, WriteSignal<Vec<Node<T>>>) {
-    // Returns reactive nodes signal from current flow context
-}
-
-pub fn use_edges<T>() -> (ReadSignal<Vec<Edge<T>>>, WriteSignal<Vec<Edge<T>>>) {
-    // Returns reactive edges signal from current flow context
-}
-
-pub fn use_flow_instance() -> FlowInstance {
-    // Returns imperative API for current flow
-}
-
-// Viewport hooks
-pub fn use_viewport() -> (ReadSignal<Viewport>, Callback<Viewport>) {
-    // Returns current viewport and setter
-}
-
-pub fn use_zoom() -> (ReadSignal<f64>, Callback<f64>) {
-    // Returns current zoom level and setter
-}
-
-// Selection hooks
-pub fn use_selection() -> (ReadSignal<Selection>, Callback<Selection>) {
-    // Returns current selection state
-}
-
-pub fn use_selected_nodes<T>() -> ReadSignal<Vec<Node<T>>> {
-    // Returns currently selected nodes
-}
-
-pub fn use_selected_edges<T>() -> ReadSignal<Vec<Edge<T>>> {
-    // Returns currently selected edges
-}
-
-// Interaction hooks
-pub fn use_drag() -> DragHandlers {
-    // Returns drag event handlers for custom drag behavior
-}
-
-pub fn use_connection() -> ConnectionHandlers {
-    // Returns connection event handlers for custom connection logic
-}
-
-// Layout hooks
-pub fn use_layout() -> LayoutHandlers {
-    // Returns layout controls and status
-}
-```
-
-#### Custom Hook Examples
-
-```rust
-// Custom node selection hook
-pub fn use_multi_select() -> (ReadSignal<Vec<String>>, Callback<String>) {
-    let (selected, set_selected) = create_signal(Vec::new());
-
-    let toggle_selection = Callback::new(move |node_id: String| {
-        set_selected.update(|selection| {
-            if selection.contains(&node_id) {
-                selection.retain(|id| id != &node_id);
-            } else {
-                selection.push(node_id);
-            }
-        });
-    });
-
-    (selected, toggle_selection)
-}
-
-// Custom undo/redo hook
-pub fn use_history<T>() -> HistoryHandlers<T> {
-    let (history, set_history) = create_signal(History::new());
-
-    HistoryHandlers {
-        undo: Callback::new(move || { /* Undo logic */ }),
-        redo: Callback::new(move || { /* Redo logic */ }),
-        can_undo: create_memo(move |_| history.get().can_undo()),
-        can_redo: create_memo(move |_| history.get().can_redo()),
-        push_state: Callback::new(move |state: T| { /* Push state */ }),
-    }
-}
-```
-
-## Type System Design
-
-### 1. Generic Node/Edge Types
-
-```rust
-// Node with custom data type
-#[derive(Clone, Debug, PartialEq)]
-pub struct Node<T = ()> {
-    pub id: String,
-    pub position: Position,
-    pub data: T,
-    pub node_type: Option<String>,
-    pub style: Option<NodeStyle>,
-    pub class_name: Option<String>,
-    pub selected: bool,
-    pub dragging: bool,
-    pub selectable: bool,
-    pub connectable: bool,
-    pub deletable: bool,
-    pub dragHandle: Option<String>,
-    pub extent: Option<Extent>,
-    pub parent_node: Option<String>,
-    pub z_index: Option<i32>,
-    pub hidden: bool,
-    pub measured: Option<Dimensions>,
-}
-
-// Edge with custom data type
-#[derive(Clone, Debug, PartialEq)]
-pub struct Edge<T = ()> {
-    pub id: String,
-    pub source: String,
-    pub target: String,
-    pub source_handle: Option<String>,
-    pub target_handle: Option<String>,
-    pub data: T,
-    pub edge_type: Option<String>,
-    pub style: Option<EdgeStyle>,
-    pub class_name: Option<String>,
-    pub animated: bool,
-    pub hidden: bool,
-    pub selected: bool,
-    pub selectable: bool,
-    pub deletable: bool,
-    pub marker_start: Option<Marker>,
-    pub marker_end: Option<Marker>,
-    pub z_index: Option<i32>,
-    pub label: Option<String>,
-    pub label_style: Option<LabelStyle>,
-    pub label_show_bg: bool,
-    pub label_bg_style: Option<LabelBgStyle>,
-    pub label_bg_padding: Option<[f64; 2]>,
-    pub label_bg_border_radius: Option<f64>,
-}
-```
-
-### 2. Trait-Based Extensibility
-
-```rust
-// Custom node behavior
-pub trait NodeBehavior {
-    fn on_drag_start(&mut self, event: DragEvent) -> EventResult;
-    fn on_drag(&mut self, event: DragEvent) -> EventResult;
-    fn on_drag_end(&mut self, event: DragEvent) -> EventResult;
-    fn on_click(&mut self, event: ClickEvent) -> EventResult;
-    fn on_double_click(&mut self, event: DoubleClickEvent) -> EventResult;
-    fn on_context_menu(&mut self, event: ContextMenuEvent) -> EventResult;
-    fn on_connect(&mut self, connection: Connection) -> EventResult;
-    fn validate_connection(&self, connection: &Connection) -> bool;
-}
-
-// Custom edge behavior
-pub trait EdgeBehavior {
-    fn on_click(&mut self, event: ClickEvent) -> EventResult;
-    fn on_double_click(&mut self, event: DoubleClickEvent) -> EventResult;
-    fn on_context_menu(&mut self, event: ContextMenuEvent) -> EventResult;
-    fn get_path(&self, source_pos: Position, target_pos: Position) -> String;
-    fn get_center(&self, source_pos: Position, target_pos: Position) -> Position;
-}
-
-// Custom layout algorithms
-pub trait LayoutAlgorithm {
-    fn name(&self) -> &str;
-    fn layout(&mut self, nodes: &mut [Node], edges: &[Edge]) -> Result<(), LayoutError>;
-    fn is_animated(&self) -> bool { false }
-    fn options(&self) -> LayoutOptions;
-}
-```
-
-### 3. Compile-Time Validation
-
-```rust
-// Type-safe node/edge creation
-pub struct NodeBuilder<T> {
-    node: Node<T>,
-}
-
-impl<T> NodeBuilder<T> {
-    pub fn new(id: impl Into<String>) -> Self {
-        Self {
-            node: Node {
-                id: id.into(),
-                data: T::default(),
-                ..Default::default()
-            }
-        }
-    }
-
-    pub fn position(mut self, x: f64, y: f64) -> Self {
-        self.node.position = Position::new(x, y);
-        self
-    }
-
-    pub fn data(mut self, data: T) -> Self {
-        self.node.data = data;
-        self
-    }
-
-    pub fn build(self) -> Node<T> {
-        self.node
-    }
-}
-
-// Type-safe edge creation with connection validation
-pub struct EdgeBuilder<T> {
-    edge: Edge<T>,
-}
-
-impl<T> EdgeBuilder<T> {
-    pub fn connect<S: Into<String>, T: Into<String>>(
-        source: S,
-        target: T
-    ) -> ConnectionBuilder<T> {
-        ConnectionBuilder::new(source.into(), target.into())
-    }
-}
-
-// Ensures valid connections at compile time
-pub struct ConnectionBuilder<T> {
-    source: String,
-    target: String,
-    _phantom: PhantomData<T>,
-}
-
-impl<T> ConnectionBuilder<T> {
-    pub fn with_handles(
-        self,
-        source_handle: impl Into<String>,
-        target_handle: impl Into<String>
-    ) -> EdgeBuilder<T> {
-        EdgeBuilder {
-            edge: Edge {
-                id: format!("{}_{}", self.source, self.target),
-                source: self.source,
-                target: self.target,
-                source_handle: Some(source_handle.into()),
-                target_handle: Some(target_handle.into()),
-                ..Default::default()
-            }
-        }
-    }
-}
-```
-
-## Event System Design
-
-### 1. Event Types
-
-```rust
-#[derive(Clone, Debug)]
-pub enum FlowEvent {
-    // Node events
-    NodeClick { node_id: String, event: MouseEvent },
-    NodeDoubleClick { node_id: String, event: MouseEvent },
-    NodeContextMenu { node_id: String, event: MouseEvent },
-    NodeDragStart { node_id: String, event: DragEvent },
-    NodeDrag { node_id: String, event: DragEvent },
-    NodeDragEnd { node_id: String, event: DragEvent },
-
-    // Edge events
-    EdgeClick { edge_id: String, event: MouseEvent },
-    EdgeDoubleClick { edge_id: String, event: MouseEvent },
-    EdgeContextMenu { edge_id: String, event: MouseEvent },
-
-    // Connection events
-    ConnectStart { node_id: String, handle_id: Option<String> },
-    ConnectEnd { connection: Option<Connection> },
-    Connect { connection: Connection },
-
-    // Selection events
-    SelectionChange { selection: Selection },
-
-    // Viewport events
-    ViewportChange { viewport: Viewport },
-    ZoomChange { zoom: f64 },
-
-    // Pane events
-    PaneClick { event: MouseEvent },
-    PaneContextMenu { event: MouseEvent },
-    PaneScroll { event: WheelEvent },
-}
-```
-
-### 2. Event Handling
-
-```rust
-// Reactive event handling with Leptos signals
-pub fn use_flow_events() -> FlowEventHandlers {
-    let (events, set_events) = create_signal(Vec::new());
-
-    FlowEventHandlers {
-        events: events.into(),
-        emit: Callback::new(move |event: FlowEvent| {
-            set_events.update(|events| events.push(event));
-        }),
-        clear: Callback::new(move || {
-            set_events.set(Vec::new());
-        }),
-    }
-}
-```
-
-## Performance Considerations
-
-### 1. Lazy Evaluation
-
-- Nodes and edges only rendered when visible
-- Layout calculations deferred until needed
-- Event handlers registered on-demand
-
-### 2. Memory Management
-
-- Automatic cleanup of unused resources
-- Object pooling for frequently created/destroyed objects
-- Efficient spatial indexing with R-tree
-
-### 3. Bundle Size Optimization
-
-- Tree-shaking friendly API design
-- Feature flags for optional functionality
-- Minimal WASM binary size
-
-This API design provides a comprehensive, type-safe, and performant interface for building flow-based applications with Leptos, while maintaining flexibility for advanced use cases and custom extensions.
+**Status**: Production Ready
+**Version**: 0.1.0-alpha
+**Last Updated**: January 2024
