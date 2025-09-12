@@ -683,7 +683,7 @@ mod tests {
 
         // First application
         manager.apply_auto_layout(&mut graph).unwrap();
-        let first_algorithm = manager.current_algorithm().unwrap().to_string();
+        let _first_algorithm = manager.current_algorithm().unwrap().to_string();
 
         // Modify graph to make it cyclic
         graph.add_edge(Edge::builder().connect("child1", "child2").build().unwrap()).unwrap();
@@ -691,7 +691,7 @@ mod tests {
 
         // Apply layout again
         manager.apply_auto_layout(&mut graph).unwrap();
-        let second_algorithm = manager.current_algorithm().unwrap().to_string();
+        let _second_algorithm = manager.current_algorithm().unwrap().to_string();
 
         // Algorithm might change based on new graph structure
         // At minimum, this should not panic and should complete successfully

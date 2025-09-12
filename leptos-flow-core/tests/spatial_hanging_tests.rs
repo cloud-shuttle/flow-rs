@@ -4,13 +4,13 @@
 //! in the spatial indexing algorithms.
 
 use leptos_flow_core::spatial::SpatialIndex;
-use leptos_flow_core::types::{Position, Rect};
+use leptos_flow_core::types::Rect;
 use leptos_flow_core::graph::NodeBuilder;
 use std::time::{Duration, Instant};
 
 #[test]
 fn test_spatial_index_handles_extreme_bounds() {
-    let mut index = SpatialIndex::new();
+    let index = SpatialIndex::new();
 
     // Test with extreme bounds that could cause infinite loops
     let extreme_bounds = Rect::new(
@@ -33,7 +33,7 @@ fn test_spatial_index_handles_extreme_bounds() {
 
 #[test]
 fn test_spatial_index_handles_infinite_values() {
-    let mut index = SpatialIndex::new();
+    let index = SpatialIndex::new();
 
     // Test with infinite values
     let infinite_bounds = Rect::new(
@@ -56,7 +56,7 @@ fn test_spatial_index_handles_infinite_values() {
 
 #[test]
 fn test_spatial_index_handles_nan_values() {
-    let mut index = SpatialIndex::new();
+    let index = SpatialIndex::new();
 
     // Test with NaN values
     let nan_bounds = Rect::new(
@@ -80,7 +80,7 @@ fn test_spatial_index_handles_nan_values() {
 #[test]
 fn test_spatial_index_handles_very_small_cell_size() {
     // Create index with very small cell size that could cause many grid cells
-    let mut index = SpatialIndex::with_cell_size(0.001); // 0.001 pixel cells
+    let index = SpatialIndex::with_cell_size(0.001); // 0.001 pixel cells
 
     let large_bounds = Rect::new(0.0, 0.0, 1000.0, 1000.0);
 
@@ -122,7 +122,7 @@ fn test_spatial_index_bounds_calculation_with_extreme_values() {
 
 #[test]
 fn test_spatial_index_maximum_grid_cells_limit() {
-    let mut index = SpatialIndex::new();
+    let index = SpatialIndex::new();
 
     // Create bounds that would generate a reasonable number of grid cells
     let reasonable_bounds = Rect::new(0.0, 0.0, 10000.0, 10000.0); // 100x100 cells with default cell size

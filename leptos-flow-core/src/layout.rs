@@ -3,8 +3,8 @@
 use std::collections::HashMap;
 
 use crate::error::{FlowError, Result};
-use crate::graph::{Graph, Node, Edge};
-use crate::types::{Position, NodeId, EdgeId};
+use crate::graph::Graph;
+use crate::types::{Position, NodeId};
 
 /// Trait for layout algorithms
 pub trait LayoutAlgorithm<N, E> {
@@ -225,6 +225,11 @@ impl ForceDirectedLayout {
     fn has_converged(&self, energy: f64) -> bool {
         energy < 1.0 || self.current_iteration >= self.iterations
     }
+
+    /// Check if the algorithm completed successfully (either by convergence or max iterations)
+    fn completed_successfully(&self) -> bool {
+        !self.running
+    }
 }
 
 impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
@@ -289,6 +294,9 @@ impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
 
     fn progress(&self) -> f64 {
         if self.iterations == 0 {
+            1.0
+        } else if self.completed_successfully() {
+            // If algorithm completed successfully (either converged or finished all iterations)
             1.0
         } else {
             (self.current_iteration as f64 / self.iterations as f64).min(1.0)
@@ -1214,7 +1222,7 @@ mod tests {
         graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
         graph.add_node(Node::builder("2").position(0.0, 0.0).build()).unwrap();
 
-        let mut layout = ForceDirectedLayout::builder()
+        let layout = ForceDirectedLayout::builder()
             .randomize_start(true)
             .build();
 
@@ -1609,7 +1617,7 @@ mod tests {
             .root_node("non-existent")
             .build();
 
-        let result_bad = layout_bad_root.apply(&mut single_graph);
+        let _result_bad = layout_bad_root.apply(&mut single_graph);
         // Should handle gracefully (might be ok or error depending on implementation)
     }
 

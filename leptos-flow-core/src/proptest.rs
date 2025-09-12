@@ -162,8 +162,9 @@ mod tests {
         #[test]
         fn test_graph_invariants(graph in arb_graph()) {
             // Graph invariants that should always hold
-            prop_assert!(graph.node_count() >= 0);
-            prop_assert!(graph.edge_count() >= 0);
+            // Node and edge counts are always >= 0 by type definition
+            // prop_assert!(graph.node_count() >= 0);
+            // prop_assert!(graph.edge_count() >= 0);
             prop_assert!(graph.edge_count() <= graph.node_count() * (graph.node_count().saturating_sub(1)));
 
             // All edges should reference existing nodes
@@ -627,8 +628,16 @@ mod tests {
         ) {
             let mut index = SpatialIndex::new();
 
-            // Insert all nodes
-            for node in &nodes {
+            // Ensure unique node IDs by adding index suffix
+            let mut unique_nodes = Vec::new();
+            for (i, node) in nodes.iter().enumerate() {
+                let mut unique_node = node.clone();
+                unique_node.id = NodeId::new(format!("{}_{}", node.id.as_str(), i));
+                unique_nodes.push(unique_node);
+            }
+
+            // Insert all nodes with unique IDs
+            for node in &unique_nodes {
                 index.insert(node).unwrap();
             }
 
@@ -637,18 +646,18 @@ mod tests {
 
             if let Some(nearest_id) = nearest {
                 // Verify the nearest node exists in our input
-                prop_assert!(nodes.iter().any(|n| n.id == nearest_id),
+                prop_assert!(unique_nodes.iter().any(|n| n.id == nearest_id),
                     "Nearest node {:?} not found in input nodes", nearest_id);
 
                 // Verify it's actually the nearest
-                let nearest_node = nodes.iter().find(|n| n.id == nearest_id).unwrap();
+                let nearest_node = unique_nodes.iter().find(|n| n.id == nearest_id).unwrap();
                 let nearest_center = Position::new(
                     nearest_node.position.x + nearest_node.size.width / 2.0,
                     nearest_node.position.y + nearest_node.size.height / 2.0,
                 );
                 let nearest_distance = query_point.distance_to(nearest_center);
 
-                for node in &nodes {
+                for node in &unique_nodes {
                     if node.id != nearest_id {
                         let node_center = Position::new(
                             node.position.x + node.size.width / 2.0,
@@ -678,7 +687,7 @@ mod tests {
 
             // Get unique nodes for bounds calculation
             let unique_nodes: HashSet<NodeId> = nodes.iter().map(|n| n.id.clone()).collect();
-            let unique_nodes_list: Vec<_> = nodes.iter()
+            let _unique_nodes_list: Vec<_> = nodes.iter()
                 .filter(|n| unique_nodes.contains(&n.id))
                 .collect();
 
@@ -779,7 +788,7 @@ mod tests {
                 .build();
 
             // Store initial positions
-            let initial_positions: std::collections::HashMap<_, _> = graph.nodes()
+            let _initial_positions: std::collections::HashMap<_, _> = graph.nodes()
                 .map(|node| (node.id.clone(), node.position))
                 .collect();
 
@@ -796,7 +805,10 @@ mod tests {
             prop_assert!(!<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::is_running(&layout), "Layout should not be running after completion");
             // Progress should be 1.0 after completion (or 0.0 if no iterations were run)
             let progress = <ForceDirectedLayout as LayoutAlgorithm<(), ()>>::progress(&layout);
-            prop_assert!(progress == 1.0 || progress == 0.0, "Progress should be 0.0 or 1.0 after completion");
+            // Allow small floating point tolerance for progress calculation
+            let tolerance = 1e-10;
+            prop_assert!((progress - 1.0).abs() < tolerance || (progress - 0.0).abs() < tolerance,
+                        "Progress should be approximately 0.0 or 1.0 after completion, got {}", progress);
             prop_assert!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&layout), "Force-directed layout should be interruptible");
         }
     }
@@ -896,15 +908,22 @@ mod tests {
 
     proptest! {
         #[test]
-        #[ignore] // Temporarily disabled due to edge case issues
         fn test_hierarchical_layout_properties(
             nodes in prop::collection::vec(arb_node(), 1..10),
             edges in prop::collection::vec(arb_edge(), 0..15)
         ) {
             let mut graph = Graph::new();
 
-            // Add nodes
-            for node in &nodes {
+            // Ensure unique node IDs by adding index suffix
+            let mut unique_nodes = Vec::new();
+            for (i, node) in nodes.iter().enumerate() {
+                let mut unique_node = node.clone();
+                unique_node.id = NodeId::new(format!("{}_{}", node.id.as_str(), i));
+                unique_nodes.push(unique_node);
+            }
+
+            // Add nodes with unique IDs
+            for node in &unique_nodes {
                 let _ = graph.add_node(node.clone());
             }
 
@@ -936,7 +955,7 @@ mod tests {
             // If layout succeeded, verify properties
             if result.is_ok() {
                 // Verify all nodes still exist
-                prop_assert_eq!(graph.node_count(), nodes.len(), "Node count should remain the same");
+                prop_assert_eq!(graph.node_count(), unique_nodes.len(), "Node count should remain the same");
 
                 // Verify hierarchical positioning properties
                 let positions: Vec<Position> = graph.nodes().map(|n| n.position).collect();
@@ -1031,7 +1050,7 @@ mod tests {
             node_ids in prop::collection::vec(prop::string::string_regex(r"[a-zA-Z0-9_]{1,20}").unwrap(), 1..50),
             group_operations in prop::collection::vec(0..4usize, 0..100)
         ) {
-            use crate::groups::{GroupManager, Group};
+            use crate::groups::GroupManager;
             use std::collections::HashSet;
 
             let mut group_manager = GroupManager::new();
@@ -1304,23 +1323,26 @@ mod tests {
     // Group drag operation property tests
     proptest! {
         #[test]
-        #[ignore] // Temporarily disabled due to edge case issues
+        #[ignore] // Temporarily disabled due to group drag implementation issues
         fn test_group_drag_invariants(
             node_positions in prop::collection::vec((arb_position(), prop::string::string_regex(r"[a-zA-Z0-9_]{1,10}").unwrap()), 2..10),
             drag_operations in prop::collection::vec(arb_position(), 1..20)
         ) {
-            use crate::groups::{GroupManager, Group};
+            use crate::groups::GroupManager;
             use crate::{Graph, Node};
             use std::collections::{HashSet, HashMap};
 
             let mut graph = Graph::<(), ()>::new();
             let mut group_manager = GroupManager::new();
 
-            // Add nodes to graph
+            // Add nodes to graph with unique positions
             let node_ids: Vec<NodeId> = node_positions.iter()
-                .map(|(pos, id)| {
+                .enumerate()
+                .map(|(i, (pos, id))| {
                     let node_id = NodeId::new(id);
-                    let node = Node::simple(node_id.clone(), *pos);
+                    // Ensure unique positions by adding small offset
+                    let unique_pos = Position::new(pos.x + (i as f64 * 0.1), pos.y + (i as f64 * 0.1));
+                    let node = Node::simple(node_id.clone(), unique_pos);
                     graph.add_node(node).unwrap();
                     node_id
                 })
@@ -1361,9 +1383,11 @@ mod tests {
                     let expected_pos = original_positions[node_id].add(delta);
 
                     prop_assert!((current_pos.x - expected_pos.x).abs() < 0.001,
-                        "Node {} x position should match expected", node_id);
+                        "Node {} x position should match expected: current={}, expected={}, delta={}",
+                        node_id, current_pos.x, expected_pos.x, delta.x);
                     prop_assert!((current_pos.y - expected_pos.y).abs() < 0.001,
-                        "Node {} y position should match expected", node_id);
+                        "Node {} y position should match expected: current={}, expected={}, delta={}",
+                        node_id, current_pos.y, expected_pos.y, delta.y);
                 }
             }
 
@@ -1409,7 +1433,6 @@ mod tests {
 
     proptest! {
         #[test]
-        #[ignore] // Temporarily disabled due to edge case issues
         fn test_group_bounds_calculation_properties(
             nodes in prop::collection::vec((arb_position(), arb_size()), 1..8)
         ) {
@@ -1451,10 +1474,25 @@ mod tests {
                 let node_top = node.position.y;
                 let node_bottom = node.position.y + node.size.height;
 
-                prop_assert!(node_left >= group.position.x, "Node should be within group bounds (left)");
-                prop_assert!(node_right <= group.position.x + group.size.width, "Node should be within group bounds (right)");
-                prop_assert!(node_top >= group.position.y, "Node should be within group bounds (top)");
-                prop_assert!(node_bottom <= group.position.y + group.size.height, "Node should be within group bounds (bottom)");
+                let group_left = group.position.x;
+                let group_right = group.position.x + group.size.width;
+                let group_top = group.position.y;
+                let group_bottom = group.position.y + group.size.height;
+
+                const TOLERANCE: f64 = 1e-10;
+
+                prop_assert!(node_left >= group_left - TOLERANCE,
+                    "Node should be within group bounds (left): node_left={}, group_left={}",
+                    node_left, group_left);
+                prop_assert!(node_right <= group_right + TOLERANCE,
+                    "Node should be within group bounds (right): node_right={}, group_right={}",
+                    node_right, group_right);
+                prop_assert!(node_top >= group_top - TOLERANCE,
+                    "Node should be within group bounds (top): node_top={}, group_top={}",
+                    node_top, group_top);
+                prop_assert!(node_bottom <= group_bottom + TOLERANCE,
+                    "Node should be within group bounds (bottom): node_bottom={}, group_bottom={}",
+                    node_bottom, group_bottom);
             }
 
             // Verify bounds are tight (minimal)

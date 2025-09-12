@@ -19,6 +19,9 @@ pub mod edge_creator;
 mod proptest;
 
 #[cfg(test)]
+mod performance_tests;
+
+#[cfg(test)]
 mod graph_handle_integration;
 
 #[cfg(test)]
@@ -37,7 +40,7 @@ mod graph_cycle_detection;
 pub use error::{FlowError, Result};
 pub use graph::{Graph, Node, Edge};
 pub use types::{Position, Size, Rect, Viewport, NodeId, EdgeId, GroupId};
-pub use selection::{SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut};
+pub use selection::{SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut, VisualFeedback};
 pub use groups::{Group, GroupManager};
 pub use handle::{Handle, HandleId, HandleType, HandlePosition, HandleManager};
 pub use drag_operations::DragOperation;
@@ -51,5 +54,5 @@ pub mod prelude {
     pub use crate::types::{Position, Size, Rect, Viewport, NodeId, EdgeId, GroupId};
     pub use crate::spatial::SpatialIndex;
     pub use crate::handle::{Handle, HandleId, HandleType, HandlePosition, HandleManager};
-    pub use crate::selection::{SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut};
+    pub use crate::selection::{SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut, VisualFeedback};
 }

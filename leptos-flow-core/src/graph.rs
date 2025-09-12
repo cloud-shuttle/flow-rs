@@ -647,6 +647,7 @@ impl<N, E> Graph<N, E> {
         Ok(())
     }
 
+
     /// Remove an edge
     pub fn remove_edge(&mut self, edge_id: &EdgeId) -> Result<Edge<E>> {
         self.edges.remove(edge_id)
@@ -724,6 +725,7 @@ impl<N, E> Graph<N, E> {
             .filter(|edge| &edge.source == node_id)
             .collect()
     }
+
 
     /// Check if two nodes are connected
     pub fn are_connected(&self, source: &NodeId, target: &NodeId) -> bool {
@@ -1101,6 +1103,245 @@ mod tests {
 
         let bounds = graph.bounds().unwrap();
         assert_eq!(bounds, Rect::new(0.0, 0.0, 300.0, 350.0));
+    }
+
+    // Comprehensive Graph Operations Tests
+
+    #[test]
+    fn test_comprehensive_node_operations() {
+        let mut graph: Graph<i32, ()> = Graph::new();
+
+        // Test adding nodes
+        let node1 = Node::new("node1", Position::new(0.0, 0.0), 42);
+        let node2 = Node::new("node2", Position::new(100.0, 100.0), 84);
+
+        assert!(graph.add_node(node1.clone()).is_ok());
+        assert!(graph.add_node(node2.clone()).is_ok());
+        assert_eq!(graph.node_count(), 2);
+        assert!(!graph.is_empty());
+
+        // Test getting nodes
+        let retrieved = graph.get_node(&NodeId::from("node1"));
+        assert!(retrieved.is_some());
+        assert_eq!(retrieved.unwrap().data, 42);
+
+        // Test duplicate node error
+        let duplicate = Node::new("node1", Position::new(50.0, 50.0), 100);
+        let result = graph.add_node(duplicate);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), FlowError::DuplicateNodeId { .. }));
+
+        // Test node removal
+        let removed = graph.remove_node(&NodeId::from("node1"));
+        assert!(removed.is_ok());
+        assert_eq!(removed.unwrap().data, 42);
+        assert_eq!(graph.node_count(), 1);
+
+        // Test removing non-existent node
+        let not_found = graph.remove_node(&NodeId::from("nonexistent"));
+        assert!(not_found.is_err());
+        assert!(matches!(not_found.unwrap_err(), FlowError::NodeNotFound { .. }));
+    }
+
+    #[test]
+    fn test_comprehensive_edge_operations() {
+        let mut graph: Graph<(), String> = Graph::new();
+
+        // Add nodes first
+        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+
+        // Test adding edges
+        let edge1 = Edge::new("edge1", "A", "B", "connects_to".to_string());
+        let edge2 = Edge::new("edge2", "B", "C", "flows_into".to_string());
+
+        assert!(graph.add_edge(edge1.clone()).is_ok());
+        assert!(graph.add_edge(edge2.clone()).is_ok());
+        assert_eq!(graph.edge_count(), 2);
+
+        // Test getting edges
+        let retrieved = graph.get_edge(&EdgeId::from("edge1"));
+        assert!(retrieved.is_some());
+        assert_eq!(retrieved.unwrap().data, "connects_to");
+
+        // Test edge to non-existent node
+        let invalid_edge = Edge::new("invalid", "A", "nonexistent", "error".to_string());
+        let result = graph.add_edge(invalid_edge);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), FlowError::NodeNotFound { .. }));
+
+        // Test duplicate edge
+        let duplicate_edge = Edge::new("edge1", "A", "B", "duplicate".to_string());
+        let result = graph.add_edge(duplicate_edge);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), FlowError::DuplicateEdgeId { .. }));
+
+        // Test edge removal
+        let removed = graph.remove_edge(&EdgeId::from("edge1"));
+        assert!(removed.is_ok());
+        assert_eq!(removed.unwrap().data, "connects_to");
+        assert_eq!(graph.edge_count(), 1);
+    }
+
+    #[test]
+    fn test_node_edge_relationships() {
+        let mut graph: Graph<(), ()> = Graph::new();
+
+        // Create nodes
+        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+
+        // Create edges: A -> B, A -> C, B -> C
+        graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
+        graph.add_edge(Edge::new("AC", "A", "C", ())).unwrap();
+        graph.add_edge(Edge::new("BC", "B", "C", ())).unwrap();
+
+        // Test connection queries
+        assert!(graph.are_connected(&NodeId::from("A"), &NodeId::from("B")));
+        assert!(graph.are_connected(&NodeId::from("A"), &NodeId::from("C")));
+        assert!(graph.are_connected(&NodeId::from("B"), &NodeId::from("C")));
+        assert!(!graph.are_connected(&NodeId::from("B"), &NodeId::from("A"))); // Direction matters
+
+        // Test connected edges
+        let a_edges = graph.get_connected_edges(&NodeId::from("A"));
+        assert_eq!(a_edges.len(), 2);
+
+        let b_edges = graph.get_connected_edges(&NodeId::from("B"));
+        assert_eq!(b_edges.len(), 2);
+
+        let c_edges = graph.get_connected_edges(&NodeId::from("C"));
+        assert_eq!(c_edges.len(), 2);
+
+        // Test incoming/outgoing edges
+        let a_outgoing = graph.get_outgoing_edges(&NodeId::from("A"));
+        assert_eq!(a_outgoing.len(), 2);
+
+        let c_incoming = graph.get_incoming_edges(&NodeId::from("C"));
+        assert_eq!(c_incoming.len(), 2);
+
+        let b_incoming = graph.get_incoming_edges(&NodeId::from("B"));
+        assert_eq!(b_incoming.len(), 1);
+
+        let b_outgoing = graph.get_outgoing_edges(&NodeId::from("B"));
+        assert_eq!(b_outgoing.len(), 1);
+    }
+
+    #[test]
+    fn test_cascading_operations() {
+        let mut graph: Graph<(), ()> = Graph::new();
+
+        // Create a small graph: A -> B -> C
+        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+
+        graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
+        graph.add_edge(Edge::new("BC", "B", "C", ())).unwrap();
+
+        assert_eq!(graph.edge_count(), 2);
+
+        // Remove node B - should cascade to remove connected edges
+        let removed = graph.remove_node(&NodeId::from("B"));
+        assert!(removed.is_ok());
+        assert_eq!(graph.node_count(), 2);
+        assert_eq!(graph.edge_count(), 0); // Both edges should be removed
+
+        // Verify edges are gone
+        assert!(graph.get_edge(&EdgeId::from("AB")).is_none());
+        assert!(graph.get_edge(&EdgeId::from("BC")).is_none());
+    }
+
+    #[test]
+    fn test_topological_sort() {
+        let mut graph: Graph<(), ()> = Graph::new();
+
+        // Create DAG: A -> B -> D, A -> C -> D
+        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("C", Position::new(100.0, 100.0), ())).unwrap();
+        graph.add_node(Node::new("D", Position::new(200.0, 0.0), ())).unwrap();
+
+        graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
+        graph.add_edge(Edge::new("AC", "A", "C", ())).unwrap();
+        graph.add_edge(Edge::new("BD", "B", "D", ())).unwrap();
+        graph.add_edge(Edge::new("CD", "C", "D", ())).unwrap();
+
+        // Test successful topological sort
+        let topo_sort = graph.topological_sort();
+        assert!(topo_sort.is_ok());
+        let sorted = topo_sort.unwrap();
+        assert_eq!(sorted.len(), 4);
+
+        // Verify ordering - A should come before B and C, B and C should come before D
+        let a_pos = sorted.iter().position(|id| id.as_str() == "A").unwrap();
+        let b_pos = sorted.iter().position(|id| id.as_str() == "B").unwrap();
+        let c_pos = sorted.iter().position(|id| id.as_str() == "C").unwrap();
+        let d_pos = sorted.iter().position(|id| id.as_str() == "D").unwrap();
+
+        assert!(a_pos < b_pos);
+        assert!(a_pos < c_pos);
+        assert!(b_pos < d_pos);
+        assert!(c_pos < d_pos);
+    }
+
+    #[test]
+    fn test_topological_sort_with_cycle() {
+        let mut graph: Graph<(), ()> = Graph::new();
+
+        // Create cycle: A -> B -> C -> A
+        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
+        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+
+        graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
+        graph.add_edge(Edge::new("BC", "B", "C", ())).unwrap();
+        graph.add_edge(Edge::new("CA", "C", "A", ())).unwrap(); // Creates cycle
+
+        // Should fail due to cycle
+        let result = graph.topological_sort();
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), FlowError::InvalidOperation { .. }));
+    }
+
+    #[test]
+    fn test_graph_iterators() {
+        let mut graph: Graph<i32, String> = Graph::new();
+
+        // Add test data
+        graph.add_node(Node::new("A", Position::new(0.0, 0.0), 1)).unwrap();
+        graph.add_node(Node::new("B", Position::new(100.0, 0.0), 2)).unwrap();
+        graph.add_node(Node::new("C", Position::new(200.0, 0.0), 3)).unwrap();
+
+        graph.add_edge(Edge::new("AB", "A", "B", "edge1".to_string())).unwrap();
+        graph.add_edge(Edge::new("BC", "B", "C", "edge2".to_string())).unwrap();
+
+        // Test node iteration
+        let node_ids: Vec<_> = graph.node_ids().cloned().collect();
+        assert_eq!(node_ids.len(), 3);
+        assert!(node_ids.contains(&NodeId::from("A")));
+        assert!(node_ids.contains(&NodeId::from("B")));
+        assert!(node_ids.contains(&NodeId::from("C")));
+
+        // Test edge iteration
+        let edge_ids: Vec<_> = graph.edge_ids().cloned().collect();
+        assert_eq!(edge_ids.len(), 2);
+        assert!(edge_ids.contains(&EdgeId::from("AB")));
+        assert!(edge_ids.contains(&EdgeId::from("BC")));
+
+        // Test node values iteration
+        let node_values: Vec<_> = graph.nodes().map(|n| n.data).collect();
+        assert_eq!(node_values.len(), 3);
+        assert!(node_values.contains(&1));
+        assert!(node_values.contains(&2));
+        assert!(node_values.contains(&3));
+
+        // Test edge values iteration
+        let edge_values: Vec<_> = graph.edges().map(|e| &e.data).collect();
+        assert_eq!(edge_values.len(), 2);
+        assert!(edge_values.contains(&&"edge1".to_string()));
+        assert!(edge_values.contains(&&"edge2".to_string()));
     }
 }
 

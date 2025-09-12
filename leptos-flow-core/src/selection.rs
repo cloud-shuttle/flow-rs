@@ -2,10 +2,83 @@
 //!
 //! Manages multi-node selection, keyboard navigation, and selection state.
 
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use crate::types::{NodeId, Position, GroupId};
 use crate::graph::Graph;
 use crate::groups::GroupManager;
+
+/// Visual feedback state for nodes
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct VisualFeedback {
+    /// Node is currently selected
+    selected: bool,
+    /// Node is currently hovered
+    hovered: bool,
+    /// Node is highlighted (e.g., during connection)
+    highlighted: bool,
+    /// Animation state for transitions
+    animation_progress: f64,
+}
+
+impl VisualFeedback {
+    /// Create new visual feedback with default state
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Create visual feedback with selection state
+    pub fn selected() -> Self {
+        Self {
+            selected: true,
+            ..Default::default()
+        }
+    }
+
+    /// Check if node is selected
+    pub fn is_selected(&self) -> bool {
+        self.selected
+    }
+
+    /// Check if node is hovered
+    pub fn is_hovered(&self) -> bool {
+        self.hovered
+    }
+
+    /// Check if node is highlighted
+    pub fn is_highlighted(&self) -> bool {
+        self.highlighted
+    }
+
+    /// Get animation progress (0.0 to 1.0)
+    pub fn animation_progress(&self) -> f64 {
+        self.animation_progress
+    }
+
+    /// Set selection state
+    pub fn set_selected(&mut self, selected: bool) {
+        self.selected = selected;
+    }
+
+    /// Set hover state
+    pub fn set_hovered(&mut self, hovered: bool) {
+        self.hovered = hovered;
+    }
+
+    /// Set highlight state
+    pub fn set_highlighted(&mut self, highlighted: bool) {
+        self.highlighted = highlighted;
+    }
+
+    /// Set animation progress
+    pub fn set_animation_progress(&mut self, progress: f64) {
+        self.animation_progress = progress.clamp(0.0, 1.0);
+    }
+
+    /// Check if any visual state is active
+    pub fn has_any_state(&self) -> bool {
+        self.selected || self.hovered || self.highlighted
+    }
+}
 
 /// Selection modes for different interaction patterns
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
@@ -28,6 +101,8 @@ pub struct SelectionManager {
     mode: SelectionMode,
     /// Rectangle selection bounds (start, end)
     rectangle_bounds: Option<(Position, Position)>,
+    /// Visual feedback for all nodes
+    visual_feedback: HashMap<NodeId, VisualFeedback>,
 }
 
 
@@ -56,16 +131,28 @@ impl SelectionManager {
     pub fn select_node(&mut self, node_id: NodeId) {
         match self.mode {
             SelectionMode::Single => {
+                // Clear visual feedback for previously selected nodes
+                for old_node_id in &self.selected_nodes {
+                    if let Some(feedback) = self.visual_feedback.get_mut(old_node_id) {
+                        feedback.set_selected(false);
+                    }
+                }
                 self.selected_nodes.clear();
-                self.selected_nodes.insert(node_id);
+                self.selected_nodes.insert(node_id.clone());
             }
             SelectionMode::Multi => {
-                self.selected_nodes.insert(node_id);
+                self.selected_nodes.insert(node_id.clone());
             }
             SelectionMode::Rectangle => {
                 // Rectangle mode doesn't support individual selection
+                return;
             }
         }
+
+        // Update visual feedback for selected node
+        self.visual_feedback.entry(node_id)
+            .or_insert_with(VisualFeedback::new)
+            .set_selected(true);
     }
 
     /// Toggle node selection (for Ctrl+Click)
@@ -80,10 +167,30 @@ impl SelectionManager {
     /// Deselect a specific node
     pub fn deselect_node(&mut self, node_id: &NodeId) {
         self.selected_nodes.remove(node_id);
+
+        // Update visual feedback for deselected node
+        if let Some(feedback) = self.visual_feedback.get_mut(node_id) {
+            feedback.set_selected(false);
+            // Remove feedback if no states are active
+            if !feedback.has_any_state() {
+                self.visual_feedback.remove(node_id);
+            }
+        }
     }
 
     /// Clear all selections
     pub fn clear_selection(&mut self) {
+        // Clear visual feedback for all selected nodes
+        for node_id in &self.selected_nodes {
+            if let Some(feedback) = self.visual_feedback.get_mut(node_id) {
+                feedback.set_selected(false);
+                // Remove feedback if no other states are active
+                if !feedback.has_any_state() {
+                    self.visual_feedback.remove(node_id);
+                }
+            }
+        }
+
         self.selected_nodes.clear();
         self.rectangle_bounds = None;
     }
@@ -364,6 +471,69 @@ impl SelectionManager {
             }
         }
     }
+
+    // Visual Feedback System Methods
+
+    /// Check if a node has visual feedback
+    pub fn has_visual_feedback(&self, node_id: &NodeId) -> bool {
+        self.visual_feedback.contains_key(node_id)
+    }
+
+    /// Get visual feedback for a node
+    pub fn get_visual_feedback(&self, node_id: &NodeId) -> Option<&VisualFeedback> {
+        self.visual_feedback.get(node_id)
+    }
+
+    /// Get mutable visual feedback for a node
+    pub fn get_visual_feedback_mut(&mut self, node_id: &NodeId) -> Option<&mut VisualFeedback> {
+        self.visual_feedback.get_mut(node_id)
+    }
+
+    /// Set hover state for a node
+    pub fn set_hover_state(&mut self, node_id: &NodeId, hovered: bool) {
+        let feedback = self.visual_feedback.entry(node_id.clone())
+            .or_insert_with(VisualFeedback::new);
+        feedback.set_hovered(hovered);
+
+        // Clean up if no states are active
+        if !feedback.has_any_state() {
+            self.visual_feedback.remove(node_id);
+        }
+    }
+
+    /// Set highlight state for a node
+    pub fn set_highlight_state(&mut self, node_id: &NodeId, highlighted: bool) {
+        let feedback = self.visual_feedback.entry(node_id.clone())
+            .or_insert_with(VisualFeedback::new);
+        feedback.set_highlighted(highlighted);
+
+        // Clean up if no states are active
+        if !feedback.has_any_state() {
+            self.visual_feedback.remove(node_id);
+        }
+    }
+
+    /// Clear all visual feedback for a node
+    pub fn clear_all_visual_feedback(&mut self, node_id: &NodeId) {
+        self.visual_feedback.remove(node_id);
+    }
+
+    /// Clear all visual feedback for all nodes
+    pub fn clear_all_visual_feedbacks(&mut self) {
+        self.visual_feedback.clear();
+    }
+
+    /// Update animation progress for a node
+    pub fn update_animation_progress(&mut self, node_id: &NodeId, progress: f64) {
+        if let Some(feedback) = self.visual_feedback.get_mut(node_id) {
+            feedback.set_animation_progress(progress);
+        }
+    }
+
+    /// Get all nodes with active visual feedback
+    pub fn nodes_with_visual_feedback(&self) -> Vec<&NodeId> {
+        self.visual_feedback.keys().collect()
+    }
 }
 
 /// Navigation directions for keyboard selection
@@ -587,7 +757,7 @@ mod tests {
     // Group-aware selection tests
     #[test]
     fn test_select_group() {
-        use crate::groups::{GroupManager, Group};
+        use crate::groups::GroupManager;
         use std::collections::HashSet;
 
         let mut selection = SelectionManager::new();
@@ -616,7 +786,7 @@ mod tests {
 
     #[test]
     fn test_select_group_multi_mode() {
-        use crate::groups::{GroupManager, Group};
+        use crate::groups::GroupManager;
         use std::collections::HashSet;
 
         let mut selection = SelectionManager::new();
@@ -849,9 +1019,184 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Visual feedback not implemented yet")]
-    fn test_selection_visual_feedback_not_implemented() {
-        // This test will fail until we implement visual selection feedback
-        panic!("Visual feedback not implemented yet");
+    fn test_selection_visual_feedback_implementation() {
+        // RED PHASE: Test the visual feedback system for selections
+        let mut manager = SelectionManager::new();
+        let node_id = NodeId::from("test_node");
+
+        // Test initial state - no visual feedback
+        assert!(!manager.has_visual_feedback(&node_id));
+        assert!(manager.get_visual_feedback(&node_id).is_none());
+
+        // Test selection creates visual feedback
+        manager.select_node(node_id.clone());
+        assert!(manager.has_visual_feedback(&node_id));
+
+        // Test visual feedback properties
+        let feedback = manager.get_visual_feedback(&node_id).expect("Visual feedback should exist");
+        assert!(feedback.is_selected());
+        assert!(!feedback.is_hovered());
+        assert!(!feedback.is_highlighted());
+
+        // Test hover state
+        manager.set_hover_state(&node_id, true);
+        let feedback = manager.get_visual_feedback(&node_id).expect("Visual feedback should exist");
+        assert!(feedback.is_selected());
+        assert!(feedback.is_hovered());
+
+        // Test highlight state
+        manager.set_highlight_state(&node_id, true);
+        let feedback = manager.get_visual_feedback(&node_id).expect("Visual feedback should exist");
+        assert!(feedback.is_selected());
+        assert!(feedback.is_hovered());
+        assert!(feedback.is_highlighted());
+
+        // Test deselection clears visual feedback
+        manager.deselect_node(&node_id);
+        // Visual feedback may still exist for hover state
+        let feedback = manager.get_visual_feedback(&node_id);
+        if let Some(feedback) = feedback {
+            assert!(!feedback.is_selected());
+            assert!(feedback.is_hovered()); // Still hovering
+        }
+
+        // Test clearing all states
+        manager.clear_all_visual_feedback(&node_id);
+        assert!(!manager.has_visual_feedback(&node_id));
+    }
+
+    #[test]
+    fn test_visual_feedback_edge_cases() {
+        let mut manager = SelectionManager::new();
+        let node_id = NodeId::from("test_node");
+
+        // Test setting hover state without selection
+        manager.set_hover_state(&node_id, true);
+        assert!(manager.has_visual_feedback(&node_id));
+        let feedback = manager.get_visual_feedback(&node_id).unwrap();
+        assert!(!feedback.is_selected());
+        assert!(feedback.is_hovered());
+
+        // Test clearing hover removes feedback if no other states
+        manager.set_hover_state(&node_id, false);
+        assert!(!manager.has_visual_feedback(&node_id));
+
+        // Test animation progress clamping
+        manager.update_animation_progress(&node_id, 1.5);
+        // No feedback should be created for animation alone
+        assert!(!manager.has_visual_feedback(&node_id));
+
+        // Create feedback first, then test animation
+        manager.set_highlight_state(&node_id, true);
+        manager.update_animation_progress(&node_id, 1.5); // Should clamp to 1.0
+        let feedback = manager.get_visual_feedback(&node_id).unwrap();
+        assert_eq!(feedback.animation_progress(), 1.0);
+
+        manager.update_animation_progress(&node_id, -0.5); // Should clamp to 0.0
+        let feedback = manager.get_visual_feedback(&node_id).unwrap();
+        assert_eq!(feedback.animation_progress(), 0.0);
+    }
+
+    #[test]
+    fn test_visual_feedback_multi_selection_integration() {
+        let mut manager = SelectionManager::new();
+        manager.set_mode(SelectionMode::Multi);
+
+        let node1 = NodeId::from("node1");
+        let node2 = NodeId::from("node2");
+        let node3 = NodeId::from("node3");
+
+        // Select multiple nodes
+        manager.select_node(node1.clone());
+        manager.select_node(node2.clone());
+        manager.select_node(node3.clone());
+
+        // All should have visual feedback for selection
+        assert!(manager.has_visual_feedback(&node1));
+        assert!(manager.has_visual_feedback(&node2));
+        assert!(manager.has_visual_feedback(&node3));
+
+        // Check selection states
+        assert!(manager.get_visual_feedback(&node1).unwrap().is_selected());
+        assert!(manager.get_visual_feedback(&node2).unwrap().is_selected());
+        assert!(manager.get_visual_feedback(&node3).unwrap().is_selected());
+
+        // Add hover to one node
+        manager.set_hover_state(&node2, true);
+        let feedback2 = manager.get_visual_feedback(&node2).unwrap();
+        assert!(feedback2.is_selected());
+        assert!(feedback2.is_hovered());
+
+        // Clear selection should update visual feedback
+        manager.clear_selection();
+
+        // Only node2 should still have feedback (for hover)
+        assert!(!manager.has_visual_feedback(&node1));
+        assert!(manager.has_visual_feedback(&node2)); // Still has hover
+        assert!(!manager.has_visual_feedback(&node3));
+
+        let feedback2 = manager.get_visual_feedback(&node2).unwrap();
+        assert!(!feedback2.is_selected());
+        assert!(feedback2.is_hovered());
+    }
+
+    #[test]
+    fn test_visual_feedback_single_selection_mode() {
+        let mut manager = SelectionManager::new(); // Default is Single mode
+
+        let node1 = NodeId::from("node1");
+        let node2 = NodeId::from("node2");
+
+        // Select first node
+        manager.select_node(node1.clone());
+        assert!(manager.get_visual_feedback(&node1).unwrap().is_selected());
+
+        // Select second node - should clear first node's selection state
+        manager.select_node(node2.clone());
+
+        // First node should lose selection visual feedback
+        if let Some(feedback1) = manager.get_visual_feedback(&node1) {
+            assert!(!feedback1.is_selected());
+        } else {
+            // Or might be completely removed if no other states
+            assert!(!manager.has_visual_feedback(&node1));
+        }
+
+        // Second node should have selection visual feedback
+        assert!(manager.get_visual_feedback(&node2).unwrap().is_selected());
+    }
+
+    #[test]
+    fn test_visual_feedback_batch_operations() {
+        let mut manager = SelectionManager::new();
+        let nodes: Vec<NodeId> = (0..10).map(|i| NodeId::from(format!("node{}", i))).collect();
+
+        // Set all nodes to different states
+        for (i, node_id) in nodes.iter().enumerate() {
+            if i % 3 == 0 {
+                manager.select_node(node_id.clone());
+            }
+            if i % 2 == 0 {
+                manager.set_hover_state(node_id, true);
+            }
+            if i % 5 == 0 {
+                manager.set_highlight_state(node_id, true);
+            }
+        }
+
+        // Verify states
+        let feedback_nodes = manager.nodes_with_visual_feedback();
+        assert!(!feedback_nodes.is_empty());
+
+        // Clear all visual feedback
+        manager.clear_all_visual_feedbacks();
+
+        // Verify all feedback is cleared
+        for node_id in &nodes {
+            assert!(!manager.has_visual_feedback(node_id));
+        }
+
+        // But selection state should remain in the selection manager
+        assert!(!manager.selected_nodes().is_empty()); // Some nodes were selected
     }
 }

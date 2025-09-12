@@ -670,7 +670,7 @@ mod tests {
     #[test]
     fn test_move_group() {
         // RED: This should fail initially
-        use crate::{Graph, Node, Size};
+        use crate::{Graph, Node};
 
         let mut graph = Graph::<(), ()>::new();
         let mut group_manager = GroupManager::new();
@@ -729,7 +729,7 @@ mod tests {
     fn test_empty_group_bounds_calculation() {
         use crate::Graph;
 
-        let graph = Graph::<(), ()>::new();
+        let _graph = Graph::<(), ()>::new();
         let mut group_manager = GroupManager::new();
 
         // Create empty group (should not happen in practice, but test edge case)

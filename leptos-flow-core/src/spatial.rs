@@ -414,7 +414,7 @@ impl<'a> SpatialQuery<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::Size;
+    use crate::types::Viewport;
     use crate::graph::NodeBuilder;
 
     #[test]
@@ -1161,5 +1161,185 @@ mod tests {
         let normal_bounds = Rect::new(0.0, 0.0, 100.0, 100.0);
         let cells_normal = index_tiny.get_grid_cells_for_bounds(&normal_bounds);
         assert_eq!(cells_normal.len(), 0); // Should be limited by MAX_GRID_CELLS to prevent hanging
+    }
+
+    // === TDD Tests for Missing Coverage (19 lines remaining) ===
+
+    #[test]
+    fn test_grid_cell_from_position() {
+        // Test the currently unused GridCell::from_position method
+        let cell = GridCell::from_position(Position::new(250.0, 350.0), 100.0);
+        assert_eq!(cell, GridCell::new(2, 3));
+
+        // Test with negative coordinates
+        let cell_neg = GridCell::from_position(Position::new(-150.0, -250.0), 100.0);
+        assert_eq!(cell_neg, GridCell::new(-2, -3));
+
+        // Test with zero coordinates
+        let cell_zero = GridCell::from_position(Position::new(0.0, 0.0), 100.0);
+        assert_eq!(cell_zero, GridCell::new(0, 0));
+
+        // Test with fractional coordinates
+        let cell_frac = GridCell::from_position(Position::new(99.9, 199.1), 100.0);
+        assert_eq!(cell_frac, GridCell::new(0, 1));
+    }
+
+    #[test]
+    fn test_spatial_index_default() {
+        // Test Default trait implementation
+        let index = SpatialIndex::default();
+        assert!(index.is_empty());
+        assert_eq!(index.len(), 0);
+        assert_eq!(index.cell_size, 100.0);
+    }
+
+    #[test]
+    fn test_spatial_index_nan_infinity_handling() {
+        let index = SpatialIndex::new();
+
+        // Test bounds with NaN values
+        let nan_bounds = Rect::new(f64::NAN, 10.0, 50.0, 50.0);
+        let cells_nan = index.get_grid_cells_for_bounds(&nan_bounds);
+        assert_eq!(cells_nan.len(), 0);
+
+        // Test bounds with infinity values
+        let inf_bounds = Rect::new(f64::INFINITY, 10.0, 50.0, 50.0);
+        let cells_inf = index.get_grid_cells_for_bounds(&inf_bounds);
+        assert_eq!(cells_inf.len(), 0);
+
+        // Test bounds with negative infinity
+        let neg_inf_bounds = Rect::new(f64::NEG_INFINITY, 10.0, 50.0, 50.0);
+        let cells_neg_inf = index.get_grid_cells_for_bounds(&neg_inf_bounds);
+        assert_eq!(cells_neg_inf.len(), 0);
+
+        // Test query with NaN position
+        let nan_pos = Position::new(f64::NAN, 10.0);
+        let nan_results = index.query_radius(nan_pos, 50.0);
+        assert_eq!(nan_results.len(), 0);
+    }
+
+    #[test]
+    fn test_spatial_index_viewport_query_edge_cases() {
+        let mut index = SpatialIndex::new();
+
+        let node = NodeBuilder::<()>::new("test-node")
+            .position(100.0, 100.0)
+            .size(50.0, 50.0)
+            .build();
+
+        index.insert(&node).unwrap();
+
+        // Test viewport query with various viewport configurations
+        let viewport1 = Viewport::with_size(0.0, 0.0, 200.0, 200.0);
+        let results1 = index.query_viewport(&viewport1);
+        assert_eq!(results1.len(), 1);
+
+        // Test viewport query that doesn't include the node
+        let viewport2 = Viewport::with_size(200.0, 200.0, 100.0, 100.0);
+        let results2 = index.query_viewport(&viewport2);
+        assert_eq!(results2.len(), 0);
+
+        // Test viewport query with very small viewport
+        let viewport3 = Viewport::with_size(125.0, 125.0, 1.0, 1.0);
+        let results3 = index.query_viewport(&viewport3);
+        assert_eq!(results3.len(), 1);
+    }
+
+    #[test]
+    fn test_spatial_query_builder_edge_cases() {
+        let mut index = SpatialIndex::new();
+
+        let nodes = vec![
+            NodeBuilder::<()>::new("node1")
+                .position(10.0, 10.0)
+                .size(20.0, 20.0)
+                .build(),
+            NodeBuilder::<()>::new("node2")
+                .position(50.0, 50.0)
+                .size(20.0, 20.0)
+                .build(),
+            NodeBuilder::<()>::new("node3")
+                .position(90.0, 90.0)
+                .size(20.0, 20.0)
+                .build(),
+        ];
+
+        index.bulk_load(&nodes).unwrap();
+
+        // Test query with no constraints (should return all nodes)
+        let results = SpatialQuery::new(&index).execute();
+        assert_eq!(results.len(), 3);
+
+        // Test query with limit larger than available results
+        let results = SpatialQuery::new(&index)
+            .limit(10)
+            .execute();
+        assert_eq!(results.len(), 3);
+
+        // Test query with limit of 0
+        let results = SpatialQuery::new(&index)
+            .limit(0)
+            .execute();
+        assert_eq!(results.len(), 0);
+
+        // Test query with both bounds and radius (bounds should take precedence)
+        let results = SpatialQuery::new(&index)
+            .bounds(Rect::new(0.0, 0.0, 40.0, 40.0))
+            .radius(Position::new(60.0, 60.0), 100.0)
+            .execute();
+        assert_eq!(results.len(), 1); // Only node1 should be in bounds
+    }
+
+    #[test]
+    fn test_spatial_index_zero_negative_size_bounds() {
+        let index = SpatialIndex::new();
+
+        // Test with negative width
+        let neg_width_bounds = Rect::new(50.0, 50.0, -20.0, 20.0);
+        let cells_neg_width = index.get_grid_cells_for_bounds(&neg_width_bounds);
+        assert_eq!(cells_neg_width.len(), 1);
+
+        // Test with negative height
+        let neg_height_bounds = Rect::new(50.0, 50.0, 20.0, -20.0);
+        let cells_neg_height = index.get_grid_cells_for_bounds(&neg_height_bounds);
+        assert_eq!(cells_neg_height.len(), 1);
+
+        // Test with both negative dimensions
+        let neg_both_bounds = Rect::new(50.0, 50.0, -20.0, -20.0);
+        let cells_neg_both = index.get_grid_cells_for_bounds(&neg_both_bounds);
+        assert_eq!(cells_neg_both.len(), 1);
+    }
+
+    #[test]
+    fn test_spatial_index_clear_functionality() {
+        let mut index = SpatialIndex::new();
+
+        let node1 = NodeBuilder::<()>::new("node1")
+            .position(10.0, 10.0)
+            .size(20.0, 20.0)
+            .build();
+
+        let node2 = NodeBuilder::<()>::new("node2")
+            .position(50.0, 50.0)
+            .size(20.0, 20.0)
+            .build();
+
+        index.insert(&node1).unwrap();
+        index.insert(&node2).unwrap();
+        assert_eq!(index.len(), 2);
+
+        // Clear the index
+        index.clear();
+        assert_eq!(index.len(), 0);
+        assert!(index.is_empty());
+
+        // Verify queries return empty results after clear
+        let query_bounds = Rect::new(0.0, 0.0, 100.0, 100.0);
+        let results = index.query_rect(&query_bounds);
+        assert_eq!(results.len(), 0);
+
+        // Verify bounds are None after clear
+        let bounds = index.bounds();
+        assert_eq!(bounds, None);
     }
 }
