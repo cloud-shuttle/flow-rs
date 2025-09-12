@@ -25,6 +25,9 @@ mod performance_tests;
 mod api_contracts;
 
 #[cfg(test)]
+mod documentation_tests;
+
+#[cfg(test)]
 mod graph_handle_integration;
 
 #[cfg(test)]
