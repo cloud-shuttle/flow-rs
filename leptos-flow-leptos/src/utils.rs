@@ -36,8 +36,8 @@ impl CanvasRect {
 /// This function properly accesses the DOM to get the actual canvas bounds,
 /// which is essential for accurate mouse coordinate transformation.
 pub fn get_canvas_rect(canvas: &HtmlCanvasElement) -> Result<CanvasRect, JsValue> {
-    // TODO: Implement this function
-    Err(JsValue::from_str("get_canvas_rect not implemented yet"))
+    let dom_rect = canvas.get_bounding_client_rect();
+    Ok(CanvasRect::from_dom_rect(&dom_rect))
 }
 
 #[cfg(test)]
