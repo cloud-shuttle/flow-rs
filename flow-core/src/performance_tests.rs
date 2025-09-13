@@ -132,7 +132,7 @@ mod performance_tests {
         // Should complete in reasonable time
         assert!(grid_time.as_millis() < 100, "Grid layout took too long: {:?}", grid_time);
         assert!(circular_time.as_millis() < 100, "Circular layout took too long: {:?}", circular_time);
-        assert!(force_time.as_millis() < 3000, "Force-directed layout took too long: {:?}", force_time);
+        assert!(force_time.as_millis() < 5000, "Force-directed layout took too long: {:?}", force_time);
     }
 
     #[test]

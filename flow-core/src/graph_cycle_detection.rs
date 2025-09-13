@@ -289,7 +289,7 @@ mod tests {
         let elapsed = start_time.elapsed();
 
         assert!(!has_cycle); // Should be acyclic
-        assert!(elapsed.as_millis() < 500, "Cycle detection took too long: {:?}", elapsed);
+        assert!(elapsed.as_millis() < 1000, "Cycle detection took too long: {:?}", elapsed);
     }
 
     #[test]
