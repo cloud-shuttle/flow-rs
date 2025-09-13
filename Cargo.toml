@@ -18,7 +18,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/flow-rs/flow-rs"
 homepage = "https://flow-rs.dev"
 documentation = "https://docs.rs/flow-rs"
-keywords = ["flow", "graph", "wasm", "reactive", "node-editor", "visualization"]
+keywords = ["flow", "graph", "wasm", "reactive", "visualization"]
 categories = ["gui", "web-programming", "wasm", "visualization"]
 readme = "README.md"
 
