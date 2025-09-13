@@ -95,7 +95,7 @@ impl EdgeCreator {
             let current_connections = graph.edges()
                 .filter(|edge| {
                     &edge.source == source_node_id &&
-                    edge.source_handle.as_ref().map(|h| h.as_str()) == Some(source_handle)
+                    edge.source_handle.as_deref() == Some(source_handle)
                 })
                 .count();
 
@@ -113,8 +113,8 @@ impl EdgeCreator {
             let target_node_id: NodeId = target_node_ref.id.clone();
             let current_connections = graph.edges()
                 .filter(|edge| {
-                    &edge.target == &target_node_id &&
-                    edge.target_handle.as_ref().map(|h| h.as_str()) == Some(target_handle)
+                    edge.target == target_node_id &&
+                    edge.target_handle.as_deref() == Some(target_handle)
                 })
                 .count();
 

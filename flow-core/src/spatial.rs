@@ -19,6 +19,7 @@ pub struct SpatialIndex {
 /// Entry in the spatial index
 #[derive(Debug, Clone)]
 struct SpatialEntry {
+    #[allow(dead_code)]
     node_id: NodeId,
     bounds: Rect,
     grid_cells: Vec<GridCell>,
@@ -36,6 +37,7 @@ impl GridCell {
         Self { x, y }
     }
 
+    #[allow(dead_code)]
     fn from_position(pos: Position, cell_size: f64) -> Self {
         Self {
             x: (pos.x / cell_size).floor() as i32,

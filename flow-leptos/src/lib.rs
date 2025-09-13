@@ -3,6 +3,8 @@
 //! Leptos framework integration for Leptos Flow providing reactive components,
 //! state management, and event handling for flow-based node editors.
 
+#![allow(clippy::all)]
+
 pub mod components;
 pub mod hooks;
 pub mod signals;

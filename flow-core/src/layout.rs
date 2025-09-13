@@ -42,6 +42,7 @@ pub struct ForceDirectedLayout {
     current_iteration: usize,
     running: bool,
     node_velocities: HashMap<NodeId, Position>,
+    #[allow(dead_code)]
     temperature: f64,
 }
 
@@ -536,6 +537,7 @@ impl HierarchicalLayout {
     }
 
     /// Recursively build tree structure
+    #[allow(clippy::only_used_in_recursion)]
     fn build_tree_recursive<N, E>(
         &self,
         node_id: &NodeId,
@@ -581,6 +583,7 @@ impl HierarchicalLayout {
     }
 
     /// First walk - calculate preliminary x coordinates
+    #[allow(clippy::only_used_in_recursion)]
     fn first_walk(&self, node: &mut TreeNode, level: usize) {
         if node.children.is_empty() {
             // Leaf node
@@ -639,6 +642,7 @@ impl HierarchicalLayout {
     }
 
     /// Apply tree positions to graph nodes
+    #[allow(clippy::only_used_in_recursion)]
     fn apply_tree_to_graph<N, E>(&self, tree: &TreeNode, graph: &mut Graph<N, E>) {
         if let Some(node) = graph.get_node_mut(&tree.id) {
             node.position = tree.position;

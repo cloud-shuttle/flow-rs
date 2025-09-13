@@ -151,7 +151,7 @@ impl SelectionManager {
 
         // Update visual feedback for selected node
         self.visual_feedback.entry(node_id)
-            .or_insert_with(VisualFeedback::new)
+            .or_default()
             .set_selected(true);
     }
 
@@ -492,7 +492,7 @@ impl SelectionManager {
     /// Set hover state for a node
     pub fn set_hover_state(&mut self, node_id: &NodeId, hovered: bool) {
         let feedback = self.visual_feedback.entry(node_id.clone())
-            .or_insert_with(VisualFeedback::new);
+            .or_default();
         feedback.set_hovered(hovered);
 
         // Clean up if no states are active
@@ -504,7 +504,7 @@ impl SelectionManager {
     /// Set highlight state for a node
     pub fn set_highlight_state(&mut self, node_id: &NodeId, highlighted: bool) {
         let feedback = self.visual_feedback.entry(node_id.clone())
-            .or_insert_with(VisualFeedback::new);
+            .or_default();
         feedback.set_highlighted(highlighted);
 
         // Clean up if no states are active

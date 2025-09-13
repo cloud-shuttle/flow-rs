@@ -395,15 +395,16 @@ impl AutoLayoutManager {
 
         // Simple DFS-based cycle detection
         for node in graph.nodes() {
-            if !visited.contains(&node.id) {
-                if self.dfs_cycle_detection(graph, &node.id, &mut visited, &mut rec_stack) {
-                    return true;
-                }
+            if !visited.contains(&node.id)
+                && self.dfs_cycle_detection(graph, &node.id, &mut visited, &mut rec_stack)
+            {
+                return true;
             }
         }
         false
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn dfs_cycle_detection<N, E>(&self, graph: &Graph<N, E>, node_id: &NodeId,
                                 visited: &mut HashSet<NodeId>, rec_stack: &mut HashSet<NodeId>) -> bool {
         visited.insert(node_id.clone());
@@ -451,12 +452,16 @@ impl AutoLayoutManager {
 #[derive(Debug)]
 struct GraphAnalysis {
     node_count: usize,
+    #[allow(dead_code)]
     edge_count: usize,
     is_tree: bool,
+    #[allow(dead_code)]
     is_dag: bool,
     has_cycles: bool,
+    #[allow(dead_code)]
     max_degree: usize,
     density: f64,
+    #[allow(dead_code)]
     clustering_coefficient: f64,
 }
 

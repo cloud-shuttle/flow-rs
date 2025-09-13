@@ -35,6 +35,7 @@ pub fn init() {
 
 /// Export WASM-compatible types and functions
 pub mod wasm_exports {
+    #[allow(unused_imports)]
     use super::*;
     pub use crate::bindings::*;
 }

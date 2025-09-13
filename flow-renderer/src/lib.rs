@@ -112,6 +112,7 @@ pub mod detection {
     #[cfg(feature = "webgpu")]
     fn is_webgpu_available() -> bool {
         // Check if WebGPU is available
+        #[allow(unused_imports)]
         use wasm_bindgen::JsCast;
         use web_sys::window;
 

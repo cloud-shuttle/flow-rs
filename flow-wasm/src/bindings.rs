@@ -2,12 +2,13 @@
 
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
 use std::collections::HashMap;
 
 use flow_core::{
     Graph, Node, Edge, NodeId, EdgeId, Position, Size, Viewport
 };
-use flow_renderer::{Renderer, RendererType};
+use flow_renderer::Renderer;
 use flow_renderer::traits::RenderStats;
 
 /// WASM-compatible position structure
@@ -271,7 +272,7 @@ impl WasmGraph {
 
     pub fn remove_node(&mut self, node_id: &str) {
         let id = NodeId::new(node_id);
-        self.inner.remove_node(&id);
+        let _ = self.inner.remove_node(&id);
     }
 
     pub fn add_edge(&mut self, edge: WasmEdge) -> Result<(), JsValue> {
@@ -282,7 +283,7 @@ impl WasmGraph {
 
     pub fn remove_edge(&mut self, edge_id: &str) {
         let id = EdgeId::new(edge_id);
-        self.inner.remove_edge(&id);
+        let _ = self.inner.remove_edge(&id);
     }
 
     pub fn get_node(&self, node_id: &str) -> Option<WasmNode> {
@@ -408,7 +409,7 @@ impl WasmFlowEditor {
     pub fn new(canvas_id: &str) -> Result<WasmFlowEditor, JsValue> {
         let window = web_sys::window().ok_or("No window object")?;
         let document = window.document().ok_or("No document object")?;
-        let canvas = document
+        let _canvas = document
             .get_element_by_id(canvas_id)
             .ok_or("Canvas element not found")?
             .dyn_into::<web_sys::HtmlCanvasElement>()

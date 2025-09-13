@@ -39,11 +39,13 @@ impl Position {
     }
 
     /// Add positions together
+    #[allow(clippy::should_implement_trait)]
     pub fn add(self, other: Position) -> Self {
         Self::new(self.x + other.x, self.y + other.y)
     }
 
     /// Subtract positions
+    #[allow(clippy::should_implement_trait)]
     pub fn sub(self, other: Position) -> Self {
         Self::new(self.x - other.x, self.y - other.y)
     }

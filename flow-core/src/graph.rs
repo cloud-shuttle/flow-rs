@@ -816,8 +816,8 @@ impl<N, E> Graph<N, E> {
         let handle_id_str = handle_id.as_str();
         self.edges.values()
             .filter(|edge| {
-                (&edge.source == node_id && edge.source_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str)) ||
-                (&edge.target == node_id && edge.target_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str))
+                (&edge.source == node_id && edge.source_handle.as_deref() == Some(handle_id_str)) ||
+                (&edge.target == node_id && edge.target_handle.as_deref() == Some(handle_id_str))
             })
             .count()
     }
@@ -830,8 +830,8 @@ impl<N, E> Graph<N, E> {
         let handle_id_str = handle_id.as_str();
         self.edges.values()
             .filter(|edge| {
-                (&edge.source == node_id && edge.source_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str)) ||
-                (&edge.target == node_id && edge.target_handle.as_ref().map(|s| s.as_str()) == Some(handle_id_str))
+                (&edge.source == node_id && edge.source_handle.as_deref() == Some(handle_id_str)) ||
+                (&edge.target == node_id && edge.target_handle.as_deref() == Some(handle_id_str))
             })
             .collect()
     }
@@ -876,7 +876,6 @@ impl<N, E> Graph<N, E> {
     }
 
     /// Drag & Drop Operations
-
     /// Apply drag operation to selected nodes
     pub fn apply_node_drag(&mut self, selected_nodes: &std::collections::HashSet<NodeId>, delta: Position) -> Result<()> {
         self.apply_node_drag_with_transform(selected_nodes, delta, |pos, _| pos)
@@ -977,7 +976,6 @@ impl<N, E> Graph<N, E> {
     }
 
     /// Interactive Edge Creation
-
     /// Create a new edge creator for this graph
     pub fn create_edge_creator(&self) -> crate::edge_creator::EdgeCreator {
         crate::edge_creator::EdgeCreator::new()
@@ -1362,10 +1360,10 @@ where
 
         // Check each node as a potential starting point
         for node_id in self.node_ids() {
-            if !visited.contains(node_id) {
-                if self.has_cycle_dfs(node_id, &mut visited, &mut rec_stack) {
-                    return true;
-                }
+            if !visited.contains(node_id)
+                && self.has_cycle_dfs(node_id, &mut visited, &mut rec_stack)
+            {
+                return true;
             }
         }
 

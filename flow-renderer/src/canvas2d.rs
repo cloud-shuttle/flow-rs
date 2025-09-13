@@ -19,6 +19,7 @@ pub struct Canvas2DRenderer {
     stats: RenderStats,
     width: u32,
     height: u32,
+    #[allow(dead_code)]
     performance_manager: PerformanceManager,
     // Animation state
     selection_count: usize,
@@ -88,6 +89,7 @@ impl Renderer for Canvas2DRenderer {
 
     fn clear(&mut self, color: Option<&str>) -> Result<()> {
         let color = color.unwrap_or("#ffffff");
+        #[allow(deprecated)]
         self.context.set_fill_style(&color.into());
         self.context.fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
 
@@ -136,6 +138,7 @@ impl Renderer for Canvas2DRenderer {
     fn render_selection(&mut self, selected_bounds: &[Rect], style: &SelectionStyle) -> Result<()> {
         self.context.save();
 
+        #[allow(deprecated)]
         self.context.set_stroke_style(&style.color.clone().into());
         self.context.set_line_width(style.width);
 
@@ -187,6 +190,7 @@ impl Renderer for Canvas2DRenderer {
         // Simple implementation - render each selection with the style
         for bounds in selected_bounds {
         self.context.save();
+            #[allow(deprecated)]
             self.context.set_stroke_style(&style.connection_color.clone().into());
             self.context.set_line_width(style.connection_width);
 
@@ -200,6 +204,7 @@ impl Renderer for Canvas2DRenderer {
 
     fn render_selection_hover(&mut self, bounds: &Rect, _hover_position: &Position, style: &SelectionHoverStyle) -> Result<()> {
         self.context.save();
+        #[allow(deprecated)]
         self.context.set_fill_style(&style.hover_highlight_color.clone().into());
         self.context.set_global_alpha(0.5); // Use a fixed opacity
 
@@ -228,6 +233,7 @@ impl Renderer for Canvas2DRenderer {
             _ => {
                 // Simple background rendering
                 self.context.save();
+                #[allow(deprecated)]
                 self.context.set_fill_style(&config.color.clone().into());
                 self.context.fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
                 self.context.restore();

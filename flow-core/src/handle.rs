@@ -224,7 +224,7 @@ impl HandleManager {
         // Check for duplicate handle IDs
         if self.handles.iter().any(|h| h.id == handle.id) {
             return Err(FlowError::invalid_operation(
-                &format!("Handle '{}' already exists", handle.id.as_str())
+                format!("Handle '{}' already exists", handle.id.as_str())
             ));
         }
 
@@ -236,7 +236,7 @@ impl HandleManager {
     pub fn remove_handle(&mut self, handle_id: &HandleId) -> Result<Handle> {
         let index = self.handles.iter().position(|h| &h.id == handle_id)
             .ok_or_else(|| FlowError::invalid_operation(
-                &format!("Handle '{}' not found", handle_id.as_str())
+                format!("Handle '{}' not found", handle_id.as_str())
             ))?;
 
         Ok(self.handles.remove(index))

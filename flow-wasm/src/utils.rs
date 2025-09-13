@@ -1,7 +1,7 @@
 //! Utility functions for WASM integration
 
 use wasm_bindgen::prelude::*;
-use web_sys::{Performance, Window, console};
+use web_sys::{console};
 
 /// Log levels for WASM console output
 #[wasm_bindgen]
@@ -254,7 +254,7 @@ impl AnimationFrame {
     pub fn stop(&mut self) {
         if let Some(id) = self.request_id.take() {
             if let Some(window) = web_sys::window() {
-                window.cancel_animation_frame(id);
+                let _ = window.cancel_animation_frame(id);
             }
         }
         self.callback = None;
@@ -284,7 +284,7 @@ pub struct EventUtils;
 #[wasm_bindgen]
 impl EventUtils {
     /// Get mouse position relative to canvas
-    pub fn get_mouse_position(canvas: &web_sys::HtmlCanvasElement, event: &web_sys::MouseEvent) -> js_sys::Array {
+    pub fn get_mouse_position(_canvas: &web_sys::HtmlCanvasElement, event: &web_sys::MouseEvent) -> js_sys::Array {
         // For now, use a simple approach without get_bounding_client_rect
         // TODO: Implement proper mouse position calculation
         let x = event.client_x() as f64;

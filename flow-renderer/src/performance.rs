@@ -123,7 +123,7 @@ impl SpatialIndex {
         let cell_x = (position.x / self.cell_size).floor() as i32;
         let cell_y = (position.y / self.cell_size).floor() as i32;
 
-        self.cells.entry((cell_x, cell_y)).or_insert_with(Vec::new).push(index);
+        self.cells.entry((cell_x, cell_y)).or_default().push(index);
         index
     }
 
@@ -145,7 +145,7 @@ impl SpatialIndex {
         }
 
         // Add to new cell
-        self.cells.entry((new_cell_x, new_cell_y)).or_insert_with(Vec::new).push(index);
+        self.cells.entry((new_cell_x, new_cell_y)).or_default().push(index);
 
         // Update position and size
         self.node_positions[index] = position;
@@ -239,6 +239,12 @@ pub struct BatchedEdge {
     pub z_index: i32,
 }
 
+impl Default for RenderBatch {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RenderBatch {
     pub fn new() -> Self {
         Self {
@@ -272,6 +278,12 @@ impl RenderBatch {
 pub struct LODSystem {
     zoom_levels: Vec<f64>,
     detail_thresholds: Vec<usize>,
+}
+
+impl Default for LODSystem {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl LODSystem {
@@ -418,11 +430,14 @@ impl PerformanceSettings {
 /// Performance optimization manager
 pub struct PerformanceManager {
     monitor: PerformanceMonitor,
+    #[allow(dead_code)]
     spatial_index: SpatialIndex,
     render_batch: RenderBatch,
     lod_system: LODSystem,
     settings: PerformanceSettings,
+    #[allow(dead_code)]
     node_pool: MemoryPool<BatchedNode>,
+    #[allow(dead_code)]
     edge_pool: MemoryPool<BatchedEdge>,
 }
 
@@ -529,6 +544,7 @@ impl PerformanceManager {
 }
 
 // Helper trait for Rect operations
+#[allow(dead_code)]
 trait RectExt {
     fn expand(&self, margin: f64) -> Self;
     fn intersects(&self, other: &Self) -> bool;
@@ -553,6 +569,7 @@ impl RectExt for Rect {
 }
 
 // Helper trait for Position operations
+#[allow(dead_code)]
 trait PositionExt {
     fn distance_to(&self, other: Self) -> f64;
 }

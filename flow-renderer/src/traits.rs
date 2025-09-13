@@ -722,11 +722,11 @@ where
     }
 
     fn get_position(&self) -> Position {
-        self.node.position.clone()
+        self.node.position
     }
 
     fn get_size(&self) -> Size {
-        self.node.size.clone()
+        self.node.size
     }
 
     fn get_data_json(&self) -> String {

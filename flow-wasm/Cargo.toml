@@ -16,6 +16,7 @@ crate-type = ["cdylib"]
 [features]
 default = ["console_error_panic_hook"]
 debug = ["console_error_panic_hook", "tracing-wasm"]
+canvas2d = []
 
 [dependencies]
 # Core dependencies
