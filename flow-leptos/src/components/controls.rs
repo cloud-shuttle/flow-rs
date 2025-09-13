@@ -4,10 +4,10 @@
 //! layout algorithm selection, and graph manipulation tools.
 
 use crate::signals::ViewportState;
-use flow_core::layout::{
+use flow_rs_core::layout::{
     CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
 };
-use flow_core::{Graph, Position};
+use flow_rs_core::{Graph, Position};
 use leptos::*;
 
 /// Configuration for the Controls component

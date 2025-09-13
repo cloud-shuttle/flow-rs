@@ -9,7 +9,7 @@ use crate::drag::DragHandler;
 use crate::edge_connection::{ConnectionHandle, ConnectionPreview, EdgeCreator, HandleDetector};
 use crate::events::{FlowEvent, KeyboardModifiers, MouseButton, NodeEvent};
 use crate::signals::{FlowState, ViewportState};
-use flow_core::{Graph, Position};
+use flow_rs_core::{Graph, Position};
 
 /// Hook for managing canvas mouse interactions
 pub fn use_canvas_mouse<N, E>(

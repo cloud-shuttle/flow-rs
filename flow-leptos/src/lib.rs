@@ -18,8 +18,8 @@ pub mod mouse_integration;
 pub mod signals;
 
 // Re-export core types for convenience
-pub use flow_core as core;
-pub use flow_renderer as renderer;
+pub use flow_rs_core as core;
+pub use flow_rs_renderer as renderer;
 
 /// Prelude module for convenient imports
 pub mod prelude {

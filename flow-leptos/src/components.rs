@@ -11,9 +11,9 @@ use std::ops::Deref;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 
-use flow_core::Graph;
-use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
-use flow_renderer::{Canvas2DRenderer, Renderer, RendererType};
+use flow_rs_core::Graph;
+use flow_rs_renderer::traits::{BackgroundConfig, BackgroundVariant};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer, RendererType};
 
 use crate::signals::{FlowState, ViewportState};
 // use crate::events::{FlowEvent, NodeEvent};

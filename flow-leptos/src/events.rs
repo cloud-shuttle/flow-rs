@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use flow_core::{Edge, EdgeId, Node, NodeId, Position};
+use flow_rs_core::{Edge, EdgeId, Node, NodeId, Position};
 
 /// Flow-level events
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -269,7 +269,7 @@ where
 /// Utility functions for event handling
 pub mod utils {
     use super::*;
-    use flow_core::Rect;
+    use flow_rs_core::Rect;
 
     /// Check if a position is inside a rectangle
     pub fn position_in_rect(pos: Position, rect: &Rect) -> bool {
@@ -320,7 +320,7 @@ pub mod utils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{EdgeBuilder, NodeBuilder, Size};
+    use flow_rs_core::prelude::{EdgeBuilder, NodeBuilder, Size};
 
     #[test]
     fn test_keyboard_modifiers() {
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn test_position_in_rect() {
-        let rect = flow_core::Rect::new(10.0, 10.0, 100.0, 50.0);
+        let rect = flow_rs_core::Rect::new(10.0, 10.0, 100.0, 50.0);
 
         assert!(utils::position_in_rect(Position::new(50.0, 25.0), &rect));
         assert!(!utils::position_in_rect(Position::new(5.0, 25.0), &rect));

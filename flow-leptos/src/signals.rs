@@ -3,11 +3,11 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use flow_core::{
+use flow_rs_core::{
     Edge, EdgeId, Graph, GroupId, GroupManager, KeyboardShortcut, NavigationDirection, Node,
     NodeId, Position, SelectionManager, SelectionMode, Viewport,
 };
-use flow_renderer::traits::RenderStats;
+use flow_rs_renderer::traits::RenderStats;
 
 #[cfg(feature = "canvas2d")]
 use leptos_flow_renderer::Canvas2DRenderer;
@@ -233,7 +233,7 @@ impl FlowState {
     }
 
     /// Get bounds of all selected nodes for rendering selection indicators
-    pub fn get_selected_bounds<N, E>(&self, graph: &Graph<N, E>) -> Vec<flow_core::Rect>
+    pub fn get_selected_bounds<N, E>(&self, graph: &Graph<N, E>) -> Vec<flow_rs_core::Rect>
     where
         N: Clone,
         E: Clone,
@@ -243,7 +243,7 @@ impl FlowState {
         for node_id in self.selection_manager.selected_nodes() {
             if let Some(node) = graph.get_node(node_id) {
                 // Calculate node bounds
-                let rect = flow_core::Rect::new(
+                let rect = flow_rs_core::Rect::new(
                     node.position.x,
                     node.position.y,
                     node.size.width,
@@ -449,7 +449,7 @@ impl ViewportState {
     }
 
     /// Fit the given bounds in the viewport
-    pub fn fit_bounds(&mut self, bounds: flow_core::Rect, canvas_size: (f64, f64)) {
+    pub fn fit_bounds(&mut self, bounds: flow_rs_core::Rect, canvas_size: (f64, f64)) {
         if bounds.width <= 0.0 || bounds.height <= 0.0 {
             return;
         }
@@ -515,7 +515,7 @@ where
     }
 
     /// Add a node to the graph
-    pub fn add_node(&self, node: Node<N>) -> Result<(), flow_core::FlowError> {
+    pub fn add_node(&self, node: Node<N>) -> Result<(), flow_rs_core::FlowError> {
         self.graph_signal.update(|graph| {
             let _ = graph.add_node(node);
         });
@@ -530,7 +530,7 @@ where
     }
 
     /// Add an edge to the graph
-    pub fn add_edge(&self, edge: Edge<E>) -> Result<(), flow_core::FlowError> {
+    pub fn add_edge(&self, edge: Edge<E>) -> Result<(), flow_rs_core::FlowError> {
         self.graph_signal.update(|graph| {
             let _ = graph.add_edge(edge);
         });
@@ -562,7 +562,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{NodeBuilder, Size};
+    use flow_rs_core::prelude::{NodeBuilder, Size};
 
     #[test]
     fn test_flow_state_selection() {

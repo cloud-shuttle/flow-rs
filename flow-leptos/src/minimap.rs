@@ -3,7 +3,7 @@
 //! Provides a minimap overview of the flow graph with navigation capabilities,
 //! viewport synchronization, and configurable rendering options.
 
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Viewport};
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Viewport};
 
 /// Configuration for the minimap component
 #[derive(Debug, Clone)]

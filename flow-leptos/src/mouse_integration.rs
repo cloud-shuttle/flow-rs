@@ -4,7 +4,7 @@ use wasm_bindgen::JsCast;
 use web_sys::{Element, MouseEvent};
 
 use crate::dom_rect::{CoordinateConverter, DomRectUtils, ElementRect};
-use flow_core::{Position, Viewport};
+use flow_rs_core::{Position, Viewport};
 
 /// Mouse event coordinate converter that integrates DOM rect access with viewport transformations
 pub struct MouseEventConverter {

@@ -2,7 +2,7 @@
 //!
 //! Provides utilities for accessing DOM element bounding rectangles and coordinate conversion.
 
-use flow_core::{Position, Rect, Size};
+use flow_rs_core::{Position, Rect, Size};
 use std::collections::HashMap;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::Element;

@@ -7,7 +7,7 @@ use wasm_bindgen::{closure::Closure, JsCast};
 use web_sys::{EventTarget, KeyboardEvent};
 
 use crate::signals::{FlowState, ViewportState};
-use flow_core::{Graph, KeyboardShortcut, NavigationDirection};
+use flow_rs_core::{Graph, KeyboardShortcut, NavigationDirection};
 
 /// Keyboard modifiers state
 #[derive(Debug, Clone, Copy, Default)]
@@ -117,7 +117,7 @@ where
 pub fn handle_node_click<N, E>(
     graph: &Graph<N, E>,
     flow_state: &mut FlowState,
-    node_id: flow_core::NodeId,
+    node_id: flow_rs_core::NodeId,
     modifiers: KeyboardModifiers,
 ) where
     N: Clone,
@@ -138,7 +138,7 @@ pub fn handle_node_click<N, E>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::{Node, Position};
+    use flow_rs_core::{Node, Position};
 
     #[test]
     fn test_keyboard_modifiers() {
@@ -157,7 +157,7 @@ mod tests {
             .unwrap();
 
         let mut flow_state = FlowState::new();
-        let node_id = flow_core::NodeId::new("node1");
+        let node_id = flow_rs_core::NodeId::new("node1");
 
         // Test regular click
         let modifiers = KeyboardModifiers::default();

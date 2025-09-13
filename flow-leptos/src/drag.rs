@@ -6,7 +6,7 @@ use leptos::*;
 use web_sys::MouseEvent;
 
 use crate::signals::{FlowState, ViewportState};
-use flow_core::{Graph, GroupId, GroupManager, NodeId, Position, Rect};
+use flow_rs_core::{Graph, GroupId, GroupManager, NodeId, Position, Rect};
 
 /// Drag configuration and constraints
 #[derive(Debug, Clone)]
@@ -255,7 +255,7 @@ impl DragHandler {
     fn apply_bounds_constraints(
         &self,
         position: Position,
-        node_size: &flow_core::Size,
+        node_size: &flow_rs_core::Size,
     ) -> Position {
         if let Some(bounds) = &self.config.canvas_bounds {
             let min_x = bounds.x;
@@ -486,7 +486,7 @@ impl DragHandler {
                 let new_width = (node.size.width + delta.x).max(10.0); // Minimum width of 10
                 let new_height = (node.size.height + delta.y).max(10.0); // Minimum height of 10
 
-                node.set_size(flow_core::Size::new(new_width, new_height));
+                node.set_size(flow_rs_core::Size::new(new_width, new_height));
             }
         }
     }
@@ -495,9 +495,9 @@ impl DragHandler {
     fn nodes_overlap(
         &self,
         pos1: Position,
-        size1: &flow_core::Size,
+        size1: &flow_rs_core::Size,
         pos2: Position,
-        size2: &flow_core::Size,
+        size2: &flow_rs_core::Size,
     ) -> bool {
         pos1.x < pos2.x + size2.width
             && pos1.x + size1.width > pos2.x
@@ -509,7 +509,7 @@ impl DragHandler {
     fn calculate_target_position(
         &self,
         flow_state: &FlowState,
-        node: &flow_core::Node<impl Clone>,
+        node: &flow_rs_core::Node<impl Clone>,
     ) -> Position {
         if let (Some(drag_start), Some(last_pos)) =
             (flow_state.drag_start, flow_state.last_mouse_pos)
@@ -693,7 +693,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::{Group, GroupManager, Node, Size};
+    use flow_rs_core::{Group, GroupManager, Node, Size};
 
     #[test]
     fn test_drag_handler_creation() {

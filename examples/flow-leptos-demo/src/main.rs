@@ -1,5 +1,5 @@
-use flow_core::{Edge, Graph, Node, Position, Size};
-use flow_leptos::components::{FlowCanvas, FlowEditor};
+use flow_rs_core::{Edge, Graph, Node, Position, Size};
+use flow_rs_leptos::components::{FlowCanvas, FlowEditor};
 use leptos::*;
 
 fn main() {

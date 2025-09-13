@@ -3,7 +3,7 @@
 //! Provides comprehensive edge connection functionality including connection validation,
 //! handle detection, edge creation, and connection management.
 
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
 
 /// Result of a connection validation operation
 #[derive(Debug, Clone, PartialEq)]

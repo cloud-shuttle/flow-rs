@@ -8,8 +8,8 @@ use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, Element, HtmlCanvasElement, HtmlElement, MouseEvent};
 
 use crate::signals::{FlowState, ViewportState};
-use flow_core::{Edge, Graph, Node, Position, Viewport};
-use flow_renderer::Canvas2DRenderer;
+use flow_rs_core::{Edge, Graph, Node, Position, Viewport};
+use flow_rs_renderer::Canvas2DRenderer;
 
 /// Configuration for the MiniMap component
 #[derive(Debug, Clone)]

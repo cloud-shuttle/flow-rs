@@ -9,7 +9,7 @@ use web_sys::{KeyboardEvent, MouseEvent, WheelEvent};
 
 use crate::events::{DragTarget, EdgeEvent, FlowEvent, KeyboardModifiers, MouseButton, NodeEvent};
 use crate::signals::{FlowState, ViewportState};
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
 
 /// Interaction manager for handling flow editor events
 pub struct InteractionManager {
@@ -341,7 +341,7 @@ impl InteractionManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::{
+    use flow_rs_core::{
         prelude::{EdgeBuilder, NodeBuilder},
         Graph,
     };
