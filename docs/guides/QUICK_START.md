@@ -1,8 +1,8 @@
-# Leptos Flow Quick Start Guide
+# Flow-RS Quick Start Guide
 
 ## Overview
 
-Get up and running with Leptos Flow in under 10 minutes. This guide walks through installation, basic setup, and creating your first interactive flow diagram.
+Get up and running with Flow-RS in under 10 minutes. This guide walks through installation, basic setup, and creating your first interactive flow diagram.
 
 ## Installation
 
@@ -20,13 +20,13 @@ Add to your `Cargo.toml`:
 ```toml
 [dependencies]
 leptos = "0.6.15"
-leptos-flow-core = "0.1"
-leptos-flow-leptos = "0.1"
-leptos-flow-renderer = "0.1"
+flow-core = "0.1"
+flow-leptos = "0.1"
+flow-renderer = "0.1"
 
 # Optional: For advanced rendering
 [features]
-webgpu = ["leptos-flow-renderer/webgpu"]
+webgpu = ["flow-renderer/webgpu"]
 ```
 
 ### Install Development Tools
@@ -50,7 +50,7 @@ Create a new component with a simple node editor:
 
 ```rust
 use leptos::*;
-use leptos_flow::*;
+use flow_leptos::*;
 
 #[component]
 pub fn SimpleFlow() -> impl IntoView {
@@ -333,7 +333,7 @@ pub fn StyledNode(
 ### 1. Force-Directed Layout
 
 ```rust
-use leptos_flow::layout::*;
+use flow_core::layout::*;
 
 let (apply_layout, _) = create_signal(());
 
@@ -513,4 +513,4 @@ fn process_data_flow() {
 }
 ```
 
-This quick start guide should get you productive with Leptos Flow quickly. Check out the other guides for more advanced usage patterns and best practices.
+This quick start guide should get you productive with Flow-RS quickly. Check out the other guides for more advanced usage patterns and best practices.

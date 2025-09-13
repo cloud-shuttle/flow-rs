@@ -1,8 +1,8 @@
-# Leptos Flow Examples
+# Flow-RS Examples
 
 ## Overview
 
-This directory contains comprehensive examples demonstrating various Leptos Flow features and use cases. Each example is self-contained with clear documentation and can serve as a starting point for your own projects.
+This directory contains comprehensive examples demonstrating various Flow-RS features and use cases. Each example is self-contained with clear documentation and can serve as a starting point for your own projects.
 
 ## Quick Start
 
@@ -17,7 +17,7 @@ trunk serve --open
 
 ### 1. Simple Flow
 
-**Path**: `examples/simple-flow/`
+**Path**: `examples/flow-simple/`
 **Complexity**: Beginner
 **Features**: Basic nodes, edges, drag and drop
 
@@ -436,8 +436,8 @@ cargo install wasm-pack
 
 1. **Navigate to example directory**:
 
-   ```bash
-   cd examples/simple-flow
+```bash
+cd examples/flow-simple
    ```
 
 2. **Start development server**:
@@ -477,7 +477,8 @@ Most examples use these common dependencies:
 ```toml
 [dependencies]
 leptos = "0.6"
-leptos-flow = "0.1"
+flow-leptos = "0.1"
+flow-core = "0.1"
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
 web-sys = "0.3"
@@ -535,4 +536,4 @@ We welcome new examples! When contributing:
 
 ## License
 
-All examples are provided under the same license as Leptos Flow (MIT/Apache-2.0), allowing you to use them as starting points for your own projects.
+All examples are provided under the same license as Flow-RS (MIT/Apache-2.0), allowing you to use them as starting points for your own projects.

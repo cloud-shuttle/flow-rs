@@ -1,10 +1,10 @@
-# Rust xyflow Design Document
+# Flow-RS Design Document
 
 ## Leveraging Leptos Helios Architecture for Node-Based UI
 
 ### Executive Summary
 
-This document outlines the design for `rust-xyflow`, a high-performance node-based UI library built in Rust that leverages the proven architecture, performance optimizations, and multi-framework support patterns from the Leptos Helios ecosystem.
+This document outlines the design for `flow-rs`, a high-performance node-based UI library built in Rust that leverages the proven architecture, performance optimizations, and multi-framework support patterns from the Leptos Helios ecosystem.
 
 ## 🎯 **Strategic Advantages from Leptos Helios**
 
@@ -41,20 +41,19 @@ This document outlines the design for `rust-xyflow`, a high-performance node-bas
 ### **Repository Structure**
 
 ```
-rust-xyflow/
-├── xyflow-core/           # Core node-based UI engine
-├── xyflow-leptos/         # Leptos integration
-├── xyflow-wasm/           # WASM bindings (universal)
-├── xyflow-macros/         # Compile-time utilities
-├── xyflow-examples/       # Examples and demos
-├── xyflow-benchmarks/     # Performance testing
-└── shared/                # Shared utilities with helios
+flow-rs/
+├── flow-core/             # Core node-based UI engine
+├── flow-leptos/           # Leptos integration
+├── flow-wasm/             # WASM bindings (universal)
+├── flow-renderer/         # Rendering backends
+├── examples/              # Examples and demos
+└── docs/                  # Documentation
 ```
 
 ### **Core Dependencies (Leveraging Helios)**
 
 ```toml
-# xyflow-core/Cargo.toml
+# flow-core/Cargo.toml
 [dependencies]
 # Rendering (from helios-core)
 wgpu = { workspace = true }
@@ -88,7 +87,7 @@ js-sys = { workspace = true }
 ### **Node System**
 
 ```rust
-// xyflow-core/src/node.rs
+// flow-core/src/node.rs
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -154,7 +153,7 @@ pub struct NodeStyle {
 ### **Edge System**
 
 ```rust
-// xyflow-core/src/edge.rs
+// flow-core/src/edge.rs
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Edge {
     pub id: String,
@@ -203,7 +202,7 @@ pub struct PathOptions {
 ### **Flow System**
 
 ```rust
-// xyflow-core/src/flow.rs
+// flow-core/src/flow.rs
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Flow {
     pub nodes: Vec<Node>,
@@ -295,7 +294,7 @@ pub struct Extent {
 ### **WebGPU Renderer**
 
 ```rust
-// xyflow-core/src/renderer/webgpu.rs
+// flow-renderer/src/webgpu.rs
 use wgpu::*;
 use bytemuck::{Pod, Zeroable};
 
@@ -345,7 +344,7 @@ impl WebGpuNodeRenderer {
 ### **Canvas2D Fallback**
 
 ```rust
-// xyflow-core/src/renderer/canvas2d.rs
+// flow-renderer/src/canvas2d.rs
 use web_sys::CanvasRenderingContext2d;
 
 /// Canvas2D-based node renderer (fallback)
@@ -387,7 +386,7 @@ impl Canvas2DNodeRenderer {
 ### **Memory Pool Management**
 
 ```rust
-// xyflow-core/src/memory.rs
+// flow-core/src/memory.rs
 use std::collections::VecDeque;
 
 /// Memory pool for efficient node/edge allocation
@@ -423,7 +422,7 @@ impl NodeMemoryPool {
 ### **Spatial Indexing**
 
 ```rust
-// xyflow-core/src/spatial.rs
+// flow-core/src/spatial.rs
 use std::collections::HashMap;
 
 /// Spatial index for efficient node queries
@@ -470,9 +469,9 @@ impl SpatialIndex {
 ### **Leptos Integration**
 
 ```rust
-// xyflow-leptos/src/lib.rs
+// flow-leptos/src/lib.rs
 use leptos::*;
-use xyflow_core::*;
+use flow_core::*;
 
 #[component]
 pub fn FlowEditor(
@@ -527,9 +526,9 @@ pub fn Node(
 ### **WASM Bindings (Universal)**
 
 ```rust
-// xyflow-wasm/src/lib.rs
+// flow-wasm/src/lib.rs
 use wasm_bindgen::prelude::*;
-use xyflow_core::*;
+use flow_core::*;
 
 #[wasm_bindgen]
 pub struct FlowEditor {
@@ -594,9 +593,9 @@ impl FlowEditor {
 ### **Comprehensive Test Suite**
 
 ```rust
-// xyflow-core/tests/integration_tests.rs
+// flow-core/tests/integration_tests.rs
 use proptest::prelude::*;
-use xyflow_core::*;
+use flow_core::*;
 
 proptest! {
     #[test]
@@ -718,9 +717,9 @@ fn test_spatial_index_performance() {
 ### **Benchmarks (Leveraging Helios Infrastructure)**
 
 ```rust
-// xyflow-benchmarks/benches/performance.rs
+// flow-core/benches/performance.rs
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use xyflow_core::*;
+use flow_core::*;
 
 fn benchmark_node_rendering(c: &mut Criterion) {
     let mut renderer = Canvas2DNodeRenderer::new(&canvas).unwrap();
@@ -768,7 +767,7 @@ criterion_main!(benches);
 
 ### **Feature Parity**
 
-- **100% API compatibility** with xyflow
+- **100% API compatibility** with modern flow editors
 - **All node types** (Input, Output, Default, Group, Custom)
 - **All edge types** (Default, Step, SmoothStep, Straight, Bezier)
 - **All interactions** (drag, zoom, pan, select, connect)

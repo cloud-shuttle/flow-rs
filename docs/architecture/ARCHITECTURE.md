@@ -1,8 +1,8 @@
-# Leptos Flow Architecture Specification
+# Flow-RS Architecture Specification
 
 ## Overview
 
-Leptos Flow is a high-performance, reactive flow-based node editor built on Rust and WebAssembly, designed specifically for the Leptos framework. This document outlines the core architectural decisions, design principles, and system boundaries.
+Flow-RS is a high-performance, reactive flow-based node editor built on Rust and WebAssembly, with a framework-agnostic core and Leptos integration. This document outlines the core architectural decisions, design principles, and system boundaries.
 
 ## Core Design Principles
 
@@ -52,7 +52,7 @@ Leptos Flow is a high-performance, reactive flow-based node editor built on Rust
 
 ## Module Boundaries
 
-### leptos-flow-core
+### flow-core
 
 **Purpose**: Framework-agnostic core logic
 **Responsibilities**:
@@ -87,7 +87,7 @@ pub struct Edge<T> {
 }
 ```
 
-### leptos-flow-renderer
+### flow-renderer
 
 **Purpose**: Rendering abstraction and implementations
 **Responsibilities**:
@@ -107,7 +107,7 @@ pub trait Renderer {
 }
 ```
 
-### leptos-flow-leptos
+### flow-leptos
 
 **Purpose**: Leptos framework integration
 **Responsibilities**:
@@ -128,7 +128,7 @@ pub fn FlowEditor<N, E>(
 ) -> impl IntoView;
 ```
 
-### leptos-flow-wasm
+### flow-wasm
 
 **Purpose**: WebAssembly bindings and optimization
 **Responsibilities**:
@@ -294,7 +294,7 @@ impl Renderer for CustomRenderer {
 
 ### Comprehensive Test Infrastructure
 
-Leptos Flow implements a robust testing strategy with multiple layers of validation:
+Flow-RS implements a robust testing strategy with multiple layers of validation:
 
 #### Unit Tests (32/32 passing ✅)
 - Core data structures and algorithms
@@ -341,7 +341,7 @@ make test-spatial    # 30s timeout for spatial tests
 make test-proptest   # 45s timeout for property-based tests
 
 # Custom timeout execution
-./scripts/test-with-timeout.sh leptos-flow-core 60 1 all
+./scripts/test-with-timeout.sh flow-core 60 1 all
 ```
 
 This architecture provides a solid foundation for building a high-performance, maintainable flow editor that leverages Rust's strengths while integrating seamlessly with the Leptos ecosystem.

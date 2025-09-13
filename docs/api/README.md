@@ -1,6 +1,6 @@
 # API Documentation
 
-This directory contains comprehensive API documentation for `leptos-flow-core`.
+This directory contains comprehensive API documentation for `flow-rs-core`.
 
 ## Documentation Files
 
@@ -26,10 +26,10 @@ This documentation is generated using:
 ./scripts/generate_api_docs.sh
 
 # Generate only Rust docs
-cargo doc --package leptos-flow-core --no-deps
+cargo doc --package flow-rs-core --no-deps
 
 # Validate documentation
-cargo test -p leptos-flow-core --lib api_reference_tests
+cargo test -p flow-rs-core --lib api_reference_tests
 ```
 
 ## Status

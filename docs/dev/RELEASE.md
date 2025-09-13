@@ -179,7 +179,7 @@ cargo audit
 find . -name "Cargo.toml" -exec sed -i 's/version = "0.1.0"/version = "0.2.0"/g' {} \;
 
 # Update version in documentation
-sed -i 's/leptos-flow = "0.1"/leptos-flow = "0.2"/g' docs/guides/QUICK_START.md
+sed -i 's/flow-rs = "0.1"/flow-rs = "0.2"/g' docs/guides/QUICK_START.md
 ```
 
 #### 2. Create Release Branch
@@ -201,7 +201,7 @@ git push origin release/v0.2.0
 cargo build --release --all-features
 
 # Test WASM build
-wasm-pack build leptos-flow-wasm --target web --release
+wasm-pack build flow-rs-wasm --target web --release
 
 # Generate documentation
 cargo doc --no-deps --all-features
@@ -238,16 +238,16 @@ git push origin v0.2.0
 
 ```bash
 # Publish in dependency order
-cd leptos-flow-core && cargo publish
+cd flow-rs-core && cargo publish
 sleep 30  # Wait for crates.io to process
 
-cd ../leptos-flow-renderer && cargo publish
+cd ../flow-rs-renderer && cargo publish
 sleep 30
 
-cd ../leptos-flow-leptos && cargo publish
+cd ../flow-rs-leptos && cargo publish
 sleep 30
 
-cd ../leptos-flow-wasm && cargo publish
+cd ../flow-rs-wasm && cargo publish
 sleep 30
 
 cd .. && cargo publish  # Main crate last
@@ -267,7 +267,7 @@ gh release create v0.2.0 \
 
 # Upload additional assets
 gh release upload v0.2.0 \
-    target/wasm32-unknown-unknown/release/leptos_flow_wasm.wasm \
+    target/wasm32-unknown-unknown/release/flow_wasm.wasm \
     target/doc.tar.gz
 ```
 
@@ -461,7 +461,7 @@ This release is fully backward compatible. No migration needed!
 
 ```toml
 [dependencies]
-leptos-flow = "0.2.0"
+flow-rs = "0.2.0"
 ```
 
 ## 🙏 Contributors
@@ -472,7 +472,7 @@ Special thanks to our contributors:
 - @contributor2 - Performance optimizations
 - @contributor3 - Documentation improvements
 
-Full changelog: <https://github.com/leptos-flow/leptos-flow/compare/v0.1.0...v0.2.0>
+Full changelog: <https://github.com/flow-rs/flow-rs/compare/v0.1.0...v0.2.0>
 
 ```
 

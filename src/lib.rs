@@ -6,11 +6,11 @@
 //! architecture components for convenient use.
 
 // Re-export core functionality
-pub use leptos_flow_core as core;
-pub use leptos_flow_renderer as renderer;
+pub use flow_core as core;
+pub use flow_renderer as renderer;
 
 #[cfg(feature = "leptos")]
-pub use leptos_flow_leptos as leptos;
+pub use flow_leptos as leptos;
 
 /// Prelude module for convenient imports
 pub mod prelude {

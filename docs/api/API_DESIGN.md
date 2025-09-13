@@ -4,9 +4,9 @@
 
 This document outlines the design principles, patterns, and guidelines that shape the `leptos-flow-core` API. These principles ensure consistency, usability, and maintainability across the entire API surface.
 
-## Design Principles
+## Design principles
 
-### 1. Type Safety
+### 1. Type safety
 
 **Principle**: Leverage Rust's type system to prevent runtime errors and provide clear contracts.
 
@@ -15,6 +15,7 @@ This document outlines the design principles, patterns, and guidelines that shap
 - Generic types for node and edge data (`Graph<N, E>`)
 - Result types for operations that can fail
 - Newtype patterns for domain-specific values
+- Geometric types (`Position`, `Size`, `Rect`, `Viewport`) for spatial operations
 
 ```rust
 // Strong typing prevents mixing different ID types

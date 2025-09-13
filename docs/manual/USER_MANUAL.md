@@ -35,16 +35,16 @@ Add Leptos Flow to your `Cargo.toml`:
 ```toml
 [dependencies]
 leptos = "0.6"
-leptos-flow = "0.1"
+flow-rs = "0.1"
 ```
 
 For advanced rendering features:
 
 ```toml
 [features]
-default = ["leptos-flow/canvas2d"]
-webgpu = ["leptos-flow/webgpu"]
-full = ["leptos-flow/full"]
+default = ["flow-rs/canvas2d"]
+webgpu = ["flow-rs/webgpu"]
+full = ["flow-rs/full"]
 ```
 
 ## Basic Concepts

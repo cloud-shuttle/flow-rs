@@ -1,8 +1,8 @@
-# Leptos Flow Core - API Reference
+# Flow-RS Core - API Reference
 
 ## Overview
 
-This document provides comprehensive API reference for `leptos-flow-core`, the core library for building high-performance, reactive flow editors in Rust.
+This document provides comprehensive API reference for `flow-core`, the core library for building high-performance, reactive flow editors in Rust.
 
 **Version**: 0.1.0-alpha
 **Status**: Production Ready
@@ -29,23 +29,83 @@ This document provides comprehensive API reference for `leptos-flow-core`, the c
 Represents a 2D position in the flow coordinate system.
 
 ```rust
-use leptos_flow_core::Position;
+use flow_core::Position;
 
-let position = Position::new(100.0, 200.0);
-assert_eq!(position.x, 100.0);
-assert_eq!(position.y, 200.0);
+let position = Position::new(0.0, 0.0);
+assert_eq!(position.x, 0.0);
+assert_eq!(position.y, 0.0);
 ```
 
 **Methods:**
-- `new(x: f64, y: f64) -> Position` - Create a new position
+- `Position::new()` - Create a new position
+  - `x: f64` - X coordinate
+  - `y: f64` - Y coordinate
 - `distance_to(other: &Position) -> f64` - Calculate distance to another position
+
+**See also:** [Size](#size), [Rect](#rect)
+
+### NodeId
+
+Unique identifier for nodes in the flow graph.
+
+```rust
+use flow_core::NodeId;
+
+let node_id = NodeId::new("my-node");
+```
+
+**Methods:**
+- `new(id: &str) -> NodeId` - Create a new node ID
+  - `id: &str` - Unique identifier string
+
+### EdgeId
+
+Unique identifier for edges in the flow graph.
+
+```rust
+use flow_core::EdgeId;
+
+let edge_id = EdgeId::new("my-edge");
+```
+
+**Methods:**
+- `new(id: &str) -> EdgeId` - Create a new edge ID
+  - `id: &str` - Unique identifier string
+
+### GroupId
+
+Unique identifier for groups in the flow graph.
+
+```rust
+use flow_core::GroupId;
+
+let group_id = GroupId::new("my-group");
+```
+
+**Methods:**
+- `new(id: &str) -> GroupId` - Create a new group ID
+  - `id: &str` - Unique identifier string
+
+### HandleId
+
+Unique identifier for handles in the flow graph.
+
+```rust
+use flow_core::HandleId;
+
+let handle_id = HandleId::new("my-handle");
+```
+
+**Methods:**
+- `new(id: &str) -> HandleId` - Create a new handle ID
+  - `id: &str` - Unique identifier string
 
 ### Size
 
 Represents dimensions with width and height.
 
 ```rust
-use leptos_flow_core::Size;
+use flow_core::Size;
 
 let size = Size::new(100.0, 50.0);
 assert_eq!(size.width, 100.0);
@@ -56,15 +116,19 @@ let default_size = Size::default(); // Size::new(100.0, 50.0)
 ```
 
 **Methods:**
-- `new(width: f64, height: f64) -> Size` - Create a new size
+- `Size::new()` - Create a new size
+  - `width: f64` - Width dimension
+  - `height: f64` - Height dimension
 - `default() -> Size` - Get default node size (100.0, 50.0)
+
+**Related:** [Position](#position), [Rect](#rect)
 
 ### Rect
 
 Represents a rectangular area with position and dimensions.
 
 ```rust
-use leptos_flow_core::{Rect, Position, Size};
+use flow_core::{Rect, Position, Size};
 
 let rect = Rect::new(10.0, 20.0, 100.0, 200.0);
 assert_eq!(rect.x, 10.0);
@@ -78,16 +142,17 @@ let bottom = rect.y + rect.height; // 220.0
 ```
 
 **Methods:**
-- `new(x: f64, y: f64, width: f64, height: f64) -> Rect` - Create a new rectangle
+- `Rect::new()` - Create a new rectangle
 - `contains(&self, point: &Position) -> bool` - Check if point is inside rectangle
 - `intersects(&self, other: &Rect) -> bool` - Check if rectangles intersect
+- `union(&self, other: &Rect) -> Rect` - Create union of two rectangles
 
 ### Viewport
 
 Manages the viewport for rendering and coordinate transformations.
 
 ```rust
-use leptos_flow_core::{Viewport, Position};
+use flow_core::{Viewport, Position};
 
 let viewport = Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0);
 let flow_pos = Position::new(100.0, 200.0);
@@ -99,9 +164,10 @@ assert_eq!(back_to_flow, flow_pos);
 ```
 
 **Methods:**
-- `new(x: f64, y: f64, width: f64, height: f64, zoom: f64) -> Viewport`
+- `Viewport::new()` - Create a new viewport
 - `flow_to_screen(&self, pos: Position) -> Position` - Convert flow to screen coordinates
 - `screen_to_flow(&self, pos: Position) -> Position` - Convert screen to flow coordinates
+- `pan(&mut self, dx: f64, dy: f64) -> Viewport` - Pan the viewport
 
 ## Graph Management
 
@@ -109,8 +175,18 @@ assert_eq!(back_to_flow, flow_pos);
 
 The main data structure representing a flow diagram with nodes and edges.
 
+**Uses:** [Node](#node), [Edge](#edge), [Position](#position)
+
+**Working Example:**
 ```rust
-use leptos_flow_core::{Graph, Node, Edge, Position};
+use flow_core::Graph;
+
+// Create a new graph
+let graph = Graph::new();
+```
+
+```rust
+use flow_core::{Graph, Node, Edge, Position};
 
 let mut graph: Graph<(), ()> = Graph::new();
 
@@ -148,10 +224,11 @@ assert!(bounds.is_some());
 Represents a node in the flow diagram.
 
 ```rust
-use leptos_flow_core::{Node, Position, Size};
+use flow_core::{Node, Position, Size};
 
 // Create node with builder
-let node = Node::<()>::builder("my_node")
+// Node::builder() creates a new node builder
+let node = Node::builder("id")
     .position(100.0, 200.0)
     .size(150.0, 75.0)
     .node_type("custom_type")
@@ -175,7 +252,7 @@ assert!(!node.selected); // Default is false
 Builder pattern for creating nodes with optional configuration.
 
 ```rust
-use leptos_flow_core::Node;
+use flow_core::Node;
 
 let node = Node::<()>::builder("builder_test")
     .position(30.0, 40.0)
@@ -202,7 +279,7 @@ assert!(!node.selectable);
 Represents a connection between two nodes.
 
 ```rust
-use leptos_flow_core::Edge;
+use flow_core::Edge;
 
 let edge_result = Edge::<()>::builder()
     .id("my_edge")
@@ -226,7 +303,7 @@ assert!(edge.selectable); // Default is true
 Builder pattern for creating edges.
 
 ```rust
-use leptos_flow_core::Edge;
+use flow_core::Edge;
 
 let edge = Edge::<()>::builder()
     .id("builder_edge")
@@ -249,7 +326,7 @@ assert_eq!(edge.id.as_str(), "builder_edge");
 Trait defining the interface for layout algorithms.
 
 ```rust
-use leptos_flow_core::layout::{LayoutAlgorithm, ForceDirectedLayout};
+use flow_core::layout::{LayoutAlgorithm, ForceDirectedLayout};
 
 let force_layout = ForceDirectedLayout::new();
 assert_eq!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::name(&force_layout), "Force-Directed");
@@ -269,7 +346,7 @@ assert!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&force_l
 Force-directed layout algorithm for organic node positioning.
 
 ```rust
-use leptos_flow_core::layout::ForceDirectedLayout;
+use flow_core::layout::ForceDirectedLayout;
 
 let mut layout = ForceDirectedLayout::new();
 assert_eq!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::name(&layout), "Force-Directed");
@@ -281,7 +358,7 @@ assert!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&layout)
 Grid-based layout algorithm for structured node positioning.
 
 ```rust
-use leptos_flow_core::layout::GridLayout;
+use flow_core::layout::GridLayout;
 
 let layout = GridLayout::new();
 assert_eq!(<GridLayout as LayoutAlgorithm<(), ()>>::name(&layout), "Grid");
@@ -293,7 +370,7 @@ assert!(!<GridLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&layout));
 Circular layout algorithm for radial node positioning.
 
 ```rust
-use leptos_flow_core::layout::CircularLayout;
+use flow_core::layout::CircularLayout;
 
 let layout = CircularLayout::new();
 assert_eq!(<CircularLayout as LayoutAlgorithm<(), ()>>::name(&layout), "Circular");
@@ -307,7 +384,7 @@ assert!(!<CircularLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&layout));
 Manages node and group selection state.
 
 ```rust
-use leptos_flow_core::{SelectionManager, SelectionMode, NodeId};
+use flow_core::{SelectionManager, SelectionMode, NodeId};
 
 let mut selection = SelectionManager::new();
 assert_eq!(selection.mode(), &SelectionMode::Single);
@@ -333,7 +410,7 @@ assert!(selection.is_selected(&node_id));
 Enum defining selection behavior modes.
 
 ```rust
-use leptos_flow_core::SelectionMode;
+use flow_core::SelectionMode;
 
 let single_mode = SelectionMode::Single;
 let multi_mode = SelectionMode::Multiple;
@@ -350,7 +427,7 @@ let multi_mode = SelectionMode::Multiple;
 Manages groups of nodes for collective operations.
 
 ```rust
-use leptos_flow_core::{GroupManager, GroupId, NodeId};
+use flow_core::{GroupManager, GroupId, NodeId};
 use std::collections::HashSet;
 
 let mut group_manager = GroupManager::new();
@@ -379,7 +456,7 @@ assert!(bounds.is_ok());
 Manages connection handles on nodes.
 
 ```rust
-use leptos_flow_core::{HandleManager, Handle, HandleType, HandlePosition, HandleId, Position};
+use flow_core::{HandleManager, Handle, HandleType, HandlePosition, HandleId, Position};
 
 let handle = Handle::new(
     HandleId::new("h1"),
@@ -400,7 +477,7 @@ assert_eq!(handle.id.as_str(), "h1");
 Represents a connection point on a node.
 
 ```rust
-use leptos_flow_core::{Handle, HandleType, HandlePosition, HandleId, Position};
+use flow_core::{Handle, HandleType, HandlePosition, HandleId, Position};
 
 let handle = Handle::new(
     HandleId::new("handle1"),
@@ -417,7 +494,7 @@ let handle = Handle::new(
 Enum defining handle types.
 
 ```rust
-use leptos_flow_core::HandleType;
+use flow_core::HandleType;
 
 let source_handle = HandleType::Source;
 let target_handle = HandleType::Target;
@@ -434,7 +511,7 @@ let target_handle = HandleType::Target;
 Automatically selects and applies the best layout algorithm for a graph.
 
 ```rust
-use leptos_flow_core::{AutoLayoutManager, Graph};
+use flow_core::{AutoLayoutManager, Graph};
 
 let mut auto_layout = AutoLayoutManager::new();
 let mut graph: Graph<(), ()> = Graph::new();
@@ -455,7 +532,7 @@ assert!(result.is_ok());
 Main error type for flow operations.
 
 ```rust
-use leptos_flow_core::FlowError;
+use flow_core::FlowError;
 
 // Error variants
 let node_not_found = FlowError::NodeNotFound(NodeId::new("missing"));
@@ -465,6 +542,34 @@ let invalid_connection = FlowError::InvalidConnection {
     source: NodeId::new("src"),
     target: NodeId::new("tgt"),
 };
+```
+
+### SpatialError
+
+Errors related to spatial indexing operations.
+
+```rust
+use flow_core::SpatialError;
+
+// Spatial errors can occur during spatial index operations
+match spatial_index.query(&rect) {
+    Ok(results) => println!("Found {} items", results.len()),
+    Err(SpatialError::InvalidBounds) => println!("Invalid query bounds"),
+}
+```
+
+### LayoutError
+
+Errors related to layout operations.
+
+```rust
+use flow_core::LayoutError;
+
+// Layout errors can occur during layout calculations
+match layout_manager.apply_layout(&mut graph) {
+    Ok(()) => println!("Layout applied successfully"),
+    Err(LayoutError::InvalidLayout) => println!("Invalid layout configuration"),
+}
 ```
 
 **Variants:**
@@ -503,7 +608,7 @@ let invalid_connection = FlowError::InvalidConnection {
 ### Creating a graph
 
 ```rust
-use leptos_flow_core::{Graph, Node, Edge, Position};
+use flow_core::{Graph, Node, Edge, Position};
 
 let mut graph: Graph<(), ()> = Graph::new();
 
@@ -525,7 +630,7 @@ graph.add_edge(edge).unwrap();
 ### Adding nodes
 
 ```rust
-use leptos_flow_core::Node;
+use flow_core::Node;
 
 // Simple node creation
 let node = Node::new("simple", Position::new(0.0, 0.0), ());
@@ -542,7 +647,7 @@ let complex_node = Node::<()>::builder("complex")
 ### Adding edges
 
 ```rust
-use leptos_flow_core::Edge;
+use flow_core::Edge;
 
 let edge = Edge::<()>::builder()
     .id("connection")
@@ -554,7 +659,7 @@ let edge = Edge::<()>::builder()
 ### Layout algorithms
 
 ```rust
-use leptos_flow_core::layout::ForceDirectedLayout;
+use flow_core::layout::ForceDirectedLayout;
 
 let mut layout = ForceDirectedLayout::new();
 layout.apply(&mut graph).unwrap();
@@ -563,7 +668,7 @@ layout.apply(&mut graph).unwrap();
 ### Selection management
 
 ```rust
-use leptos_flow_core::{SelectionManager, NodeId};
+use flow_core::{SelectionManager, NodeId};
 
 let mut selection = SelectionManager::new();
 selection.select_node(&NodeId::new("node1"));
@@ -573,7 +678,7 @@ assert!(selection.is_selected(&NodeId::new("node1")));
 ### Group management
 
 ```rust
-use leptos_flow_core::{GroupManager, GroupId, NodeId};
+use flow_core::{GroupManager, GroupId, NodeId};
 use std::collections::HashSet;
 
 let mut group_manager = GroupManager::new();
@@ -596,7 +701,7 @@ group_manager.create_group(GroupId::new("group1"), node_ids).unwrap();
 
 ## Version Information
 
-This API reference is for **leptos-flow-core version 0.1.0-alpha**.
+This API reference is for **flow-core version 0.1.0-alpha**.
 
 **Compatibility**: Requires Rust 1.70+ and Leptos 0.6.15+
 

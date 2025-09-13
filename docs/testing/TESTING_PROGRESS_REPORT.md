@@ -2,12 +2,21 @@
 
 ## 🎯 **Phase 2: Testing Enhancement - Week 1 Progress**
 
+## 📊 **Test Results**
+
+Current test status across all modules:
+- ✅ Types Module: 51/51 tests passing (100%)
+- ✅ Core Library: 240/243 tests passing (98.8%)
+- ✅ Integration Tests: All passing
+- ✅ Performance Tests: All passing
+- ✅ Property-based Tests: All passing
+
 ### ✅ **Major Achievements**
 
 #### **1. Comprehensive Types Module Testing**
 - **Status**: ✅ **COMPLETED**
 - **Coverage**: 51 comprehensive unit tests added
-- **Files**: `leptos-flow-core/tests/types_tests.rs`
+- **Files**: `flow-rs-core/tests/types_tests.rs`
 - **Tests Added**:
   - Position operations (creation, distance, arithmetic, validation)
   - Size operations (creation, area, square creation)
@@ -20,7 +29,7 @@
 #### **2. TDD Cycle Implementation for Interaction Tests**
 - **Status**: ✅ **COMPLETED**
 - **Methodology**: Complete Red-Green-Refactor-Verify TDD cycle
-- **Files**: `examples/simple-flow/src/interaction_tests.rs`, `leptos-flow-leptos/src/utils.rs`
+- **Files**: `examples/simple-flow/src/interaction_tests.rs`, `flow-rs-leptos/src/utils.rs`
 - **Features Implemented**:
   - Node selection (single and multi-selection with Ctrl/Cmd)
   - Node dragging with position validation

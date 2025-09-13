@@ -16,7 +16,7 @@ Leptos Flow employs a comprehensive testing strategy covering unit tests, integr
 #[cfg(test)]
 mod graph_tests {
     use super::*;
-    use leptos_flow_core::graph::*;
+    use flow_core::graph::*;
 
     #[test]
     fn test_add_node() {
@@ -58,7 +58,7 @@ mod graph_tests {
 #[cfg(test)]
 mod spatial_tests {
     use super::*;
-    use leptos_flow_core::spatial::*;
+    use flow_core::spatial::*;
 
     #[test]
     fn test_rtree_insertion_and_query() {
@@ -118,7 +118,7 @@ mod spatial_tests {
 #[cfg(test)]
 mod layout_tests {
     use super::*;
-    use leptos_flow_core::layout::*;
+    use flow_core::layout::*;
 
     #[test]
     fn test_force_directed_layout_convergence() {
@@ -162,7 +162,7 @@ mod layout_tests {
 #[cfg(test)]
 mod canvas2d_tests {
     use super::*;
-    use leptos_flow_renderer::canvas2d::*;
+    use flow_renderer::canvas2d::*;
     use wasm_bindgen_test::*;
 
     wasm_bindgen_test_configure!(run_in_browser);
@@ -205,7 +205,7 @@ mod canvas2d_tests {
 #[cfg(test)]
 mod webgl2_tests {
     use super::*;
-    use leptos_flow_renderer::webgl2::*;
+    use flow_renderer::webgl2::*;
     use wasm_bindgen_test::*;
 
     wasm_bindgen_test_configure!(run_in_browser);
@@ -766,7 +766,7 @@ make test-spatial    # Spatial tests (30s timeout)
 make test-proptest   # Property-based tests (45s timeout)
 
 # Run tests with custom timeout
-./scripts/test-with-timeout.sh leptos-flow-core 60 1 all
+./scripts/test-with-timeout.sh flow-rs-core 60 1 all
 
 # Traditional cargo test commands
 cargo test --all-features

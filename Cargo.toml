@@ -1,24 +1,24 @@
 [workspace]
 members = [
-    "leptos-flow-core",
-    "leptos-flow-renderer",
-    "leptos-flow-leptos",
-    "leptos-flow-wasm",
-    "examples/simple-flow",
-    "examples/leptos-demo",
+    "flow-core",
+    "flow-renderer",
+    "flow-leptos",
+    "flow-wasm",
+    "examples/flow-simple",
+    "examples/flow-leptos-demo",
 ]
 
 
 [workspace.package]
 version = "0.1.0"
-authors = ["Leptos Flow Contributors"]
+authors = ["Flow-RS Contributors"]
 edition = "2021"
 rust-version = "1.70"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/leptos-flow/leptos-flow"
-homepage = "https://leptos-flow.dev"
-documentation = "https://docs.rs/leptos-flow"
-keywords = ["leptos", "flow", "graph", "wasm", "reactive"]
+repository = "https://github.com/flow-rs/flow-rs"
+homepage = "https://flow-rs.dev"
+documentation = "https://docs.rs/flow-rs"
+keywords = ["flow", "graph", "wasm", "reactive", "node-editor", "visualization"]
 categories = ["gui", "web-programming", "wasm", "visualization"]
 readme = "README.md"
 
@@ -59,8 +59,8 @@ console_error_panic_hook = "0.1"
 tracing-wasm = "0.2"
 
 [package]
-name = "leptos-flow"
-description = "High-performance reactive flow editor for Leptos"
+name = "flow-rs"
+description = "High-performance reactive flow editor for Rust"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -77,25 +77,25 @@ readme.workspace = true
 default = ["canvas2d", "leptos"]
 
 # Rendering backends
-canvas2d = ["leptos-flow-renderer/canvas2d"]
-webgl2 = ["leptos-flow-renderer/webgl2"]
-webgpu = ["leptos-flow-renderer/webgpu"]
+canvas2d = ["flow-renderer/canvas2d"]
+webgl2 = ["flow-renderer/webgl2"]
+webgpu = ["flow-renderer/webgpu"]
 
 # Framework integrations
-leptos = ["leptos-flow-leptos"]
+leptos = ["flow-leptos"]
 
 # Development features
-debug = ["leptos-flow-core/debug", "leptos-flow-renderer/debug"]
-profiling = ["leptos-flow-core/profiling"]
+debug = ["flow-core/debug", "flow-renderer/debug"]
+profiling = ["flow-core/profiling"]
 
 # Full feature set
 full = ["canvas2d", "webgl2", "webgpu", "leptos", "debug"]
 
 [dependencies]
 # Re-export core functionality
-leptos-flow-core = { version = "0.1.0", path = "leptos-flow-core" }
-leptos-flow-renderer = { version = "0.1.0", path = "leptos-flow-renderer", default-features = false }
-leptos-flow-leptos = { version = "0.1.0", path = "leptos-flow-leptos", optional = true }
+flow-core = { version = "0.1.0", path = "flow-core" }
+flow-renderer = { version = "0.1.0", path = "flow-renderer", default-features = false }
+flow-leptos = { version = "0.1.0", path = "flow-leptos", optional = true }
 
 # Core dependencies
 serde.workspace = true

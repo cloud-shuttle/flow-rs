@@ -1,4 +1,4 @@
-# Quick Start Guide: Building Rust xyflow
+# Quick Start Guide: Building Flow-RS
 
 ## 🚀 **Immediate Action Plan**
 
@@ -6,8 +6,8 @@
 
 ```bash
 # Create new repository
-mkdir rust-xyflow
-cd rust-xyflow
+mkdir flow-rs
+cd flow-rs
 git init
 
 # Copy proven workspace structure from leptos-helios
@@ -16,12 +16,12 @@ cp -r ../leptos-helios/.github .
 cp -r ../leptos-helios/docs .
 
 # Create workspace structure
-mkdir -p xyflow-core/src
-mkdir -p xyflow-leptos/src
-mkdir -p xyflow-wasm/src
-mkdir -p xyflow-macros/src
-mkdir -p xyflow-examples/src
-mkdir -p xyflow-benchmarks/benches
+mkdir -p flow-core/src
+mkdir -p flow-leptos/src
+mkdir -p flow-wasm/src
+mkdir -p flow-renderer/src
+mkdir -p examples/src
+mkdir -p docs
 ```
 
 ### **Step 2: Copy Proven Dependencies (2 minutes)**
@@ -31,24 +31,24 @@ mkdir -p xyflow-benchmarks/benches
 cp ../leptos-helios/Cargo.toml ./Cargo.toml
 
 # Update package names in Cargo.toml
-sed -i 's/leptos-helios/rust-xyflow/g' Cargo.toml
-sed -i 's/helios-core/xyflow-core/g' Cargo.toml
-sed -i 's/helios-leptos/xyflow-leptos/g' Cargo.toml
+sed -i 's/leptos-helios/flow-rs/g' Cargo.toml
+sed -i 's/helios-core/flow-core/g' Cargo.toml
+sed -i 's/helios-leptos/flow-leptos/g' Cargo.toml
 ```
 
 ### **Step 3: Copy Core Infrastructure (10 minutes)**
 
 ```bash
 # Copy proven infrastructure files
-cp ../leptos-helios/helios-core/src/webgpu_renderer.rs ./xyflow-core/src/
-cp ../lelios-core/src/canvas2d_renderer.rs ./xyflow-core/src/
-cp ../helios-core/src/styling.rs ./xyflow-core/src/
-cp ../helios-core/src/utils.rs ./xyflow-core/src/
-cp ../helios-core/src/performance.rs ./xyflow-core/src/
+cp ../leptos-helios/helios-core/src/webgpu_renderer.rs ./flow-renderer/src/
+cp ../helios-core/src/canvas2d_renderer.rs ./flow-renderer/src/
+cp ../helios-core/src/styling.rs ./flow-core/src/
+cp ../helios-core/src/utils.rs ./flow-core/src/
+cp ../helios-core/src/performance.rs ./flow-core/src/
 
 # Rename and adapt for node-based UI
-mv ./xyflow-core/src/webgpu_renderer.rs ./xyflow-core/src/webgpu_node_renderer.rs
-mv ./xyflow-core/src/canvas2d_renderer.rs ./xyflow-core/src/canvas2d_node_renderer.rs
+mv ./flow-renderer/src/webgpu_renderer.rs ./flow-renderer/src/webgpu_node_renderer.rs
+mv ./flow-renderer/src/canvas2d_renderer.rs ./flow-renderer/src/canvas2d_node_renderer.rs
 ```
 
 ## 🎯 **Week 1 Implementation**
@@ -56,7 +56,7 @@ mv ./xyflow-core/src/canvas2d_renderer.rs ./xyflow-core/src/canvas2d_node_render
 ### **Day 1-2: Core Data Structures**
 
 ```rust
-// xyflow-core/src/lib.rs
+// flow-core/src/lib.rs
 pub mod node;
 pub mod edge;
 pub mod flow;
@@ -74,7 +74,7 @@ pub use interactions::{InteractionState, SelectionState};
 ### **Day 3-4: Canvas2D Renderer (Fastest to implement)**
 
 ```rust
-// xyflow-core/src/canvas2d_node_renderer.rs
+// flow-renderer/src/canvas2d_node_renderer.rs
 // Copy from helios-core and adapt for nodes
 use web_sys::CanvasRenderingContext2d;
 
@@ -101,7 +101,7 @@ impl Canvas2DNodeRenderer {
 ### **Day 5-7: Basic Interactions**
 
 ```rust
-// xyflow-core/src/interactions.rs
+// flow-core/src/interactions.rs
 pub struct InteractionState {
     pub selected_nodes: HashSet<String>,
     pub dragged_node: Option<String>,
@@ -125,7 +125,7 @@ impl InteractionState {
 ### **Day 8-10: WebGPU Renderer**
 
 ```rust
-// xyflow-core/src/webgpu_node_renderer.rs
+// flow-renderer/src/webgpu_node_renderer.rs
 // Copy WebGPU setup from helios-core
 use wgpu::*;
 
@@ -148,13 +148,13 @@ impl WebGpuNodeRenderer {
 ### **Day 11-14: Performance Optimizations**
 
 ```rust
-// xyflow-core/src/spatial.rs
+// flow-core/src/spatial.rs
 // Copy spatial indexing from helios-core
 pub struct SpatialIndex {
     // ... copy proven spatial indexing patterns
 }
 
-// xyflow-core/src/memory.rs
+// flow-core/src/memory.rs
 // Copy memory pool management from helios-core
 pub struct NodeMemoryPool {
     // ... copy proven memory management patterns
@@ -166,9 +166,9 @@ pub struct NodeMemoryPool {
 ### **Day 15-17: Leptos Integration**
 
 ```rust
-// xyflow-leptos/src/lib.rs
+// flow-leptos/src/lib.rs
 use leptos::*;
-use xyflow_core::*;
+use flow_core::*;
 
 #[component]
 pub fn FlowEditor(
@@ -191,9 +191,9 @@ pub fn FlowEditor(
 ### **Day 18-21: WASM Bindings**
 
 ```rust
-// xyflow-wasm/src/lib.rs
+// flow-wasm/src/lib.rs
 use wasm_bindgen::prelude::*;
-use xyflow_core::*;
+use flow_core::*;
 
 #[wasm_bindgen]
 pub struct FlowEditor {
@@ -232,7 +232,7 @@ impl FlowEditor {
 
 ```bash
 # Create the repository structure
-mkdir rust-xyflow && cd rust-xyflow
+mkdir flow-rs && cd flow-rs
 git init
 cp -r ../leptos-helios/Cargo.toml .
 # Update package names
@@ -243,10 +243,10 @@ cp -r ../leptos-helios/Cargo.toml .
 
 ```bash
 # Copy proven infrastructure
-cp ../leptos-helios/helios-core/src/webgpu_renderer.rs ./xyflow-core/src/webgpu_node_renderer.rs
-cp ../helios-core/src/canvas2d_renderer.rs ./xyflow-core/src/canvas2d_node_renderer.rs
-cp ../helios-core/src/styling.rs ./xyflow-core/src/
-cp ../helios-core/src/utils.rs ./xyflow-core/src/
+cp ../leptos-helios/helios-core/src/webgpu_renderer.rs ./flow-renderer/src/webgpu_node_renderer.rs
+cp ../helios-core/src/canvas2d_renderer.rs ./flow-renderer/src/canvas2d_node_renderer.rs
+cp ../helios-core/src/styling.rs ./flow-core/src/
+cp ../helios-core/src/utils.rs ./flow-core/src/
 ```
 
 ### **3. Implement Basic Node Structure (2 hours)**
@@ -282,4 +282,4 @@ cp ../helios-core/src/utils.rs ./xyflow-core/src/
 - **Day 21**: Leptos integration, WASM bindings
 - **Day 28**: Production-ready library
 
-This approach leverages all the hard work already done in Leptos Helios and gets you to a working xyflow clone in record time! 🚀
+This approach leverages all the hard work already done in Leptos Helios and gets you to a working flow editor in record time! 🚀

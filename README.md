@@ -1,11 +1,11 @@
-# Leptos Flow
+# Flow-RS
 
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
 [![Leptos](https://img.shields.io/badge/leptos-0.6.15-blue.svg)](https://leptos.dev)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-311%2F312%20passing-brightgreen.svg)](#testing)
 
-A high-performance, reactive flow editor built with Rust and Leptos for creating interactive node-based interfaces, data flow diagrams, and visual programming environments.
+A high-performance, reactive flow editor built with Rust for creating interactive node-based interfaces, data flow diagrams, and visual programming environments. Framework-agnostic core with Leptos integration.
 
 ## 🎯 **Current Status: Production Ready**
 
@@ -42,23 +42,23 @@ A high-performance, reactive flow editor built with Rust and Leptos for creating
 
 ## 🏗️ Architecture
 
-Leptos Flow is built as a modular Rust workspace with the following components:
+Flow-RS is built as a modular Rust workspace with the following components:
 
 ```
-leptos-flow/
-├── leptos-flow-core/          # Core data structures and algorithms
-├── leptos-flow-leptos/        # Leptos integration and reactive components
-├── leptos-flow-renderer/      # Rendering backends (Canvas2D, WebGL)
-├── leptos-flow-wasm/          # WASM bindings and utilities
+flow-rs/
+├── flow-core/                 # Core data structures and algorithms
+├── flow-leptos/               # Leptos integration and reactive components
+├── flow-renderer/             # Rendering backends (Canvas2D, WebGL)
+├── flow-wasm/                 # WASM bindings and utilities
 └── examples/                  # Example applications and demos
 ```
 
 ### Core Components
 
-- **`leptos-flow-core`**: Graph data structures, spatial indexing, layout algorithms
-- **`leptos-flow-leptos`**: Reactive components, event handling, state management
-- **`leptos-flow-renderer`**: Rendering implementations and visual styling
-- **`leptos-flow-wasm`**: WebAssembly bindings and browser integration
+- **`flow-core`**: Graph data structures, spatial indexing, layout algorithms
+- **`flow-leptos`**: Reactive components, event handling, state management
+- **`flow-renderer`**: Rendering implementations and visual styling
+- **`flow-wasm`**: WebAssembly bindings and browser integration
 
 ## 🚀 Quick Start
 
@@ -72,8 +72,8 @@ leptos-flow/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-org/leptos-flow.git
-   cd leptos-flow
+   git clone https://github.com/flow-rs/flow-rs.git
+   cd flow-rs
    ```
 
 2. **Install dependencies**:
@@ -87,15 +87,15 @@ leptos-flow/
 
 3. **Run the demo**:
    ```bash
-   cd examples/leptos-demo
+   cd examples/flow-leptos-demo
    trunk serve --open
    ```
 
 ### Basic Usage
 
 ```rust
-use leptos_flow_leptos::FlowEditor;
-use leptos_flow_core::{Graph, Node, Position};
+use flow_leptos::FlowEditor;
+use flow_core::{Graph, Node, Position};
 
 #[component]
 pub fn MyFlowApp() -> impl IntoView {
@@ -133,7 +133,7 @@ pub fn MyFlowApp() -> impl IntoView {
 
 ### Test Infrastructure
 
-Leptos Flow includes a comprehensive testing infrastructure:
+Flow-RS includes a comprehensive testing infrastructure:
 
 - **Unit Tests**: Core functionality testing
 - **Integration Tests**: Component interaction testing
@@ -153,7 +153,7 @@ make test-spatial    # Spatial tests (30s timeout)
 make test-proptest   # Property-based tests (45s timeout)
 
 # Run tests with custom timeout
-./scripts/test-with-timeout.sh leptos-flow-core 60 1 all
+./scripts/test-with-timeout.sh flow-core 60 1 all
 ```
 
 ### Test Results
@@ -167,8 +167,8 @@ make test-proptest   # Property-based tests (45s timeout)
 
 ### Interactive Demos
 
-- **[Basic Flow Editor](examples/leptos-demo/)** - Simple node editor with drag-and-drop
-- **[Advanced Flow Editor](examples/simple-flow/)** - Full-featured editor with all capabilities
+- **[Basic Flow Editor](examples/flow-leptos-demo/)** - Simple node editor with drag-and-drop
+- **[Advanced Flow Editor](examples/flow-simple/)** - Full-featured editor with all capabilities
 
 ### Code Examples
 
@@ -193,7 +193,7 @@ graph.add_edge("input", "process", ());
 
 ### Benchmarks
 
-Leptos Flow is optimized for performance:
+Flow-RS is optimized for performance:
 
 - **Spatial Queries**: O(1) average case with grid-based indexing
 - **Rendering**: 60 FPS with 1000+ nodes
@@ -204,11 +204,11 @@ Leptos Flow is optimized for performance:
 
 ```bash
 # Run performance benchmarks
-cd leptos-flow-core
+cd flow-core
 cargo bench
 
 # Monitor performance in development
-cd examples/simple-flow
+cd examples/flow-simple
 cargo run --features performance-monitoring
 ```
 

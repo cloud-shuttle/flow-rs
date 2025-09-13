@@ -2,7 +2,7 @@
 
 ## Overview
 
-Leptos Flow features a pluggable rendering architecture that supports multiple backends with automatic fallback. This guide covers the rendering system, how to choose renderers, and how to implement custom rendering solutions.
+Flow-RS features a pluggable rendering architecture that supports multiple backends with automatic fallback. This guide covers the rendering system, how to choose renderers, and how to implement custom rendering solutions.
 
 ## Renderer Architecture
 
@@ -27,10 +27,10 @@ WebGPU → WebGL2 → Canvas2D → SVG (export only)
 
 ### Automatic Selection
 
-By default, Leptos Flow automatically detects and selects the best available renderer:
+By default, Flow-RS automatically detects and selects the best available renderer:
 
 ```rust
-use leptos_flow::*;
+use flow_leptos::*;
 
 view! {
     <FlowEditor
@@ -47,7 +47,7 @@ view! {
 You can force a specific renderer for testing or compatibility:
 
 ```rust
-use leptos_flow::renderer::*;
+use flow_renderer::*;
 
 view! {
     <FlowEditor
@@ -98,7 +98,7 @@ view! {
 ### Configuration
 
 ```rust
-use leptos_flow::renderer::webgpu::*;
+use flow_renderer::webgpu::*;
 
 let webgpu_config = WebGPUConfig {
     // Performance settings
@@ -197,7 +197,7 @@ let custom_renderer = WebGPURenderer::builder()
 ### Configuration
 
 ```rust
-use leptos_flow::renderer::webgl2::*;
+use flow_renderer::webgl2::*;
 
 let webgl2_config = WebGL2Config {
     // Context settings
@@ -277,7 +277,7 @@ void main() {
 ### Configuration
 
 ```rust
-use leptos_flow::renderer::canvas2d::*;
+use flow_renderer::canvas2d::*;
 
 let canvas2d_config = Canvas2DConfig {
     // Quality settings
@@ -305,7 +305,7 @@ view! {
 ### Custom Canvas2D Rendering
 
 ```rust
-use leptos_flow::renderer::canvas2d::*;
+use flow_renderer::canvas2d::*;
 
 pub struct CustomCanvas2DRenderer {
     context: CanvasRenderingContext2d,
@@ -367,7 +367,7 @@ impl Canvas2DRenderer for CustomCanvas2DRenderer {
 Implement the `Renderer` trait to create custom rendering backends:
 
 ```rust
-use leptos_flow::renderer::*;
+use flow_renderer::*;
 
 pub trait Renderer {
     type Config: Default;

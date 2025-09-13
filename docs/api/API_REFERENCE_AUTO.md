@@ -92,7 +92,7 @@ let edge = Edge::<()>::builder()
 
 ### Creating a Graph
 ```rust
-use leptos_flow_core::{Graph, Node, Edge, Position};
+use flow_core::{Graph, Node, Edge, Position};
 
 let mut graph: Graph<(), ()> = Graph::new();
 let node = Node::new("node1", Position::new(100.0, 100.0), ());
@@ -101,7 +101,7 @@ graph.add_node(node).unwrap();
 
 ### Selection Management
 ```rust
-use leptos_flow_core::{SelectionManager, NodeId};
+use flow_core::{SelectionManager, NodeId};
 
 let mut selection = SelectionManager::new();
 selection.select_node(&NodeId::new("node1"));
@@ -109,7 +109,7 @@ selection.select_node(&NodeId::new("node1"));
 
 ### Layout Algorithms
 ```rust
-use leptos_flow_core::layout::ForceDirectedLayout;
+use flow_core::layout::ForceDirectedLayout;
 
 let mut layout = ForceDirectedLayout::new();
 layout.apply(&mut graph).unwrap();
