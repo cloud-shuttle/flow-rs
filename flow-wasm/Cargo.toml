@@ -20,8 +20,8 @@ canvas2d = []
 
 [dependencies]
 # Core dependencies
-flow-core = { version = "0.1.0", path = "../flow-core" }
-flow-renderer = { version = "0.1.0", path = "../flow-renderer" }
+flow-core = { version = "0.1.0-beta.1", path = "../flow-core" }
+flow-renderer = { version = "0.1.0-beta.1", path = "../flow-renderer" }
 
 # WASM bindings
 wasm-bindgen = { workspace = true, features = ["serde-serialize"] }

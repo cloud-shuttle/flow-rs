@@ -19,7 +19,7 @@ debug = ["tracing"]
 
 [dependencies]
 # Core dependency
-flow-core = { version = "0.1.0", path = "../flow-core" }
+flow-core = { version = "0.1.0-beta.1", path = "../flow-core" }
 
 # Web APIs
 wasm-bindgen = { workspace = true }

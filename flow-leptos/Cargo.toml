@@ -18,9 +18,9 @@ web-sys = []
 
 [dependencies]
 # Core dependencies
-flow-core = { version = "0.1.0", path = "../flow-core", features = ["serde"] }
-flow-renderer = { version = "0.1.0", path = "../flow-renderer" }
-flow-wasm = { version = "0.1.0", path = "../flow-wasm" }
+flow-core = { version = "0.1.0-beta.1", path = "../flow-core", features = ["serde"] }
+flow-renderer = { version = "0.1.0-beta.1", path = "../flow-renderer" }
+flow-wasm = { version = "0.1.0-beta.1", path = "../flow-wasm" }
 
 # Leptos ecosystem
 leptos = { workspace = true }

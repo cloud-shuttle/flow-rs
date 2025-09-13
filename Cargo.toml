@@ -93,9 +93,9 @@ full = ["canvas2d", "webgl2", "webgpu", "leptos", "debug"]
 
 [dependencies]
 # Re-export core functionality
-flow-core = { version = "0.1.0", path = "flow-core" }
-flow-renderer = { version = "0.1.0", path = "flow-renderer", default-features = false }
-flow-leptos = { version = "0.1.0", path = "flow-leptos", optional = true }
+flow-core = { version = "0.1.0-beta.1", path = "flow-core" }
+flow-renderer = { version = "0.1.0-beta.1", path = "flow-renderer", default-features = false }
+flow-leptos = { version = "0.1.0-beta.1", path = "flow-leptos", optional = true }
 
 # Core dependencies
 serde.workspace = true
