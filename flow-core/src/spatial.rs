@@ -6,8 +6,8 @@
 use std::collections::HashMap;
 
 use crate::error::Result;
-use crate::types::{Position, Rect, Viewport, NodeId};
 use crate::graph::Node;
+use crate::types::{NodeId, Position, Rect, Viewport};
 
 /// Spatial index for efficient viewport and proximity queries
 pub struct SpatialIndex {
@@ -86,10 +86,7 @@ impl SpatialIndex {
 
         // Add to grid cells
         for cell in &grid_cells {
-            self.grid
-                .entry(*cell)
-                .or_default()
-                .push(node.id.clone());
+            self.grid.entry(*cell).or_default().push(node.id.clone());
         }
 
         // Store entry
@@ -170,7 +167,8 @@ impl SpatialIndex {
     pub fn query_radius(&self, center: Position, radius: f64) -> Vec<NodeId> {
         // For zero or negative radius, do a brute force search
         if radius <= 0.0 {
-            return self.entries
+            return self
+                .entries
                 .iter()
                 .filter(|(_, entry)| {
                     let node_center = Position::new(
@@ -315,8 +313,11 @@ impl SpatialIndex {
     /// Get grid cells that overlap with the given bounds
     fn get_grid_cells_for_bounds(&self, bounds: &Rect) -> Vec<GridCell> {
         // Handle truly invalid bounds (NaN, infinite values)
-        if !bounds.x.is_finite() || !bounds.y.is_finite() ||
-           !bounds.width.is_finite() || !bounds.height.is_finite() {
+        if !bounds.x.is_finite()
+            || !bounds.y.is_finite()
+            || !bounds.width.is_finite()
+            || !bounds.height.is_finite()
+        {
             return Vec::new();
         }
 
@@ -339,8 +340,10 @@ impl SpatialIndex {
         let width = max_cell_x.saturating_sub(min_cell_x).saturating_add(1);
         let height = max_cell_y.saturating_sub(min_cell_y).saturating_add(1);
 
-        if width > MAX_GRID_CELLS || height > MAX_GRID_CELLS ||
-           width.saturating_mul(height) > MAX_GRID_CELLS {
+        if width > MAX_GRID_CELLS
+            || height > MAX_GRID_CELLS
+            || width.saturating_mul(height) > MAX_GRID_CELLS
+        {
             // For very large bounds, return empty result to prevent hanging
             return Vec::new();
         }
@@ -416,8 +419,8 @@ impl<'a> SpatialQuery<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::Viewport;
     use crate::graph::NodeBuilder;
+    use crate::types::Viewport;
 
     #[test]
     fn test_spatial_index_creation() {
@@ -931,7 +934,10 @@ mod tests {
         index.bulk_load(&nodes).unwrap();
         let mut updated_nodes = nodes.clone();
         for node in &mut updated_nodes {
-            node.set_position(Position::new(node.position.x + 100.0, node.position.y + 100.0));
+            node.set_position(Position::new(
+                node.position.x + 100.0,
+                node.position.y + 100.0,
+            ));
             index.update(node).unwrap();
         }
 
@@ -1123,10 +1129,12 @@ mod tests {
         // Test bulk_load with very large number of nodes
         let mut many_nodes = Vec::new();
         for i in 0..1000 {
-            many_nodes.push(NodeBuilder::<()>::new(format!("node_{}", i))
-                .position(i as f64, i as f64)
-                .size(10.0, 10.0)
-                .build());
+            many_nodes.push(
+                NodeBuilder::<()>::new(format!("node_{}", i))
+                    .position(i as f64, i as f64)
+                    .size(10.0, 10.0)
+                    .build(),
+            );
         }
 
         let result_many = index.bulk_load(&many_nodes);
@@ -1273,15 +1281,11 @@ mod tests {
         assert_eq!(results.len(), 3);
 
         // Test query with limit larger than available results
-        let results = SpatialQuery::new(&index)
-            .limit(10)
-            .execute();
+        let results = SpatialQuery::new(&index).limit(10).execute();
         assert_eq!(results.len(), 3);
 
         // Test query with limit of 0
-        let results = SpatialQuery::new(&index)
-            .limit(0)
-            .execute();
+        let results = SpatialQuery::new(&index).limit(0).execute();
         assert_eq!(results.len(), 0);
 
         // Test query with both bounds and radius (bounds should take precedence)

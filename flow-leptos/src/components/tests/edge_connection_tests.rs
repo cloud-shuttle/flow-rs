@@ -3,19 +3,25 @@
 //! Tests for the edge connection functionality including connection validation,
 //! handle detection, edge creation, and connection management.
 
-use wasm_bindgen_test::*;
-use flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Size};
-use flow_core::prelude::*;
 use crate::edge_connection::ConnectionResult;
+use flow_core::prelude::*;
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size};
+use wasm_bindgen_test::*;
 
 /// Create a test graph with nodes for edge connection testing
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
 
     // Add nodes with different sizes and positions
-    graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-    graph.add_node(Node::simple("node2", Position::new(300.0, 150.0))).unwrap();
-    graph.add_node(Node::simple("node3", Position::new(500.0, 200.0))).unwrap();
+    graph
+        .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node2", Position::new(300.0, 150.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node3", Position::new(500.0, 200.0)))
+        .unwrap();
 
     graph
 }
@@ -23,7 +29,7 @@ fn create_test_graph() -> Graph<(), ()> {
 #[wasm_bindgen_test]
 fn test_connection_validation_basic() {
     // Test: Basic connection validation between two nodes
-    use crate::edge_connection::{ConnectionValidator, ConnectionResult};
+    use crate::edge_connection::{ConnectionResult, ConnectionValidator};
 
     let validator = ConnectionValidator::new();
     let graph = create_test_graph();
@@ -43,7 +49,7 @@ fn test_connection_validation_basic() {
 #[wasm_bindgen_test]
 fn test_connection_validation_duplicate() {
     // Test: Connection validation should prevent duplicate edges
-    use crate::edge_connection::{ConnectionValidator, ConnectionResult};
+    use crate::edge_connection::{ConnectionResult, ConnectionValidator};
 
     let mut graph = create_test_graph();
     let validator = ConnectionValidator::new();
@@ -52,7 +58,14 @@ fn test_connection_validation_duplicate() {
     let target_node = NodeId::new("node2");
 
     // Add an existing edge
-    graph.add_edge(Edge::new("edge1", source_node.clone(), target_node.clone(), ())).unwrap();
+    graph
+        .add_edge(Edge::new(
+            "edge1",
+            source_node.clone(),
+            target_node.clone(),
+            (),
+        ))
+        .unwrap();
 
     // Try to add duplicate edge
     let result = validator.validate_connection(&graph, &source_node, &target_node);
@@ -62,7 +75,7 @@ fn test_connection_validation_duplicate() {
 #[wasm_bindgen_test]
 fn test_connection_validation_circular() {
     // Test: Connection validation should prevent circular dependencies
-    use crate::edge_connection::{ConnectionValidator, ConnectionResult};
+    use crate::edge_connection::{ConnectionResult, ConnectionValidator};
 
     let mut graph = create_test_graph();
     let validator = ConnectionValidator::new();
@@ -72,8 +85,12 @@ fn test_connection_validation_circular() {
     let node3 = NodeId::new("node3");
 
     // Create a chain: node1 -> node2 -> node3
-    graph.add_edge(Edge::new("edge1", node1.clone(), node2.clone(), ())).unwrap();
-    graph.add_edge(Edge::new("edge2", node2.clone(), node3.clone(), ())).unwrap();
+    graph
+        .add_edge(Edge::new("edge1", node1.clone(), node2.clone(), ()))
+        .unwrap();
+    graph
+        .add_edge(Edge::new("edge2", node2.clone(), node3.clone(), ()))
+        .unwrap();
 
     // Try to create circular connection: node3 -> node1
     let result = validator.validate_connection(&graph, &node3, &node1);
@@ -83,7 +100,7 @@ fn test_connection_validation_circular() {
 #[wasm_bindgen_test]
 fn test_handle_detection() {
     // Test: System should detect connection handles on nodes
-    use crate::edge_connection::{HandleDetector, ConnectionHandle};
+    use crate::edge_connection::{ConnectionHandle, HandleDetector};
 
     let detector = HandleDetector::new();
     let graph = create_test_graph();
@@ -135,7 +152,7 @@ fn test_connection_preview() {
 #[wasm_bindgen_test]
 fn test_edge_creation() {
     // Test: System should create edges between nodes
-    use crate::edge_connection::{EdgeCreator, ConnectionResult};
+    use crate::edge_connection::{ConnectionResult, EdgeCreator};
 
     let mut creator = EdgeCreator::new();
     let mut graph = create_test_graph();
@@ -224,13 +241,16 @@ fn test_connection_handle_positions() {
 
     // Output handle should be on the right side
     assert_eq!(output_handle_pos.x, node.position.x + node.size.width);
-    assert_eq!(output_handle_pos.y, node.position.y + node.size.height / 2.0);
+    assert_eq!(
+        output_handle_pos.y,
+        node.position.y + node.size.height / 2.0
+    );
 }
 
 #[wasm_bindgen_test]
 fn test_connection_constraints() {
     // Test: Connection system should respect constraints
-    use crate::edge_connection::{ConnectionValidator, ConnectionResult, ConnectionConstraints};
+    use crate::edge_connection::{ConnectionConstraints, ConnectionResult, ConnectionValidator};
 
     let constraints = ConnectionConstraints {
         max_connections_per_node: 2,
@@ -246,8 +266,12 @@ fn test_connection_constraints() {
     let node3 = NodeId::new("node3");
 
     // Add two connections from node1 (should be allowed)
-    graph.add_edge(Edge::new("edge1", node1.clone(), node2.clone(), ())).unwrap();
-    graph.add_edge(Edge::new("edge2", node1.clone(), node3.clone(), ())).unwrap();
+    graph
+        .add_edge(Edge::new("edge1", node1.clone(), node2.clone(), ()))
+        .unwrap();
+    graph
+        .add_edge(Edge::new("edge2", node1.clone(), node3.clone(), ()))
+        .unwrap();
 
     // Try to add third connection (should be rejected)
     let result = validator.validate_connection(&graph, &node1, &NodeId::new("node4"));
@@ -257,7 +281,7 @@ fn test_connection_constraints() {
 #[wasm_bindgen_test]
 fn test_connection_undo_redo() {
     // Test: Connection operations should support undo/redo
-    use crate::edge_connection::{EdgeCreator, ConnectionHistory};
+    use crate::edge_connection::{ConnectionHistory, EdgeCreator};
 
     let mut creator = EdgeCreator::new();
     let mut history = ConnectionHistory::new();
@@ -294,7 +318,12 @@ fn test_connection_performance() {
     // Add many nodes
     for i in 4..100 {
         let node_id = NodeId::new(&format!("node{}", i));
-        graph.add_node(Node::simple(format!("node{}", i), Position::new(i as f64 * 50.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple(
+                format!("node{}", i),
+                Position::new(i as f64 * 50.0, 100.0),
+            ))
+            .unwrap();
     }
 
     // Create many edges
@@ -306,7 +335,8 @@ fn test_connection_performance() {
 
     // Validate connection should still be fast
     let start = std::time::Instant::now();
-    let result = validator.validate_connection(&graph, &NodeId::new("node1"), &NodeId::new("node50"));
+    let result =
+        validator.validate_connection(&graph, &NodeId::new("node1"), &NodeId::new("node50"));
     let duration = start.elapsed();
 
     assert!(matches!(result, ConnectionResult::Valid));

@@ -1,9 +1,12 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use leptos_flow_core::{
-    Graph, Node, Edge, Position, Size,
+    layout::{
+        CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
+        LayoutDirection,
+    },
     prelude::SpatialIndex,
-    layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, CircularLayout, HierarchicalLayout, LayoutDirection},
-    types::{NodeId, EdgeId}
+    types::{EdgeId, NodeId},
+    Edge, Graph, Node, Position, Size,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -25,12 +28,7 @@ fn create_connected_graph(node_count: usize) -> Graph<(), ()> {
     for i in 0..node_count - 1 {
         let source = NodeId::new(format!("node_{}", i));
         let target = NodeId::new(format!("node_{}", i + 1));
-        let edge = Edge::new(
-            EdgeId::new(format!("edge_{}", i)),
-            source,
-            target,
-            (),
-        );
+        let edge = Edge::new(EdgeId::new(format!("edge_{}", i)), source, target, ());
         let _ = graph.add_edge(edge);
     }
 
@@ -38,12 +36,7 @@ fn create_connected_graph(node_count: usize) -> Graph<(), ()> {
     for i in 0..node_count / 4 {
         let source = NodeId::new(format!("node_{}", i));
         let target = NodeId::new(format!("node_{}", i + node_count / 2));
-        let edge = Edge::new(
-            EdgeId::new(format!("cross_edge_{}", i)),
-            source,
-            target,
-            (),
-        );
+        let edge = Edge::new(EdgeId::new(format!("cross_edge_{}", i)), source, target, ());
         let _ = graph.add_edge(edge);
     }
 
@@ -71,12 +64,7 @@ fn create_dense_graph(node_count: usize, edge_probability: f64) -> Graph<(), ()>
             if (edge_count as f64 / (node_count * (node_count - 1) / 2) as f64) < edge_probability {
                 let source = NodeId::new(format!("node_{}", i));
                 let target = NodeId::new(format!("node_{}", j));
-                let edge = Edge::new(
-                    EdgeId::new(format!("edge_{}_{}", i, j)),
-                    source,
-                    target,
-                    (),
-                );
+                let edge = Edge::new(EdgeId::new(format!("edge_{}_{}", i, j)), source, target, ());
                 let _ = graph.add_edge(edge);
                 edge_count += 1;
             }
@@ -108,7 +96,7 @@ fn benchmark_force_directed_convergence(c: &mut Criterion) {
                         layout.apply(&mut test_graph).unwrap();
                         black_box(test_graph)
                     })
-                }
+                },
             );
         }
     }
@@ -123,19 +111,23 @@ fn benchmark_layout_algorithm_comparison(c: &mut Criterion) {
         let graph = create_connected_graph(*size);
 
         // Force-directed layout
-        group.bench_with_input(BenchmarkId::new("force_directed", size), &graph, |b, graph| {
-            b.iter(|| {
-                let mut test_graph = graph.clone();
-                let mut layout = ForceDirectedLayout::builder()
-                    .iterations(50)
-                    .spring_length(100.0)
-                    .repulsion_strength(1000.0)
-                    .damping(0.8)
-                    .build();
-                layout.apply(&mut test_graph).unwrap();
-                black_box(test_graph)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("force_directed", size),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    let mut test_graph = graph.clone();
+                    let mut layout = ForceDirectedLayout::builder()
+                        .iterations(50)
+                        .spring_length(100.0)
+                        .repulsion_strength(1000.0)
+                        .damping(0.8)
+                        .build();
+                    layout.apply(&mut test_graph).unwrap();
+                    black_box(test_graph)
+                })
+            },
+        );
 
         // Grid layout
         group.bench_with_input(BenchmarkId::new("grid", size), &graph, |b, graph| {
@@ -164,18 +156,22 @@ fn benchmark_layout_algorithm_comparison(c: &mut Criterion) {
         });
 
         // Hierarchical layout
-        group.bench_with_input(BenchmarkId::new("hierarchical", size), &graph, |b, graph| {
-            b.iter(|| {
-                let mut test_graph = graph.clone();
-                let mut layout = HierarchicalLayout::builder()
-                    .node_separation(100.0)
-                    .level_separation(150.0)
-                    .direction(LayoutDirection::TopToBottom)
-                    .build();
-                let _ = layout.apply(&mut test_graph);
-                black_box(test_graph)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("hierarchical", size),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    let mut test_graph = graph.clone();
+                    let mut layout = HierarchicalLayout::builder()
+                        .node_separation(100.0)
+                        .level_separation(150.0)
+                        .direction(LayoutDirection::TopToBottom)
+                        .build();
+                    let _ = layout.apply(&mut test_graph);
+                    black_box(test_graph)
+                })
+            },
+        );
     }
 
     group.finish();
@@ -211,7 +207,7 @@ fn benchmark_spatial_index_scaling(c: &mut Criterion) {
                         let rect = leptos_flow_core::Rect::new(0.0, 0.0, query_size, query_size);
                         black_box(index.query_rect(&rect))
                     })
-                }
+                },
             );
         }
 
@@ -225,7 +221,7 @@ fn benchmark_spatial_index_scaling(c: &mut Criterion) {
                         let center = Position::new(5000.0, 5000.0);
                         black_box(index.query_radius(center, radius))
                     })
-                }
+                },
             );
         }
 
@@ -249,36 +245,44 @@ fn benchmark_graph_density_impact(c: &mut Criterion) {
     for density in [0.1, 0.2, 0.3, 0.5, 0.7, 0.9].iter() {
         let graph = create_dense_graph(node_count, *density);
 
-        group.bench_with_input(BenchmarkId::new("bounds_calculation", density), &graph, |b, graph| {
-            b.iter(|| {
-                black_box(graph.bounds())
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("bounds_calculation", density),
+            &graph,
+            |b, graph| b.iter(|| black_box(graph.bounds())),
+        );
 
-        group.bench_with_input(BenchmarkId::new("edge_iteration", density), &graph, |b, graph| {
-            b.iter(|| {
-                let mut count = 0;
-                for _edge in graph.edges() {
-                    count += 1;
-                }
-                black_box(count)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("edge_iteration", density),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    let mut count = 0;
+                    for _edge in graph.edges() {
+                        count += 1;
+                    }
+                    black_box(count)
+                })
+            },
+        );
 
         // Test layout performance with different densities
-        group.bench_with_input(BenchmarkId::new("force_directed_layout", density), &graph, |b, graph| {
-            b.iter(|| {
-                let mut test_graph = graph.clone();
-                let mut layout = ForceDirectedLayout::builder()
-                    .iterations(30)
-                    .spring_length(100.0)
-                    .repulsion_strength(1000.0)
-                    .damping(0.8)
-                    .build();
-                layout.apply(&mut test_graph).unwrap();
-                black_box(test_graph)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("force_directed_layout", density),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    let mut test_graph = graph.clone();
+                    let mut layout = ForceDirectedLayout::builder()
+                        .iterations(30)
+                        .spring_length(100.0)
+                        .repulsion_strength(1000.0)
+                        .damping(0.8)
+                        .build();
+                    layout.apply(&mut test_graph).unwrap();
+                    black_box(test_graph)
+                })
+            },
+        );
     }
 
     group.finish();
@@ -289,41 +293,53 @@ fn benchmark_memory_efficiency(c: &mut Criterion) {
 
     for size in [100, 1000, 5000, 10000].iter() {
         // Test graph memory usage
-        group.bench_with_input(BenchmarkId::new("graph_creation", size), size, |b, &size| {
-            b.iter(|| {
-                let graph = create_connected_graph(size);
-                black_box(graph)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("graph_creation", size),
+            size,
+            |b, &size| {
+                b.iter(|| {
+                    let graph = create_connected_graph(size);
+                    black_box(graph)
+                })
+            },
+        );
 
         // Test spatial index memory usage
-        group.bench_with_input(BenchmarkId::new("spatial_index_creation", size), size, |b, &size| {
-            b.iter(|| {
-                let mut index = SpatialIndex::new();
-                for i in 0..size {
-        let mut node = Node::new(
-            NodeId::new(format!("node_{}", i)),
-            Position::new(i as f64 * 100.0, i as f64 * 100.0),
-            (),
+        group.bench_with_input(
+            BenchmarkId::new("spatial_index_creation", size),
+            size,
+            |b, &size| {
+                b.iter(|| {
+                    let mut index = SpatialIndex::new();
+                    for i in 0..size {
+                        let mut node = Node::new(
+                            NodeId::new(format!("node_{}", i)),
+                            Position::new(i as f64 * 100.0, i as f64 * 100.0),
+                            (),
+                        );
+                        node.size = Size::new(50.0, 50.0);
+                        index.insert(&node).unwrap();
+                    }
+                    black_box(index)
+                })
+            },
         );
-        node.size = Size::new(50.0, 50.0);
-                    index.insert(&node).unwrap();
-                }
-                black_box(index)
-            })
-        });
 
         // Test combined memory usage
-        group.bench_with_input(BenchmarkId::new("combined_structures", size), size, |b, &size| {
-            b.iter(|| {
-                let graph = create_connected_graph(size);
-                let mut index = SpatialIndex::new();
-                for node in graph.nodes() {
-                    index.insert(node).unwrap();
-                }
-                black_box((graph, index))
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("combined_structures", size),
+            size,
+            |b, &size| {
+                b.iter(|| {
+                    let graph = create_connected_graph(size);
+                    let mut index = SpatialIndex::new();
+                    for node in graph.nodes() {
+                        index.insert(node).unwrap();
+                    }
+                    black_box((graph, index))
+                })
+            },
+        );
     }
 
     group.finish();
@@ -344,11 +360,7 @@ fn benchmark_edge_cases(c: &mut Criterion) {
     group.bench_function("single_node_graph", |b| {
         b.iter(|| {
             let mut graph: Graph<(), ()> = Graph::new();
-            let mut node = Node::new(
-                NodeId::new("single"),
-                Position::new(0.0, 0.0),
-                (),
-            );
+            let mut node = Node::new(NodeId::new("single"), Position::new(0.0, 0.0), ());
             node.size = Size::new(50.0, 50.0);
             graph.add_node(node).unwrap();
             black_box(graph.bounds())

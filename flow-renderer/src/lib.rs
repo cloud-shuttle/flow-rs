@@ -127,9 +127,9 @@ pub mod detection {
 
 /// Prelude for convenient imports
 pub mod prelude {
+    pub use super::detection::{detect_available_renderers, select_best_renderer};
     pub use super::error::{RendererError, Result};
     pub use super::traits::{Renderer, RendererCapabilities, RendererType};
-    pub use super::detection::{detect_available_renderers, select_best_renderer};
 
     #[cfg(feature = "canvas2d")]
     pub use super::canvas2d::Canvas2DRenderer;

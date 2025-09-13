@@ -6,16 +6,16 @@
 #![allow(clippy::all)]
 
 pub mod components;
-pub mod hooks;
-pub mod signals;
-pub mod interactions;
-pub mod events;
-pub mod keyboard;
+pub mod dom_rect;
 pub mod drag;
 pub mod edge_connection;
+pub mod events;
+pub mod hooks;
+pub mod interactions;
+pub mod keyboard;
 pub mod minimap;
-pub mod dom_rect;
 pub mod mouse_integration;
+pub mod signals;
 
 // Re-export core types for convenience
 pub use flow_core as core;
@@ -23,25 +23,24 @@ pub use flow_renderer as renderer;
 
 /// Prelude module for convenient imports
 pub mod prelude {
-    pub use crate::components::*;
-    pub use crate::components::minimap::*;
     pub use crate::components::controls::*;
-    pub use crate::hooks::*;
-    pub use crate::signals::*;
-    pub use crate::events::*;
-    pub use crate::interactions::*;
-    pub use crate::keyboard::*;
+    pub use crate::components::minimap::*;
+    pub use crate::components::*;
+    pub use crate::dom_rect::*;
     pub use crate::drag::*;
     pub use crate::edge_connection::*;
+    pub use crate::events::*;
+    pub use crate::hooks::*;
+    pub use crate::interactions::*;
+    pub use crate::keyboard::*;
     pub use crate::minimap::*;
-    pub use crate::dom_rect::*;
     pub use crate::mouse_integration::*;
+    pub use crate::signals::*;
 
     // Re-export commonly used Leptos types
     pub use leptos::{
-        component, create_signal, create_memo, create_effect, create_resource,
-        Signal, ReadSignal, WriteSignal, RwSignal, Memo,
-        IntoView, Children, ChildrenFn,
+        component, create_effect, create_memo, create_resource, create_signal, Children,
+        ChildrenFn, IntoView, Memo, ReadSignal, RwSignal, Signal, WriteSignal,
     };
 
     // Re-export core types

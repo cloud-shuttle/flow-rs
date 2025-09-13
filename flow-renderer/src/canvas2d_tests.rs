@@ -1,12 +1,14 @@
 //! Tests for Canvas2D renderer
 
-use wasm_bindgen_test::*;
-use wasm_bindgen::JsCast;
-use web_sys::HtmlCanvasElement;
-use flow_core::{Graph, Node, Edge, Position, Viewport, Rect};
-use flow_core::types::{NodeId, EdgeId};
 use crate::canvas2d::Canvas2DRenderer;
-use crate::traits::{Renderer, NodeStyle, EdgeStyle, BackgroundConfig, BackgroundVariant, SelectionStyle};
+use crate::traits::{
+    BackgroundConfig, BackgroundVariant, EdgeStyle, NodeStyle, Renderer, SelectionStyle,
+};
+use flow_core::types::{EdgeId, NodeId};
+use flow_core::{Edge, Graph, Node, Position, Rect, Viewport};
+use wasm_bindgen::JsCast;
+use wasm_bindgen_test::*;
+use web_sys::HtmlCanvasElement;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 

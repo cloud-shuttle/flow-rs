@@ -3,11 +3,11 @@
 //! This module provides shared test utilities that can be used across
 //! different test files.
 
-use flow_core::{Graph, Node, Edge, Position, Viewport};
-use flow_renderer::Renderer;
+use flow_core::{Edge, Graph, Node, Position, Viewport};
 use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
-use web_sys::HtmlCanvasElement;
+use flow_renderer::Renderer;
 use wasm_bindgen::JsCast;
+use web_sys::HtmlCanvasElement;
 
 /// Create a test canvas element with default dimensions
 pub fn create_test_canvas() -> HtmlCanvasElement {
@@ -109,7 +109,13 @@ pub fn create_test_viewport() -> Viewport {
 }
 
 /// Create a test viewport with custom settings
-pub fn create_test_viewport_with_settings(x: f64, y: f64, width: f64, height: f64, zoom: f64) -> Viewport {
+pub fn create_test_viewport_with_settings(
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+    zoom: f64,
+) -> Viewport {
     Viewport::new(x, y, width, height, zoom)
 }
 
@@ -119,7 +125,11 @@ where
     F: FnOnce() -> Result<R, Box<dyn std::error::Error>>,
 {
     let result = operation();
-    assert!(result.is_ok(), "Renderer operation should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Renderer operation should succeed: {:?}",
+        result.err()
+    );
 }
 
 /// Assert that a renderer operation fails with expected error
@@ -130,8 +140,12 @@ where
     let result = operation();
     assert!(result.is_err(), "Renderer operation should fail");
     let error_msg = format!("{:?}", result.err().unwrap());
-    assert!(error_msg.contains(expected_error),
-           "Expected error containing '{}', got: {}", expected_error, error_msg);
+    assert!(
+        error_msg.contains(expected_error),
+        "Expected error containing '{}', got: {}",
+        expected_error,
+        error_msg
+    );
 }
 
 /// Performance test helper - measure execution time
@@ -152,6 +166,10 @@ where
     F: FnOnce() -> R,
 {
     let (_, duration) = measure_execution_time(operation);
-    assert!(duration <= max_time_ms,
-           "Operation took {}ms, expected <= {}ms", duration, max_time_ms);
+    assert!(
+        duration <= max_time_ms,
+        "Operation took {}ms, expected <= {}ms",
+        duration,
+        max_time_ms
+    );
 }

@@ -3,11 +3,11 @@
 //! Provides keyboard shortcuts and navigation for flow editors
 
 use leptos::*;
-use wasm_bindgen::{JsCast, closure::Closure};
-use web_sys::{KeyboardEvent, EventTarget};
+use wasm_bindgen::{closure::Closure, JsCast};
+use web_sys::{EventTarget, KeyboardEvent};
 
-use flow_core::{Graph, NavigationDirection, KeyboardShortcut};
 use crate::signals::{FlowState, ViewportState};
+use flow_core::{Graph, KeyboardShortcut, NavigationDirection};
 
 /// Keyboard modifiers state
 #[derive(Debug, Clone, Copy, Default)]
@@ -55,9 +55,7 @@ where
             }
 
             // Clear selection (Escape)
-            "Escape" => {
-                Some(KeyboardShortcut::Escape)
-            }
+            "Escape" => Some(KeyboardShortcut::Escape),
 
             // Navigation (Arrow keys)
             "ArrowRight" => {
@@ -154,7 +152,9 @@ mod tests {
     #[test]
     fn test_handle_node_click() {
         let mut graph = Graph::<(), ()>::new();
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
 
         let mut flow_state = FlowState::new();
         let node_id = flow_core::NodeId::new("node1");
@@ -165,7 +165,11 @@ mod tests {
         assert!(flow_state.is_node_selected(&node_id));
 
         // Test Ctrl+Click (toggle)
-        let modifiers = KeyboardModifiers { ctrl: true, shift: false, alt: false };
+        let modifiers = KeyboardModifiers {
+            ctrl: true,
+            shift: false,
+            alt: false,
+        };
         handle_node_click(&graph, &mut flow_state, node_id.clone(), modifiers);
         assert!(!flow_state.is_node_selected(&node_id)); // Should be deselected
     }

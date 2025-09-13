@@ -1,6 +1,6 @@
+use flow_core::{Edge, Graph, Node, Position, Size};
+use flow_leptos::components::{FlowCanvas, FlowEditor};
 use leptos::*;
-use flow_core::{Graph, Node, Edge, Position, Size};
-use flow_leptos::components::{FlowEditor, FlowCanvas};
 
 fn main() {
     console_error_panic_hook::set_once();
@@ -109,10 +109,7 @@ fn add_random_node(graph_signal: &RwSignal<Graph<(), ()>>) {
         let x = 100.0 + (node_count as f64 * 150.0) % 600.0;
         let y = 100.0 + (node_count as f64 * 100.0) % 400.0;
 
-        let node = Node::simple(
-            format!("node_{}", node_count),
-            Position::new(x, y),
-        );
+        let node = Node::simple(format!("node_{}", node_count), Position::new(x, y));
         let _ = graph.add_node(node);
     });
 }

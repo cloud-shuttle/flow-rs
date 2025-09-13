@@ -3,7 +3,7 @@
 //! Provides functionality for creating edges interactively through drag operations
 //! from source handles to target handles or nodes.
 
-use crate::{FlowError, Result, NodeId, Position, Graph, Edge};
+use crate::{Edge, FlowError, Graph, NodeId, Position, Result};
 
 /// Helper function to create edge with default data
 fn create_edge_with_defaults<E: Default>(
@@ -85,17 +85,19 @@ impl EdgeCreator {
 
         // Check handle compatibility
         if !source_handle_ref.can_connect_to(target_handle_ref) {
-            return Err(FlowError::invalid_connection(
-                format!("Incompatible handles: {} cannot connect to {}", source_handle, target_handle)
-            ));
+            return Err(FlowError::invalid_connection(format!(
+                "Incompatible handles: {} cannot connect to {}",
+                source_handle, target_handle
+            )));
         }
 
         // Check connection limits for source handle
         if let Some(limit) = source_handle_ref.connection_limit {
-            let current_connections = graph.edges()
+            let current_connections = graph
+                .edges()
                 .filter(|edge| {
-                    &edge.source == source_node_id &&
-                    edge.source_handle.as_deref() == Some(source_handle)
+                    &edge.source == source_node_id
+                        && edge.source_handle.as_deref() == Some(source_handle)
                 })
                 .count();
 
@@ -103,7 +105,7 @@ impl EdgeCreator {
                 return Err(FlowError::connection_limit_exceeded(
                     source_handle,
                     current_connections,
-                    limit
+                    limit,
                 ));
             }
         }
@@ -111,10 +113,11 @@ impl EdgeCreator {
         // Check connection limits for target handle
         if let Some(limit) = target_handle_ref.connection_limit {
             let target_node_id: NodeId = target_node_ref.id.clone();
-            let current_connections = graph.edges()
+            let current_connections = graph
+                .edges()
                 .filter(|edge| {
-                    edge.target == target_node_id &&
-                    edge.target_handle.as_deref() == Some(target_handle)
+                    edge.target == target_node_id
+                        && edge.target_handle.as_deref() == Some(target_handle)
                 })
                 .count();
 
@@ -122,7 +125,7 @@ impl EdgeCreator {
                 return Err(FlowError::connection_limit_exceeded(
                     target_handle,
                     current_connections,
-                    limit
+                    limit,
                 ));
             }
         }
@@ -181,11 +184,12 @@ impl EdgeCreator {
         N: Clone,
         E: Clone + Default,
     {
-        let preview = self.preview_edge.take().ok_or_else(|| {
-            FlowError::InvalidOperation {
+        let preview = self
+            .preview_edge
+            .take()
+            .ok_or_else(|| FlowError::InvalidOperation {
                 message: "No edge creation in progress".to_string(),
-            }
-        })?;
+            })?;
 
         let target_node_id: NodeId = target_node.into();
 
@@ -202,20 +206,25 @@ impl EdgeCreator {
         let target_node_ref = graph.get_node(&target_node_id).unwrap();
 
         // Validate handle compatibility if both handles specified
-        if let (Some(source_handle), Some(target_handle)) = (&preview.source_handle, target_handle) {
+        if let (Some(source_handle), Some(target_handle)) = (&preview.source_handle, target_handle)
+        {
             self.validate_handle_compatibility(
                 graph,
                 source_node_ref,
                 target_node_ref,
                 source_handle,
                 target_handle,
-                &preview.source_node
+                &preview.source_node,
             )?;
         }
 
         // Create the actual edge
         let edge_id = format!("edge_{}_to_{}", preview.source_node.as_str(), target_node);
-        let mut edge = create_edge_with_defaults::<E>(edge_id, preview.source_node.as_str(), target_node_id.as_str());
+        let mut edge = create_edge_with_defaults::<E>(
+            edge_id,
+            preview.source_node.as_str(),
+            target_node_id.as_str(),
+        );
 
         // Set handle references if provided
         if let Some(source_handle) = preview.source_handle {
@@ -248,7 +257,9 @@ impl EdgeCreator {
         for node in graph.nodes() {
             for handle in node.handles() {
                 let handle_pos = node.position + handle.position.to_position();
-                let distance = ((position.x - handle_pos.x).powi(2) + (position.y - handle_pos.y).powi(2)).sqrt();
+                let distance = ((position.x - handle_pos.x).powi(2)
+                    + (position.y - handle_pos.y).powi(2))
+                .sqrt();
 
                 if distance <= tolerance {
                     return Some((node.id.clone(), Some(handle.id.as_str().to_string())));

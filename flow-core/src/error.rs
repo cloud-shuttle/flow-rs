@@ -109,7 +109,11 @@ impl FlowError {
     }
 
     /// Create a connection limit exceeded error
-    pub fn connection_limit_exceeded(handle_id: impl Into<String>, current: usize, limit: usize) -> Self {
+    pub fn connection_limit_exceeded(
+        handle_id: impl Into<String>,
+        current: usize,
+        limit: usize,
+    ) -> Self {
         Self::ConnectionLimitExceeded {
             handle_id: handle_id.into(),
             current,
@@ -231,7 +235,10 @@ mod tests {
             }
             _ => panic!("Expected InvalidOperation variant"),
         }
-        assert_eq!(error.to_string(), "Invalid operation: Operation not supported");
+        assert_eq!(
+            error.to_string(),
+            "Invalid operation: Operation not supported"
+        );
     }
 
     #[test]
@@ -250,14 +257,21 @@ mod tests {
     fn test_connection_limit_exceeded_constructor() {
         let error = FlowError::connection_limit_exceeded("output-handle", 3, 2);
         match &error {
-            FlowError::ConnectionLimitExceeded { handle_id, current, limit } => {
+            FlowError::ConnectionLimitExceeded {
+                handle_id,
+                current,
+                limit,
+            } => {
                 assert_eq!(handle_id, "output-handle");
                 assert_eq!(*current, 3);
                 assert_eq!(*limit, 2);
             }
             _ => panic!("Expected ConnectionLimitExceeded variant"),
         }
-        assert_eq!(error.to_string(), "Connection limit exceeded for handle 'output-handle': 3/2");
+        assert_eq!(
+            error.to_string(),
+            "Connection limit exceeded for handle 'output-handle': 3/2"
+        );
     }
 
     // === Direct Variant Construction Tests ===
@@ -270,19 +284,27 @@ mod tests {
 
     #[test]
     fn test_invalid_position_variant() {
-        let error = FlowError::InvalidPosition { x: f64::NAN, y: f64::INFINITY };
+        let error = FlowError::InvalidPosition {
+            x: f64::NAN,
+            y: f64::INFINITY,
+        };
         assert_eq!(error.to_string(), "Invalid position: x=NaN, y=inf");
     }
 
     #[test]
     fn test_invalid_size_variant() {
-        let error = FlowError::InvalidSize { width: -10.0, height: 0.0 };
+        let error = FlowError::InvalidSize {
+            width: -10.0,
+            height: 0.0,
+        };
         assert_eq!(error.to_string(), "Invalid size: width=-10, height=0");
     }
 
     #[test]
     fn test_serialization_variant() {
-        let error = FlowError::Serialization { message: "JSON parse error".to_string() };
+        let error = FlowError::Serialization {
+            message: "JSON parse error".to_string(),
+        };
         assert_eq!(error.to_string(), "Serialization error: JSON parse error");
     }
 
@@ -323,8 +345,10 @@ mod tests {
 
         // Ensure they're independent objects
         match (&original, &cloned) {
-            (FlowError::InvalidConnection { message: msg1 },
-             FlowError::InvalidConnection { message: msg2 }) => {
+            (
+                FlowError::InvalidConnection { message: msg1 },
+                FlowError::InvalidConnection { message: msg2 },
+            ) => {
                 assert_eq!(msg1, msg2);
             }
             _ => panic!("Cloning changed error variant"),
@@ -367,11 +391,16 @@ mod tests {
     fn test_connection_limit_boundary_values() {
         // Zero limit
         let error1 = FlowError::connection_limit_exceeded("handle", 1, 0);
-        assert_eq!(error1.to_string(), "Connection limit exceeded for handle 'handle': 1/0");
+        assert_eq!(
+            error1.to_string(),
+            "Connection limit exceeded for handle 'handle': 1/0"
+        );
 
         // Maximum values
         let error2 = FlowError::connection_limit_exceeded("handle", usize::MAX, usize::MAX - 1);
-        assert!(error2.to_string().contains(&format!("{}/{}", usize::MAX, usize::MAX - 1)));
+        assert!(error2
+            .to_string()
+            .contains(&format!("{}/{}", usize::MAX, usize::MAX - 1)));
     }
 
     // === Result Type Integration Tests ===
@@ -442,8 +471,14 @@ mod tests {
 
         // Validation errors
         let validation_errors = vec![
-            FlowError::InvalidPosition { x: f64::NAN, y: 0.0 },
-            FlowError::InvalidSize { width: -1.0, height: 0.0 },
+            FlowError::InvalidPosition {
+                x: f64::NAN,
+                y: 0.0,
+            },
+            FlowError::InvalidSize {
+                width: -1.0,
+                height: 0.0,
+            },
         ];
 
         for error in validation_errors {
@@ -453,26 +488,28 @@ mod tests {
 
     // Helper functions for error categorization
     fn is_graph_structure_error(error: &FlowError) -> bool {
-        matches!(error,
-            FlowError::NodeNotFound { .. } |
-            FlowError::EdgeNotFound { .. } |
-            FlowError::DuplicateNodeId { .. } |
-            FlowError::DuplicateEdgeId { .. }
+        matches!(
+            error,
+            FlowError::NodeNotFound { .. }
+                | FlowError::EdgeNotFound { .. }
+                | FlowError::DuplicateNodeId { .. }
+                | FlowError::DuplicateEdgeId { .. }
         )
     }
 
     fn is_connection_error(error: &FlowError) -> bool {
-        matches!(error,
-            FlowError::InvalidConnection { .. } |
-            FlowError::SelfConnection |
-            FlowError::ConnectionLimitExceeded { .. }
+        matches!(
+            error,
+            FlowError::InvalidConnection { .. }
+                | FlowError::SelfConnection
+                | FlowError::ConnectionLimitExceeded { .. }
         )
     }
 
     fn is_validation_error(error: &FlowError) -> bool {
-        matches!(error,
-            FlowError::InvalidPosition { .. } |
-            FlowError::InvalidSize { .. }
+        matches!(
+            error,
+            FlowError::InvalidPosition { .. } | FlowError::InvalidSize { .. }
         )
     }
 
@@ -494,7 +531,10 @@ mod tests {
         let error = FlowError::connection_limit_exceeded("output", 5, 3);
         let serialized = serde_json::to_string(&error).expect("Serialization should work");
 
-        assert_eq!(serialized, "\"Connection limit exceeded for handle 'output': 5/3\"");
+        assert_eq!(
+            serialized,
+            "\"Connection limit exceeded for handle 'output': 5/3\""
+        );
     }
 
     // === From Trait Integration Tests ===

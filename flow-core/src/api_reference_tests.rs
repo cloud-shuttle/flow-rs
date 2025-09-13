@@ -27,14 +27,15 @@ mod tests {
         let api_ref_dir = Path::new("../docs/api");
         assert!(api_ref_dir.exists(), "API reference directory should exist");
 
-        let required_files = [
-            "../docs/api/API_DESIGN.md",
-            "../docs/api/REFERENCE.md",
-        ];
+        let required_files = ["../docs/api/API_DESIGN.md", "../docs/api/REFERENCE.md"];
 
         for file in &required_files {
             let path = Path::new(file);
-            assert!(path.exists(), "Required API reference file should exist: {}", file);
+            assert!(
+                path.exists(),
+                "Required API reference file should exist: {}",
+                file
+            );
         }
     }
 
@@ -44,22 +45,16 @@ mod tests {
         let api_ref = fs::read_to_string("../docs/api/REFERENCE.md").unwrap();
 
         let core_types = [
-            "Graph",
-            "Node",
-            "Edge",
-            "Position",
-            "Size",
-            "Rect",
-            "Viewport",
-            "NodeId",
-            "EdgeId",
-            "GroupId",
-            "HandleId",
+            "Graph", "Node", "Edge", "Position", "Size", "Rect", "Viewport", "NodeId", "EdgeId",
+            "GroupId", "HandleId",
         ];
 
         for type_name in &core_types {
-            assert!(api_ref.contains(&format!("## {}", type_name)),
-                "Core type should be documented: {}", type_name);
+            assert!(
+                api_ref.contains(&format!("## {}", type_name)),
+                "Core type should be documented: {}",
+                type_name
+            );
         }
     }
 
@@ -76,8 +71,11 @@ mod tests {
         ];
 
         for manager in &managers {
-            assert!(api_ref.contains(&format!("## {}", manager)),
-                "Manager should be documented: {}", manager);
+            assert!(
+                api_ref.contains(&format!("## {}", manager)),
+                "Manager should be documented: {}",
+                manager
+            );
         }
     }
 
@@ -94,8 +92,11 @@ mod tests {
         ];
 
         for algorithm in &algorithms {
-            assert!(api_ref.contains(&format!("## {}", algorithm)),
-                "Layout algorithm should be documented: {}", algorithm);
+            assert!(
+                api_ref.contains(&format!("## {}", algorithm)),
+                "Layout algorithm should be documented: {}",
+                algorithm
+            );
         }
     }
 
@@ -104,15 +105,14 @@ mod tests {
         // Test that all error types are documented
         let api_ref = fs::read_to_string("../docs/api/REFERENCE.md").unwrap();
 
-        let error_types = [
-            "FlowError",
-            "SpatialError",
-            "LayoutError",
-        ];
+        let error_types = ["FlowError", "SpatialError", "LayoutError"];
 
         for error_type in &error_types {
-            assert!(api_ref.contains(&format!("## {}", error_type)),
-                "Error type should be documented: {}", error_type);
+            assert!(
+                api_ref.contains(&format!("## {}", error_type)),
+                "Error type should be documented: {}",
+                error_type
+            );
         }
     }
 
@@ -123,8 +123,14 @@ mod tests {
 
         // Check that examples use correct imports
         if api_ref.contains("use leptos_flow_core::") {
-            assert!(api_ref.contains("Graph"), "Should import Graph if using leptos_flow_core");
-            assert!(api_ref.contains("Node"), "Should import Node if using leptos_flow_core");
+            assert!(
+                api_ref.contains("Graph"),
+                "Should import Graph if using leptos_flow_core"
+            );
+            assert!(
+                api_ref.contains("Node"),
+                "Should import Node if using leptos_flow_core"
+            );
         }
     }
 
@@ -145,8 +151,11 @@ mod tests {
         ];
 
         for method in &key_methods {
-            assert!(api_ref.contains(method),
-                "Method signature should be documented: {}", method);
+            assert!(
+                api_ref.contains(method),
+                "Method signature should be documented: {}",
+                method
+            );
         }
     }
 
@@ -167,8 +176,11 @@ mod tests {
         ];
 
         for return_type in &return_type_examples {
-            assert!(api_ref.contains(return_type),
-                "Return type should be documented: {}", return_type);
+            assert!(
+                api_ref.contains(return_type),
+                "Return type should be documented: {}",
+                return_type
+            );
         }
     }
 
@@ -189,8 +201,11 @@ mod tests {
         ];
 
         for pattern in &param_patterns {
-            assert!(api_ref.contains(pattern),
-                "Parameter should be documented: {}", pattern);
+            assert!(
+                api_ref.contains(pattern),
+                "Parameter should be documented: {}",
+                pattern
+            );
         }
     }
 
@@ -209,8 +224,11 @@ mod tests {
         ];
 
         for pattern in &example_patterns {
-            assert!(api_ref.contains(pattern),
-                "Working example should be present: {}", pattern);
+            assert!(
+                api_ref.contains(pattern),
+                "Working example should be present: {}",
+                pattern
+            );
         }
     }
 
@@ -220,12 +238,7 @@ mod tests {
         let api_ref = fs::read_to_string("../docs/api/REFERENCE.md").unwrap();
 
         // Check for cross-reference patterns
-        let cross_ref_patterns = [
-            "See also:",
-            "Related:",
-            "Used by:",
-            "Uses:",
-        ];
+        let cross_ref_patterns = ["See also:", "Related:", "Used by:", "Uses:"];
 
         // At least some cross-references should be present
         let mut found_cross_refs = 0;
@@ -235,7 +248,10 @@ mod tests {
             }
         }
 
-        assert!(found_cross_refs > 0, "Should have some cross-references in API docs");
+        assert!(
+            found_cross_refs > 0,
+            "Should have some cross-references in API docs"
+        );
     }
 
     #[test]
@@ -245,11 +261,15 @@ mod tests {
         let cargo_toml = fs::read_to_string("../Cargo.toml").unwrap();
 
         // Extract version from Cargo.toml
-        let version_line = cargo_toml.lines()
+        let version_line = cargo_toml
+            .lines()
             .find(|line| line.starts_with("version = "))
             .expect("Cargo.toml should have version field");
 
-        let version = version_line.split('"').nth(1).expect("Version should be quoted");
+        let version = version_line
+            .split('"')
+            .nth(1)
+            .expect("Version should be quoted");
 
         // API reference should mention the version
         assert!(api_ref.contains("flow-core"), "Should mention flow-core");
@@ -270,8 +290,11 @@ mod tests {
         ];
 
         for pattern in &usage_patterns {
-            assert!(api_ref.contains(pattern),
-                "Usage pattern should be documented: {}", pattern);
+            assert!(
+                api_ref.contains(pattern),
+                "Usage pattern should be documented: {}",
+                pattern
+            );
         }
     }
 
@@ -296,7 +319,10 @@ mod tests {
             }
         }
 
-        assert!(found_error_docs > 0, "Should document error handling patterns");
+        assert!(
+            found_error_docs > 0,
+            "Should document error handling patterns"
+        );
     }
 
     #[test]
@@ -304,13 +330,7 @@ mod tests {
         // Test that performance considerations are documented
         let api_ref = fs::read_to_string("../docs/api/REFERENCE.md").unwrap();
 
-        let performance_patterns = [
-            "Performance",
-            "Complexity",
-            "O(",
-            "efficient",
-            "optimized",
-        ];
+        let performance_patterns = ["Performance", "Complexity", "O(", "efficient", "optimized"];
 
         // At least some performance notes should be present
         let mut found_performance_docs = 0;
@@ -320,7 +340,10 @@ mod tests {
             }
         }
 
-        assert!(found_performance_docs > 0, "Should document performance considerations");
+        assert!(
+            found_performance_docs > 0,
+            "Should document performance considerations"
+        );
     }
 
     #[test]
@@ -337,8 +360,11 @@ mod tests {
         ];
 
         for principle in &design_principles {
-            assert!(api_design.contains(principle),
-                "Design principle should be documented: {}", principle);
+            assert!(
+                api_design.contains(principle),
+                "Design principle should be documented: {}",
+                principle
+            );
         }
     }
 
@@ -363,7 +389,10 @@ mod tests {
             }
         }
 
-        assert!(found_evolution_docs > 0, "Should document API evolution strategy");
+        assert!(
+            found_evolution_docs > 0,
+            "Should document API evolution strategy"
+        );
     }
 
     // ============================================================================
@@ -374,7 +403,10 @@ mod tests {
     fn test_automated_doc_generation_script_exists() {
         // Test that automated documentation generation script exists
         let script_path = Path::new("../scripts/generate_api_docs.sh");
-        assert!(script_path.exists(), "API documentation generation script should exist");
+        assert!(
+            script_path.exists(),
+            "API documentation generation script should exist"
+        );
     }
 
     #[test]
@@ -399,7 +431,10 @@ mod tests {
         let api_ref_path = Path::new("../docs/api/REFERENCE.md");
         if api_ref_path.exists() {
             let metadata = fs::metadata(api_ref_path).unwrap();
-            assert!(metadata.is_file(), "Generated API reference should be a file");
+            assert!(
+                metadata.is_file(),
+                "Generated API reference should be a file"
+            );
         }
     }
 }

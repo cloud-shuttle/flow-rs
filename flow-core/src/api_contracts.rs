@@ -8,14 +8,14 @@
 //! 3. **Regression Prevention** - Catch breaking changes early
 //! 4. **Usage Examples** - Demonstrate correct API usage patterns
 
+use crate::layout::{CircularLayout, ForceDirectedLayout, GridLayout, LayoutAlgorithm};
 use crate::prelude::*;
-use crate::{
-    Graph, Node, Edge, Position, Size, Rect, Viewport, NodeId, EdgeId,
-    SelectionManager, SelectionMode, GroupManager, HandleManager, Handle, HandleType, HandlePosition,
-    AutoLayoutManager, FlowError
-};
-use crate::layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, CircularLayout};
 use crate::spatial::SpatialIndex;
+use crate::{
+    AutoLayoutManager, Edge, EdgeId, FlowError, Graph, GroupManager, Handle, HandleManager,
+    HandlePosition, HandleType, Node, NodeId, Position, Rect, SelectionManager, SelectionMode,
+    Size, Viewport,
+};
 
 #[cfg(test)]
 mod tests {
@@ -289,8 +289,12 @@ mod tests {
         let mut graph = Graph::new();
 
         // Add nodes first
-        graph.add_node(Node::new("node1", Position::new(10.0, 20.0), ())).unwrap();
-        graph.add_node(Node::new("node2", Position::new(30.0, 40.0), ())).unwrap();
+        graph
+            .add_node(Node::new("node1", Position::new(10.0, 20.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("node2", Position::new(30.0, 40.0), ()))
+            .unwrap();
 
         // Test adding edges
         let edge1 = Edge::new("edge1", "node1", "node2", ());
@@ -320,9 +324,15 @@ mod tests {
         let mut graph = Graph::new();
 
         // Add test data
-        graph.add_node(Node::new("node1", Position::new(10.0, 20.0), ())).unwrap();
-        graph.add_node(Node::new("node2", Position::new(30.0, 40.0), ())).unwrap();
-        graph.add_edge(Edge::new("edge1", "node1", "node2", ())).unwrap();
+        graph
+            .add_node(Node::new("node1", Position::new(10.0, 20.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("node2", Position::new(30.0, 40.0), ()))
+            .unwrap();
+        graph
+            .add_edge(Edge::new("edge1", "node1", "node2", ()))
+            .unwrap();
 
         // Test node iteration
         let node_ids: Vec<_> = graph.node_ids().collect();
@@ -429,22 +439,48 @@ mod tests {
         let circular_layout = CircularLayout::new();
 
         // Test common trait methods
-        assert_eq!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::name(&force_layout), "Force-Directed");
-        assert_eq!(<GridLayout as LayoutAlgorithm<(), ()>>::name(&grid_layout), "Grid");
-        assert_eq!(<CircularLayout as LayoutAlgorithm<(), ()>>::name(&circular_layout), "Circular");
+        assert_eq!(
+            <ForceDirectedLayout as LayoutAlgorithm<(), ()>>::name(&force_layout),
+            "Force-Directed"
+        );
+        assert_eq!(
+            <GridLayout as LayoutAlgorithm<(), ()>>::name(&grid_layout),
+            "Grid"
+        );
+        assert_eq!(
+            <CircularLayout as LayoutAlgorithm<(), ()>>::name(&circular_layout),
+            "Circular"
+        );
 
         // Test default states
         assert!(!<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::is_running(&force_layout));
-        assert!(!<GridLayout as LayoutAlgorithm<(), ()>>::is_running(&grid_layout));
-        assert!(!<CircularLayout as LayoutAlgorithm<(), ()>>::is_running(&circular_layout));
+        assert!(!<GridLayout as LayoutAlgorithm<(), ()>>::is_running(
+            &grid_layout
+        ));
+        assert!(!<CircularLayout as LayoutAlgorithm<(), ()>>::is_running(
+            &circular_layout
+        ));
 
-        assert_eq!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::progress(&force_layout), 1.0);
-        assert_eq!(<GridLayout as LayoutAlgorithm<(), ()>>::progress(&grid_layout), 1.0);
-        assert_eq!(<CircularLayout as LayoutAlgorithm<(), ()>>::progress(&circular_layout), 1.0);
+        assert_eq!(
+            <ForceDirectedLayout as LayoutAlgorithm<(), ()>>::progress(&force_layout),
+            1.0
+        );
+        assert_eq!(
+            <GridLayout as LayoutAlgorithm<(), ()>>::progress(&grid_layout),
+            1.0
+        );
+        assert_eq!(
+            <CircularLayout as LayoutAlgorithm<(), ()>>::progress(&circular_layout),
+            1.0
+        );
 
         assert!(<ForceDirectedLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&force_layout));
-        assert!(!<GridLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&grid_layout));
-        assert!(!<CircularLayout as LayoutAlgorithm<(), ()>>::can_interrupt(&circular_layout));
+        assert!(!<GridLayout as LayoutAlgorithm<(), ()>>::can_interrupt(
+            &grid_layout
+        ));
+        assert!(!<CircularLayout as LayoutAlgorithm<(), ()>>::can_interrupt(
+            &circular_layout
+        ));
     }
 
     #[test]
@@ -470,9 +506,15 @@ mod tests {
 
         // Test layout application
         let mut graph = Graph::new();
-        graph.add_node(Node::new("node1", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("node2", Position::new(100.0, 100.0), ())).unwrap();
-        graph.add_edge(Edge::new("edge1", "node1", "node2", ())).unwrap();
+        graph
+            .add_node(Node::new("node1", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("node2", Position::new(100.0, 100.0), ()))
+            .unwrap();
+        graph
+            .add_edge(Edge::new("edge1", "node1", "node2", ()))
+            .unwrap();
 
         assert!(layout.apply(&mut graph).is_ok());
     }
@@ -523,19 +565,28 @@ mod tests {
 
         // Test group creation
         let group_id = GroupId::new("test_group");
-        let node_ids: std::collections::HashSet<_> = [NodeId::new("node1"), NodeId::new("node2")].into();
+        let node_ids: std::collections::HashSet<_> =
+            [NodeId::new("node1"), NodeId::new("node2")].into();
 
-        assert!(group_manager.create_group(group_id.clone(), node_ids).is_ok());
+        assert!(group_manager
+            .create_group(group_id.clone(), node_ids)
+            .is_ok());
         assert_eq!(group_manager.all_groups().len(), 1);
 
         // Test group retrieval
         assert!(group_manager.get_group(&group_id).is_some());
-        assert!(group_manager.get_group(&GroupId::new("nonexistent")).is_none());
+        assert!(group_manager
+            .get_group(&GroupId::new("nonexistent"))
+            .is_none());
 
         // Test group bounds calculation (requires a graph)
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::new("node1", Position::new(10.0, 20.0), ())).unwrap();
-        graph.add_node(Node::new("node2", Position::new(30.0, 40.0), ())).unwrap();
+        graph
+            .add_node(Node::new("node1", Position::new(10.0, 20.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("node2", Position::new(30.0, 40.0), ()))
+            .unwrap();
         let bounds = group_manager.calculate_group_bounds(&group_id, &graph);
         assert!(bounds.is_ok());
 
@@ -566,11 +617,17 @@ mod tests {
         assert_eq!(handle_manager.handles().len(), 1);
 
         // Test handle retrieval
-        assert!(handle_manager.get_handle(&HandleId::new("handle1")).is_some());
-        assert!(handle_manager.get_handle(&HandleId::new("nonexistent")).is_none());
+        assert!(handle_manager
+            .get_handle(&HandleId::new("handle1"))
+            .is_some());
+        assert!(handle_manager
+            .get_handle(&HandleId::new("nonexistent"))
+            .is_none());
 
         // Test handle removal
-        assert!(handle_manager.remove_handle(&HandleId::new("handle1")).is_ok());
+        assert!(handle_manager
+            .remove_handle(&HandleId::new("handle1"))
+            .is_ok());
         assert!(handle_manager.handles().is_empty());
     }
 
@@ -587,8 +644,12 @@ mod tests {
 
         // Test layout application
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::new("node1", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("node2", Position::new(100.0, 100.0), ())).unwrap();
+        graph
+            .add_node(Node::new("node1", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("node2", Position::new(100.0, 100.0), ()))
+            .unwrap();
 
         assert!(auto_layout.apply_auto_layout(&mut graph).is_ok());
     }
@@ -600,24 +661,39 @@ mod tests {
     #[test]
     fn test_error_types_api_contract() {
         // Test FlowError creation and properties
-        let node_error = FlowError::NodeNotFound { id: "test".to_string() };
+        let node_error = FlowError::NodeNotFound {
+            id: "test".to_string(),
+        };
         assert_eq!(node_error.to_string(), "Node with ID 'test' not found");
 
-        let edge_error = FlowError::EdgeNotFound { id: "test".to_string() };
+        let edge_error = FlowError::EdgeNotFound {
+            id: "test".to_string(),
+        };
         assert_eq!(edge_error.to_string(), "Edge with ID 'test' not found");
 
-        let duplicate_error = FlowError::DuplicateNodeId { id: "test".to_string() };
+        let duplicate_error = FlowError::DuplicateNodeId {
+            id: "test".to_string(),
+        };
         assert_eq!(duplicate_error.to_string(), "Duplicate node ID: 'test'");
 
         let connection_error = FlowError::InvalidConnection {
-            message: "test message".to_string()
+            message: "test message".to_string(),
         };
-        assert_eq!(connection_error.to_string(), "Invalid connection: test message");
+        assert_eq!(
+            connection_error.to_string(),
+            "Invalid connection: test message"
+        );
 
-        let position_error = FlowError::InvalidPosition { x: f64::NAN, y: 0.0 };
+        let position_error = FlowError::InvalidPosition {
+            x: f64::NAN,
+            y: 0.0,
+        };
         assert_eq!(position_error.to_string(), "Invalid position: x=NaN, y=0");
 
-        let size_error = FlowError::InvalidSize { width: -10.0, height: 20.0 };
+        let size_error = FlowError::InvalidSize {
+            width: -10.0,
+            height: 20.0,
+        };
         assert_eq!(size_error.to_string(), "Invalid size: width=-10, height=20");
     }
 
@@ -646,8 +722,12 @@ mod tests {
 
         // Test Graph serialization
         let mut graph = Graph::new();
-        graph.add_node(Node::new("node1", Position::new(10.0, 20.0), ())).unwrap();
-        graph.add_edge(Edge::new("edge1", "node1", "node1", ())).unwrap();
+        graph
+            .add_node(Node::new("node1", Position::new(10.0, 20.0), ()))
+            .unwrap();
+        graph
+            .add_edge(Edge::new("edge1", "node1", "node1", ()))
+            .unwrap();
 
         let serialized = serde_json::to_string(&graph).unwrap();
         let deserialized: Graph<(), ()> = serde_json::from_str(&serialized).unwrap();

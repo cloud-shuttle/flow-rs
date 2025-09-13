@@ -26,16 +26,40 @@ mod tests {
         let cargo_toml = fs::read_to_string("../Cargo.toml").unwrap();
 
         // Check workspace members use new naming
-        assert!(cargo_toml.contains("flow-core"), "Workspace should contain flow-core");
-        assert!(cargo_toml.contains("flow-renderer"), "Workspace should contain flow-renderer");
-        assert!(cargo_toml.contains("flow-wasm"), "Workspace should contain flow-wasm");
-        assert!(cargo_toml.contains("flow-leptos"), "Workspace should contain flow-leptos");
+        assert!(
+            cargo_toml.contains("flow-core"),
+            "Workspace should contain flow-core"
+        );
+        assert!(
+            cargo_toml.contains("flow-renderer"),
+            "Workspace should contain flow-renderer"
+        );
+        assert!(
+            cargo_toml.contains("flow-wasm"),
+            "Workspace should contain flow-wasm"
+        );
+        assert!(
+            cargo_toml.contains("flow-leptos"),
+            "Workspace should contain flow-leptos"
+        );
 
         // Check old names are removed
-        assert!(!cargo_toml.contains("leptos-flow-core"), "Old leptos-flow-core should be removed");
-        assert!(!cargo_toml.contains("leptos-flow-renderer"), "Old leptos-flow-renderer should be removed");
-        assert!(!cargo_toml.contains("leptos-flow-wasm"), "Old leptos-flow-wasm should be removed");
-        assert!(!cargo_toml.contains("leptos-flow-leptos"), "Old leptos-flow-leptos should be removed");
+        assert!(
+            !cargo_toml.contains("leptos-flow-core"),
+            "Old leptos-flow-core should be removed"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow-renderer"),
+            "Old leptos-flow-renderer should be removed"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow-wasm"),
+            "Old leptos-flow-wasm should be removed"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow-leptos"),
+            "Old leptos-flow-leptos should be removed"
+        );
     }
 
     #[test]
@@ -43,8 +67,14 @@ mod tests {
         // Test that main package uses new naming
         let cargo_toml = fs::read_to_string("../Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("name = \"flow-rs\""), "Main package should be named flow-rs");
-        assert!(!cargo_toml.contains("name = \"leptos-flow\""), "Old leptos-flow name should be removed");
+        assert!(
+            cargo_toml.contains("name = \"flow-rs\""),
+            "Main package should be named flow-rs"
+        );
+        assert!(
+            !cargo_toml.contains("name = \"leptos-flow\""),
+            "Old leptos-flow name should be removed"
+        );
     }
 
     #[test]
@@ -52,8 +82,14 @@ mod tests {
         // Test that core package uses new naming
         let cargo_toml = fs::read_to_string("Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("name = \"flow-core\""), "Core package should be named flow-core");
-        assert!(!cargo_toml.contains("name = \"leptos-flow-core\""), "Old leptos-flow-core name should be removed");
+        assert!(
+            cargo_toml.contains("name = \"flow-core\""),
+            "Core package should be named flow-core"
+        );
+        assert!(
+            !cargo_toml.contains("name = \"leptos-flow-core\""),
+            "Old leptos-flow-core name should be removed"
+        );
     }
 
     #[test]
@@ -61,8 +97,14 @@ mod tests {
         // Test that renderer package uses new naming
         let cargo_toml = fs::read_to_string("../flow-renderer/Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("name = \"flow-renderer\""), "Renderer package should be named flow-renderer");
-        assert!(!cargo_toml.contains("name = \"leptos-flow-renderer\""), "Old leptos-flow-renderer name should be removed");
+        assert!(
+            cargo_toml.contains("name = \"flow-renderer\""),
+            "Renderer package should be named flow-renderer"
+        );
+        assert!(
+            !cargo_toml.contains("name = \"leptos-flow-renderer\""),
+            "Old leptos-flow-renderer name should be removed"
+        );
     }
 
     #[test]
@@ -70,8 +112,14 @@ mod tests {
         // Test that WASM package uses new naming
         let cargo_toml = fs::read_to_string("../flow-wasm/Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("name = \"flow-wasm\""), "WASM package should be named flow-wasm");
-        assert!(!cargo_toml.contains("name = \"leptos-flow-wasm\""), "Old leptos-flow-wasm name should be removed");
+        assert!(
+            cargo_toml.contains("name = \"flow-wasm\""),
+            "WASM package should be named flow-wasm"
+        );
+        assert!(
+            !cargo_toml.contains("name = \"leptos-flow-wasm\""),
+            "Old leptos-flow-wasm name should be removed"
+        );
     }
 
     #[test]
@@ -79,8 +127,14 @@ mod tests {
         // Test that Leptos integration package uses new naming
         let cargo_toml = fs::read_to_string("../flow-leptos/Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("name = \"flow-leptos\""), "Leptos package should be named flow-leptos");
-        assert!(!cargo_toml.contains("name = \"leptos-flow-leptos\""), "Old leptos-flow-leptos name should be removed");
+        assert!(
+            cargo_toml.contains("name = \"flow-leptos\""),
+            "Leptos package should be named flow-leptos"
+        );
+        assert!(
+            !cargo_toml.contains("name = \"leptos-flow-leptos\""),
+            "Old leptos-flow-leptos name should be removed"
+        );
     }
 
     // ============================================================================
@@ -93,8 +147,14 @@ mod tests {
         let cargo_toml = fs::read_to_string("Cargo.toml").unwrap();
 
         // Core should not depend on any flow packages (it's the base)
-        assert!(!cargo_toml.contains("flow-core = {"), "Core should not depend on itself");
-        assert!(!cargo_toml.contains("leptos-flow"), "Core should not depend on old names");
+        assert!(
+            !cargo_toml.contains("flow-core = {"),
+            "Core should not depend on itself"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow"),
+            "Core should not depend on old names"
+        );
     }
 
     #[test]
@@ -102,8 +162,14 @@ mod tests {
         // Test that renderer package dependencies use new names
         let cargo_toml = fs::read_to_string("../flow-renderer/Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("flow-core"), "Renderer should depend on flow-core");
-        assert!(!cargo_toml.contains("leptos-flow-core"), "Renderer should not depend on old names");
+        assert!(
+            cargo_toml.contains("flow-core"),
+            "Renderer should depend on flow-core"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow-core"),
+            "Renderer should not depend on old names"
+        );
     }
 
     #[test]
@@ -111,9 +177,18 @@ mod tests {
         // Test that WASM package dependencies use new names
         let cargo_toml = fs::read_to_string("../flow-wasm/Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("flow-core"), "WASM should depend on flow-core");
-        assert!(cargo_toml.contains("flow-renderer"), "WASM should depend on flow-renderer");
-        assert!(!cargo_toml.contains("leptos-flow"), "WASM should not depend on old names");
+        assert!(
+            cargo_toml.contains("flow-core"),
+            "WASM should depend on flow-core"
+        );
+        assert!(
+            cargo_toml.contains("flow-renderer"),
+            "WASM should depend on flow-renderer"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow"),
+            "WASM should not depend on old names"
+        );
     }
 
     #[test]
@@ -121,10 +196,22 @@ mod tests {
         // Test that Leptos package dependencies use new names
         let cargo_toml = fs::read_to_string("../flow-leptos/Cargo.toml").unwrap();
 
-        assert!(cargo_toml.contains("flow-core"), "Leptos should depend on flow-core");
-        assert!(cargo_toml.contains("flow-renderer"), "Leptos should depend on flow-renderer");
-        assert!(cargo_toml.contains("flow-wasm"), "Leptos should depend on flow-wasm");
-        assert!(!cargo_toml.contains("leptos-flow"), "Leptos should not depend on old names");
+        assert!(
+            cargo_toml.contains("flow-core"),
+            "Leptos should depend on flow-core"
+        );
+        assert!(
+            cargo_toml.contains("flow-renderer"),
+            "Leptos should depend on flow-renderer"
+        );
+        assert!(
+            cargo_toml.contains("flow-wasm"),
+            "Leptos should depend on flow-wasm"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow"),
+            "Leptos should not depend on old names"
+        );
     }
 
     // ============================================================================
@@ -137,8 +224,14 @@ mod tests {
         let lib_rs = fs::read_to_string("src/lib.rs").unwrap();
 
         // Check that lib.rs doesn't contain old import references
-        assert!(!lib_rs.contains("leptos_flow_core"), "lib.rs should not contain old import names");
-        assert!(!lib_rs.contains("leptos-flow-core"), "lib.rs should not contain old package names");
+        assert!(
+            !lib_rs.contains("leptos_flow_core"),
+            "lib.rs should not contain old import names"
+        );
+        assert!(
+            !lib_rs.contains("leptos-flow-core"),
+            "lib.rs should not contain old package names"
+        );
     }
 
     #[test]
@@ -146,17 +239,30 @@ mod tests {
         // Test that example imports use new package names
         let simple_flow_main = fs::read_to_string("../examples/flow-simple/src/lib.rs").unwrap();
 
-        assert!(simple_flow_main.contains("flow_core"), "Examples should use flow_core imports");
-        assert!(!simple_flow_main.contains("leptos_flow_core"), "Examples should not use old import names");
+        assert!(
+            simple_flow_main.contains("flow_core"),
+            "Examples should use flow_core imports"
+        );
+        assert!(
+            !simple_flow_main.contains("leptos_flow_core"),
+            "Examples should not use old import names"
+        );
     }
 
     #[test]
     fn test_leptos_demo_imports_updated() {
         // Test that Leptos demo imports use new package names
-        let leptos_demo_main = fs::read_to_string("../examples/flow-leptos-demo/src/main.rs").unwrap();
+        let leptos_demo_main =
+            fs::read_to_string("../examples/flow-leptos-demo/src/main.rs").unwrap();
 
-        assert!(leptos_demo_main.contains("flow_leptos"), "Leptos demo should use flow_leptos imports");
-        assert!(!leptos_demo_main.contains("leptos_flow_leptos"), "Leptos demo should not use old import names");
+        assert!(
+            leptos_demo_main.contains("flow_leptos"),
+            "Leptos demo should use flow_leptos imports"
+        );
+        assert!(
+            !leptos_demo_main.contains("leptos_flow_leptos"),
+            "Leptos demo should not use old import names"
+        );
     }
 
     // ============================================================================
@@ -168,10 +274,22 @@ mod tests {
         // Test that README uses new naming
         let readme = fs::read_to_string("../README.md").unwrap();
 
-        assert!(readme.contains("# Flow-RS"), "README title should be Flow-RS");
-        assert!(readme.contains("flow-rs"), "README should reference flow-rs");
-        assert!(!readme.contains("# Leptos Flow"), "README should not have old title");
-        assert!(!readme.contains("leptos-flow"), "README should not reference old name");
+        assert!(
+            readme.contains("# Flow-RS"),
+            "README title should be Flow-RS"
+        );
+        assert!(
+            readme.contains("flow-rs"),
+            "README should reference flow-rs"
+        );
+        assert!(
+            !readme.contains("# Leptos Flow"),
+            "README should not have old title"
+        );
+        assert!(
+            !readme.contains("leptos-flow"),
+            "README should not reference old name"
+        );
     }
 
     #[test]
@@ -179,10 +297,22 @@ mod tests {
         // Test that API documentation uses new naming
         let api_ref = fs::read_to_string("../docs/api/REFERENCE.md").unwrap();
 
-        assert!(api_ref.contains("Flow-RS Core"), "API reference should reference Flow-RS Core");
-        assert!(api_ref.contains("flow-core"), "API reference should reference flow-core");
-        assert!(!api_ref.contains("Leptos Flow Core"), "API reference should not reference old name");
-        assert!(!api_ref.contains("leptos-flow-core"), "API reference should not reference old package name");
+        assert!(
+            api_ref.contains("Flow-RS Core"),
+            "API reference should reference Flow-RS Core"
+        );
+        assert!(
+            api_ref.contains("flow-core"),
+            "API reference should reference flow-core"
+        );
+        assert!(
+            !api_ref.contains("Leptos Flow Core"),
+            "API reference should not reference old name"
+        );
+        assert!(
+            !api_ref.contains("leptos-flow-core"),
+            "API reference should not reference old package name"
+        );
     }
 
     #[test]
@@ -190,9 +320,18 @@ mod tests {
         // Test that architecture documentation uses new naming
         let arch_doc = fs::read_to_string("../docs/architecture/ARCHITECTURE.md").unwrap();
 
-        assert!(arch_doc.contains("Flow-RS"), "Architecture doc should reference Flow-RS");
-        assert!(arch_doc.contains("flow-core"), "Architecture doc should reference flow-core");
-        assert!(!arch_doc.contains("Leptos Flow"), "Architecture doc should not reference old name");
+        assert!(
+            arch_doc.contains("Flow-RS"),
+            "Architecture doc should reference Flow-RS"
+        );
+        assert!(
+            arch_doc.contains("flow-core"),
+            "Architecture doc should reference flow-core"
+        );
+        assert!(
+            !arch_doc.contains("Leptos Flow"),
+            "Architecture doc should not reference old name"
+        );
     }
 
     // ============================================================================
@@ -205,16 +344,40 @@ mod tests {
         let project_root = Path::new("../");
 
         // Check new directories exist
-        assert!(project_root.join("flow-core").exists(), "flow-core directory should exist");
-        assert!(project_root.join("flow-renderer").exists(), "flow-renderer directory should exist");
-        assert!(project_root.join("flow-wasm").exists(), "flow-wasm directory should exist");
-        assert!(project_root.join("flow-leptos").exists(), "flow-leptos directory should exist");
+        assert!(
+            project_root.join("flow-core").exists(),
+            "flow-core directory should exist"
+        );
+        assert!(
+            project_root.join("flow-renderer").exists(),
+            "flow-renderer directory should exist"
+        );
+        assert!(
+            project_root.join("flow-wasm").exists(),
+            "flow-wasm directory should exist"
+        );
+        assert!(
+            project_root.join("flow-leptos").exists(),
+            "flow-leptos directory should exist"
+        );
 
         // Check old directories are removed
-        assert!(!project_root.join("leptos-flow-core").exists(), "Old leptos-flow-core directory should be removed");
-        assert!(!project_root.join("leptos-flow-renderer").exists(), "Old leptos-flow-renderer directory should be removed");
-        assert!(!project_root.join("leptos-flow-wasm").exists(), "Old leptos-flow-wasm directory should be removed");
-        assert!(!project_root.join("leptos-flow-leptos").exists(), "Old leptos-flow-leptos directory should be removed");
+        assert!(
+            !project_root.join("leptos-flow-core").exists(),
+            "Old leptos-flow-core directory should be removed"
+        );
+        assert!(
+            !project_root.join("leptos-flow-renderer").exists(),
+            "Old leptos-flow-renderer directory should be removed"
+        );
+        assert!(
+            !project_root.join("leptos-flow-wasm").exists(),
+            "Old leptos-flow-wasm directory should be removed"
+        );
+        assert!(
+            !project_root.join("leptos-flow-leptos").exists(),
+            "Old leptos-flow-leptos directory should be removed"
+        );
     }
 
     #[test]
@@ -224,12 +387,25 @@ mod tests {
 
         // Check that examples reference new package names in their Cargo.toml
         let simple_flow_cargo = fs::read_to_string("../examples/flow-simple/Cargo.toml").unwrap();
-        assert!(simple_flow_cargo.contains("flow-core"), "Simple flow example should depend on flow-core");
-        assert!(!simple_flow_cargo.contains("leptos-flow-core"), "Simple flow example should not depend on old names");
+        assert!(
+            simple_flow_cargo.contains("flow-core"),
+            "Simple flow example should depend on flow-core"
+        );
+        assert!(
+            !simple_flow_cargo.contains("leptos-flow-core"),
+            "Simple flow example should not depend on old names"
+        );
 
-        let leptos_demo_cargo = fs::read_to_string("../examples/flow-leptos-demo/Cargo.toml").unwrap();
-        assert!(leptos_demo_cargo.contains("flow-leptos"), "Leptos demo should depend on flow-leptos");
-        assert!(!leptos_demo_cargo.contains("leptos-flow-leptos"), "Leptos demo should not depend on old names");
+        let leptos_demo_cargo =
+            fs::read_to_string("../examples/flow-leptos-demo/Cargo.toml").unwrap();
+        assert!(
+            leptos_demo_cargo.contains("flow-leptos"),
+            "Leptos demo should depend on flow-leptos"
+        );
+        assert!(
+            !leptos_demo_cargo.contains("leptos-flow-leptos"),
+            "Leptos demo should not depend on old names"
+        );
     }
 
     // ============================================================================
@@ -243,8 +419,14 @@ mod tests {
         let cargo_toml = fs::read_to_string("../Cargo.toml").unwrap();
 
         // Check that workspace configuration is valid
-        assert!(cargo_toml.contains("[workspace]"), "Workspace configuration should exist");
-        assert!(cargo_toml.contains("members = ["), "Workspace members should be defined");
+        assert!(
+            cargo_toml.contains("[workspace]"),
+            "Workspace configuration should exist"
+        );
+        assert!(
+            cargo_toml.contains("members = ["),
+            "Workspace members should be defined"
+        );
     }
 
     #[test]
@@ -253,8 +435,14 @@ mod tests {
         let cargo_toml = fs::read_to_string("../Cargo.toml").unwrap();
 
         // Check repository and homepage use new naming
-        assert!(cargo_toml.contains("flow-rs"), "Repository should reference flow-rs");
-        assert!(!cargo_toml.contains("leptos-flow"), "Repository should not reference old name");
+        assert!(
+            cargo_toml.contains("flow-rs"),
+            "Repository should reference flow-rs"
+        );
+        assert!(
+            !cargo_toml.contains("leptos-flow"),
+            "Repository should not reference old name"
+        );
     }
 
     // ============================================================================
@@ -279,8 +467,14 @@ mod tests {
         assert!(migration_guide.exists(), "Migration guide should exist");
 
         let migration_content = fs::read_to_string(migration_guide).unwrap();
-        assert!(migration_content.contains("flow-rs"), "Migration guide should reference flow-rs");
-        assert!(migration_content.contains("leptos-flow"), "Migration guide should mention old name");
+        assert!(
+            migration_content.contains("flow-rs"),
+            "Migration guide should reference flow-rs"
+        );
+        assert!(
+            migration_content.contains("leptos-flow"),
+            "Migration guide should mention old name"
+        );
     }
 
     // ============================================================================

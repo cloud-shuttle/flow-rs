@@ -1,8 +1,8 @@
 //! Performance monitoring utilities for the simple flow example
 
+use std::collections::VecDeque;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
-use std::collections::VecDeque;
 
 /// Performance monitor for tracking rendering performance
 #[wasm_bindgen]
@@ -85,7 +85,10 @@ impl PerformanceMonitor {
             average_frame_time: self.get_average_frame_time(),
             fps: self.get_fps(),
             frame_count: self.frame_times.len(),
-            min_frame_time: self.frame_times.iter().fold(f64::INFINITY, |a, &b| a.min(b)),
+            min_frame_time: self
+                .frame_times
+                .iter()
+                .fold(f64::INFINITY, |a, &b| a.min(b)),
             max_frame_time: self.frame_times.iter().fold(0.0, |a, &b| a.max(b)),
         };
 
@@ -188,9 +191,10 @@ impl MemoryMonitor {
             current_memory: self.get_memory_usage(),
             initial_memory: self.initial_memory,
             peak_memory: self.peak_memory,
-            memory_growth: self.initial_memory.map(|init| {
-                self.get_memory_usage().map(|current| current - init)
-            }).flatten(),
+            memory_growth: self
+                .initial_memory
+                .map(|init| self.get_memory_usage().map(|current| current - init))
+                .flatten(),
         };
 
         serde_wasm_bindgen::to_value(&stats).unwrap_or(JsValue::NULL)
@@ -362,8 +366,16 @@ impl PerformanceBenchmark {
             average_fps: self.monitor.get_fps(),
             average_frame_time: self.monitor.get_average_frame_time(),
             performance_grade: self.monitor.get_performance_grade(),
-            memory_stats: serde_json::from_str(&format!("{:?}", self.memory_monitor.get_memory_stats())).unwrap_or(serde_json::Value::Null),
-            rendering_metrics: serde_json::from_str(&format!("{:?}", self.render_analyzer.get_metrics())).unwrap_or(serde_json::Value::Null),
+            memory_stats: serde_json::from_str(&format!(
+                "{:?}",
+                self.memory_monitor.get_memory_stats()
+            ))
+            .unwrap_or(serde_json::Value::Null),
+            rendering_metrics: serde_json::from_str(&format!(
+                "{:?}",
+                self.render_analyzer.get_metrics()
+            ))
+            .unwrap_or(serde_json::Value::Null),
         };
 
         self.benchmark_results.push(result.clone());

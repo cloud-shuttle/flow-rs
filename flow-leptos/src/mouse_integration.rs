@@ -1,9 +1,9 @@
 //! Integration between DOM rect access and mouse event handling
 
-use web_sys::{Element, MouseEvent};
 use wasm_bindgen::JsCast;
+use web_sys::{Element, MouseEvent};
 
-use crate::dom_rect::{DomRectUtils, ElementRect, CoordinateConverter};
+use crate::dom_rect::{CoordinateConverter, DomRectUtils, ElementRect};
 use flow_core::{Position, Viewport};
 
 /// Mouse event coordinate converter that integrates DOM rect access with viewport transformations
@@ -22,16 +22,25 @@ impl MouseEventConverter {
     }
 
     /// Initialize with a canvas element
-    pub fn with_canvas(&mut self, canvas_element: &Element) -> Result<(), crate::dom_rect::DomRectError> {
+    pub fn with_canvas(
+        &mut self,
+        canvas_element: &Element,
+    ) -> Result<(), crate::dom_rect::DomRectError> {
         self.element_rect = Some(self.rect_utils.get_bounding_client_rect(canvas_element)?);
         Ok(())
     }
 
     /// Convert mouse event to canvas coordinates
-    pub fn mouse_to_canvas(&self, event: &MouseEvent) -> Result<Position, crate::dom_rect::DomRectError> {
-        let element_rect = self.element_rect.as_ref().ok_or(crate::dom_rect::DomRectError::DomAccessFailed(
-            "Canvas element not initialized".to_string()
-        ))?;
+    pub fn mouse_to_canvas(
+        &self,
+        event: &MouseEvent,
+    ) -> Result<Position, crate::dom_rect::DomRectError> {
+        let element_rect =
+            self.element_rect
+                .as_ref()
+                .ok_or(crate::dom_rect::DomRectError::DomAccessFailed(
+                    "Canvas element not initialized".to_string(),
+                ))?;
 
         Ok(Position::new(
             event.client_x() as f64 - element_rect.x,
@@ -40,26 +49,44 @@ impl MouseEventConverter {
     }
 
     /// Convert mouse event to world coordinates using viewport
-    pub fn mouse_to_world(&self, event: &MouseEvent, viewport: &Viewport) -> Result<Position, crate::dom_rect::DomRectError> {
+    pub fn mouse_to_world(
+        &self,
+        event: &MouseEvent,
+        viewport: &Viewport,
+    ) -> Result<Position, crate::dom_rect::DomRectError> {
         let canvas_pos = self.mouse_to_canvas(event)?;
         self.canvas_to_world(canvas_pos, viewport)
     }
 
     /// Convert canvas coordinates to world coordinates
-    pub fn canvas_to_world(&self, canvas_pos: Position, _viewport: &Viewport) -> Result<Position, crate::dom_rect::DomRectError> {
-        let element_rect = self.element_rect.as_ref().ok_or(crate::dom_rect::DomRectError::DomAccessFailed(
-            "Canvas element not initialized".to_string()
-        ))?;
+    pub fn canvas_to_world(
+        &self,
+        canvas_pos: Position,
+        _viewport: &Viewport,
+    ) -> Result<Position, crate::dom_rect::DomRectError> {
+        let element_rect =
+            self.element_rect
+                .as_ref()
+                .ok_or(crate::dom_rect::DomRectError::DomAccessFailed(
+                    "Canvas element not initialized".to_string(),
+                ))?;
 
         let converter = CoordinateConverter::new(element_rect.clone());
         Ok(converter.element_to_viewport(canvas_pos))
     }
 
     /// Convert world coordinates to canvas coordinates
-    pub fn world_to_canvas(&self, world_pos: Position, _viewport: &Viewport) -> Result<Position, crate::dom_rect::DomRectError> {
-        let element_rect = self.element_rect.as_ref().ok_or(crate::dom_rect::DomRectError::DomAccessFailed(
-            "Canvas element not initialized".to_string()
-        ))?;
+    pub fn world_to_canvas(
+        &self,
+        world_pos: Position,
+        _viewport: &Viewport,
+    ) -> Result<Position, crate::dom_rect::DomRectError> {
+        let element_rect =
+            self.element_rect
+                .as_ref()
+                .ok_or(crate::dom_rect::DomRectError::DomAccessFailed(
+                    "Canvas element not initialized".to_string(),
+                ))?;
 
         let converter = CoordinateConverter::new(element_rect.clone());
         Ok(converter.viewport_to_element(world_pos))
@@ -71,7 +98,10 @@ impl MouseEventConverter {
     }
 
     /// Update canvas element rect (useful for resize events)
-    pub fn update_canvas(&mut self, canvas_element: &Element) -> Result<(), crate::dom_rect::DomRectError> {
+    pub fn update_canvas(
+        &mut self,
+        canvas_element: &Element,
+    ) -> Result<(), crate::dom_rect::DomRectError> {
         self.element_rect = Some(self.rect_utils.get_bounding_client_rect(canvas_element)?);
         Ok(())
     }
@@ -103,7 +133,11 @@ pub mod utils {
         viewport: &Viewport,
     ) -> Result<Position, crate::dom_rect::DomRectError> {
         let canvas_pos = mouse_event_to_canvas_coords(event, canvas_element, rect_utils)?;
-        Ok(utils::canvas_to_world(canvas_pos, viewport.offset, viewport.zoom))
+        Ok(utils::canvas_to_world(
+            canvas_pos,
+            viewport.offset,
+            viewport.zoom,
+        ))
     }
 
     /// Convert mouse event to world coordinates with scroll offset
@@ -174,8 +208,8 @@ pub mod utils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wasm_bindgen_test::*;
     use js_sys::Object;
+    use wasm_bindgen_test::*;
 
     wasm_bindgen_test_configure!(run_in_browser);
 
@@ -183,7 +217,12 @@ mod tests {
         let event = Object::new();
         js_sys::Reflect::set(&event, &"clientX".into(), &client_x.into()).unwrap();
         js_sys::Reflect::set(&event, &"clientY".into(), &client_y.into()).unwrap();
-        js_sys::Reflect::set(&event, &"preventDefault".into(), &js_sys::Function::new_no_args("")).unwrap();
+        js_sys::Reflect::set(
+            &event,
+            &"preventDefault".into(),
+            &js_sys::Function::new_no_args(""),
+        )
+        .unwrap();
         event.unchecked_into()
     }
 
@@ -246,7 +285,9 @@ mod tests {
         let mouse_event = create_mock_mouse_event(250.0, 350.0);
         let mut rect_utils = DomRectUtils::new();
 
-        let canvas_pos = utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils).unwrap();
+        let canvas_pos =
+            utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils)
+                .unwrap();
 
         assert_eq!(canvas_pos.x, 150.0);
         assert_eq!(canvas_pos.y, 150.0);
@@ -259,7 +300,13 @@ mod tests {
         let mut rect_utils = DomRectUtils::new();
         let viewport = Viewport::new(100.0, 50.0, 0.0, 0.0, 2.0);
 
-        let world_pos = utils::mouse_event_to_world_coords(&mouse_event, &canvas_element, &mut rect_utils, &viewport).unwrap();
+        let world_pos = utils::mouse_event_to_world_coords(
+            &mouse_event,
+            &canvas_element,
+            &mut rect_utils,
+            &viewport,
+        )
+        .unwrap();
 
         // Expected: (400 / 2.0) + 100 = 300, (300 / 2.0) + 50 = 200
         assert_eq!(world_pos.x, 300.0);
@@ -273,12 +320,14 @@ mod tests {
 
         // Mouse inside canvas
         let inside_event = create_mock_mouse_event(500.0, 500.0);
-        let inside_result = utils::is_mouse_in_canvas(&inside_event, &canvas_element, &mut rect_utils).unwrap();
+        let inside_result =
+            utils::is_mouse_in_canvas(&inside_event, &canvas_element, &mut rect_utils).unwrap();
         assert!(inside_result);
 
         // Mouse outside canvas
         let outside_event = create_mock_mouse_event(50.0, 150.0);
-        let outside_result = utils::is_mouse_in_canvas(&outside_event, &canvas_element, &mut rect_utils).unwrap();
+        let outside_result =
+            utils::is_mouse_in_canvas(&outside_event, &canvas_element, &mut rect_utils).unwrap();
         assert!(!outside_result);
     }
 
@@ -288,7 +337,9 @@ mod tests {
         let mouse_event = create_mock_mouse_event(500.0, 500.0); // Center of canvas
         let mut rect_utils = DomRectUtils::new();
 
-        let relative_pos = utils::mouse_relative_to_canvas_center(&mouse_event, &canvas_element, &mut rect_utils).unwrap();
+        let relative_pos =
+            utils::mouse_relative_to_canvas_center(&mouse_event, &canvas_element, &mut rect_utils)
+                .unwrap();
 
         // Canvas center is at (100 + 400, 200 + 300) = (500, 500)
         // Mouse is at (500, 500), so relative position should be (0, 0)

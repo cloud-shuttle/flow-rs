@@ -6,8 +6,8 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::types::{Position, Size, NodeId};
 use crate::error::{FlowError, Result};
+use crate::types::{NodeId, Position, Size};
 
 /// Handle identifier
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -96,11 +96,7 @@ pub struct Handle {
 
 impl Handle {
     /// Create a new handle
-    pub fn new(
-        id: impl Into<HandleId>,
-        handle_type: HandleType,
-        position: HandlePosition,
-    ) -> Self {
+    pub fn new(id: impl Into<HandleId>, handle_type: HandleType, position: HandlePosition) -> Self {
         Self {
             id: id.into(),
             handle_type,
@@ -142,10 +138,7 @@ impl Handle {
     /// Calculate absolute position of handle given node position and size
     pub fn absolute_position(&self, node_pos: Position, node_size: Size) -> Position {
         match &self.position {
-            HandlePosition::Top => Position::new(
-                node_pos.x + node_size.width / 2.0,
-                node_pos.y,
-            ),
+            HandlePosition::Top => Position::new(node_pos.x + node_size.width / 2.0, node_pos.y),
             HandlePosition::Right => Position::new(
                 node_pos.x + node_size.width,
                 node_pos.y + node_size.height / 2.0,
@@ -154,26 +147,26 @@ impl Handle {
                 node_pos.x + node_size.width / 2.0,
                 node_pos.y + node_size.height,
             ),
-            HandlePosition::Left => Position::new(
-                node_pos.x,
-                node_pos.y + node_size.height / 2.0,
-            ),
-            HandlePosition::Custom(pos) => Position::new(
-                node_pos.x + pos.x,
-                node_pos.y + pos.y,
-            ),
+            HandlePosition::Left => Position::new(node_pos.x, node_pos.y + node_size.height / 2.0),
+            HandlePosition::Custom(pos) => Position::new(node_pos.x + pos.x, node_pos.y + pos.y),
         }
     }
 
     /// Check if a point is within the handle's bounds
-    pub fn contains_point(&self, point: Position, node_pos: Position, node_size: Size, handle_size: f64) -> bool {
+    pub fn contains_point(
+        &self,
+        point: Position,
+        node_pos: Position,
+        node_size: Size,
+        handle_size: f64,
+    ) -> bool {
         let handle_pos = self.absolute_position(node_pos, node_size);
         let half_size = handle_size / 2.0;
 
-        point.x >= handle_pos.x - half_size &&
-        point.x <= handle_pos.x + half_size &&
-        point.y >= handle_pos.y - half_size &&
-        point.y <= handle_pos.y + half_size
+        point.x >= handle_pos.x - half_size
+            && point.x <= handle_pos.x + half_size
+            && point.y >= handle_pos.y - half_size
+            && point.y <= handle_pos.y + half_size
     }
 
     /// Check if this handle can connect to another handle
@@ -184,7 +177,9 @@ impl Handle {
         }
 
         // Check connection type compatibility
-        if let (Some(self_types), Some(other_types)) = (&self.valid_connection_types, &other.valid_connection_types) {
+        if let (Some(self_types), Some(other_types)) =
+            (&self.valid_connection_types, &other.valid_connection_types)
+        {
             // At least one matching type required
             return self_types.iter().any(|t| other_types.contains(t));
         }
@@ -223,9 +218,10 @@ impl HandleManager {
     pub fn add_handle(&mut self, handle: Handle) -> Result<()> {
         // Check for duplicate handle IDs
         if self.handles.iter().any(|h| h.id == handle.id) {
-            return Err(FlowError::invalid_operation(
-                format!("Handle '{}' already exists", handle.id.as_str())
-            ));
+            return Err(FlowError::invalid_operation(format!(
+                "Handle '{}' already exists",
+                handle.id.as_str()
+            )));
         }
 
         self.handles.push(handle);
@@ -234,10 +230,13 @@ impl HandleManager {
 
     /// Remove a handle
     pub fn remove_handle(&mut self, handle_id: &HandleId) -> Result<Handle> {
-        let index = self.handles.iter().position(|h| &h.id == handle_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Handle '{}' not found", handle_id.as_str())
-            ))?;
+        let index = self
+            .handles
+            .iter()
+            .position(|h| &h.id == handle_id)
+            .ok_or_else(|| {
+                FlowError::invalid_operation(format!("Handle '{}' not found", handle_id.as_str()))
+            })?;
 
         Ok(self.handles.remove(index))
     }
@@ -253,20 +252,30 @@ impl HandleManager {
     }
 
     /// Find handle at position
-    pub fn handle_at_position(&self, point: Position, node_pos: Position, node_size: Size, handle_size: f64) -> Option<&Handle> {
-        self.handles.iter().find(|handle| {
-            handle.contains_point(point, node_pos, node_size, handle_size)
-        })
+    pub fn handle_at_position(
+        &self,
+        point: Position,
+        node_pos: Position,
+        node_size: Size,
+        handle_size: f64,
+    ) -> Option<&Handle> {
+        self.handles
+            .iter()
+            .find(|handle| handle.contains_point(point, node_pos, node_size, handle_size))
     }
 
     /// Get source handles
     pub fn source_handles(&self) -> impl Iterator<Item = &Handle> {
-        self.handles.iter().filter(|h| h.handle_type == HandleType::Source)
+        self.handles
+            .iter()
+            .filter(|h| h.handle_type == HandleType::Source)
     }
 
     /// Get target handles
     pub fn target_handles(&self) -> impl Iterator<Item = &Handle> {
-        self.handles.iter().filter(|h| h.handle_type == HandleType::Target)
+        self.handles
+            .iter()
+            .filter(|h| h.handle_type == HandleType::Target)
     }
 
     /// Count connections for a handle
@@ -320,7 +329,10 @@ mod tests {
             .with_style("custom");
 
         assert_eq!(handle.connection_limit, Some(1));
-        assert_eq!(handle.valid_connection_types, Some(vec!["data".to_string()]));
+        assert_eq!(
+            handle.valid_connection_types,
+            Some(vec!["data".to_string()])
+        );
         assert_eq!(handle.style, Some("custom".to_string()));
     }
 
@@ -342,7 +354,11 @@ mod tests {
             Position::new(180.0, 230.0) // x: 100 + 80, y: 200 + 30
         );
 
-        let custom_handle = Handle::new("custom", HandleType::Source, HandlePosition::Custom(Position::new(10.0, 20.0)));
+        let custom_handle = Handle::new(
+            "custom",
+            HandleType::Source,
+            HandlePosition::Custom(Position::new(10.0, 20.0)),
+        );
         assert_eq!(
             custom_handle.absolute_position(node_pos, node_size),
             Position::new(110.0, 220.0) // x: 100 + 10, y: 200 + 20
@@ -357,11 +373,31 @@ mod tests {
         let handle_size = 10.0;
 
         // Handle is at (100, 25) with size 10x10
-        assert!(handle.contains_point(Position::new(100.0, 25.0), node_pos, node_size, handle_size));
+        assert!(handle.contains_point(
+            Position::new(100.0, 25.0),
+            node_pos,
+            node_size,
+            handle_size
+        ));
         assert!(handle.contains_point(Position::new(95.0, 25.0), node_pos, node_size, handle_size));
-        assert!(handle.contains_point(Position::new(105.0, 25.0), node_pos, node_size, handle_size));
-        assert!(!handle.contains_point(Position::new(90.0, 25.0), node_pos, node_size, handle_size));
-        assert!(!handle.contains_point(Position::new(100.0, 35.0), node_pos, node_size, handle_size));
+        assert!(handle.contains_point(
+            Position::new(105.0, 25.0),
+            node_pos,
+            node_size,
+            handle_size
+        ));
+        assert!(!handle.contains_point(
+            Position::new(90.0, 25.0),
+            node_pos,
+            node_size,
+            handle_size
+        ));
+        assert!(!handle.contains_point(
+            Position::new(100.0, 35.0),
+            node_pos,
+            node_size,
+            handle_size
+        ));
     }
 
     #[test]
@@ -431,12 +467,18 @@ mod tests {
         let handle_size = 10.0;
 
         // Should find handle at right position (100, 25)
-        let found = manager.handle_at_position(Position::new(100.0, 25.0), node_pos, node_size, handle_size);
+        let found = manager.handle_at_position(
+            Position::new(100.0, 25.0),
+            node_pos,
+            node_size,
+            handle_size,
+        );
         assert!(found.is_some());
         assert_eq!(found.unwrap().id.as_str(), "right");
 
         // Should not find handle at wrong position
-        let not_found = manager.handle_at_position(Position::new(50.0, 25.0), node_pos, node_size, handle_size);
+        let not_found =
+            manager.handle_at_position(Position::new(50.0, 25.0), node_pos, node_size, handle_size);
         assert!(not_found.is_none());
     }
 
@@ -444,9 +486,15 @@ mod tests {
     fn test_handle_type_filtering() {
         let mut manager = HandleManager::new("node1".into());
 
-        manager.add_handle(Handle::source("out1", HandlePosition::Right)).unwrap();
-        manager.add_handle(Handle::source("out2", HandlePosition::Top)).unwrap();
-        manager.add_handle(Handle::target("in1", HandlePosition::Left)).unwrap();
+        manager
+            .add_handle(Handle::source("out1", HandlePosition::Right))
+            .unwrap();
+        manager
+            .add_handle(Handle::source("out2", HandlePosition::Top))
+            .unwrap();
+        manager
+            .add_handle(Handle::target("in1", HandlePosition::Left))
+            .unwrap();
 
         let sources: Vec<_> = manager.source_handles().collect();
         let targets: Vec<_> = manager.target_handles().collect();

@@ -6,12 +6,12 @@
 //! - Canvas panning
 //! - Visual feedback for selected nodes
 
-use flow_core::{Graph, Position, Viewport};
 use flow_core::types::NodeId;
+use flow_core::{Graph, Position, Viewport};
 use flow_renderer::{Canvas2DRenderer, Renderer};
-use web_sys::HtmlCanvasElement;
-use wasm_bindgen::prelude::*;
 use std::collections::HashSet;
+use wasm_bindgen::prelude::*;
+use web_sys::HtmlCanvasElement;
 
 /// Interaction state for the flow editor
 #[derive(Debug, Clone)]
@@ -51,7 +51,12 @@ pub struct InteractionHandler {
 
 impl InteractionHandler {
     /// Create a new interaction handler
-    pub fn new(canvas: HtmlCanvasElement, renderer: Canvas2DRenderer, graph: Graph<(), ()>, viewport: Viewport) -> Self {
+    pub fn new(
+        canvas: HtmlCanvasElement,
+        renderer: Canvas2DRenderer,
+        graph: Graph<(), ()>,
+        viewport: Viewport,
+    ) -> Self {
         Self {
             state: InteractionState::default(),
             canvas,
@@ -127,8 +132,11 @@ impl InteractionHandler {
             let node_pos = node.position;
             let node_size = node.size;
 
-            if pos.x >= node_pos.x && pos.x <= node_pos.x + node_size.width &&
-               pos.y >= node_pos.y && pos.y <= node_pos.y + node_size.height {
+            if pos.x >= node_pos.x
+                && pos.x <= node_pos.x + node_size.width
+                && pos.y >= node_pos.y
+                && pos.y <= node_pos.y + node_size.height
+            {
                 return Some(node.id.clone());
             }
         }
@@ -164,7 +172,8 @@ impl InteractionHandler {
     /// Render the current state
     pub fn render(&mut self) -> Result<(), JsValue> {
         // Clear canvas
-        self.renderer.clear(Some("#ffffff"))
+        self.renderer
+            .clear(Some("#ffffff"))
             .map_err(|e| JsValue::from_str(&format!("Clear error: {:?}", e)))?;
 
         // Render background
@@ -175,14 +184,16 @@ impl InteractionHandler {
             size: 20.0,
             opacity: 0.5,
         };
-        self.renderer.render_background(&bg_config, &self.viewport)
+        self.renderer
+            .render_background(&bg_config, &self.viewport)
             .map_err(|e| JsValue::from_str(&format!("Background render error: {:?}", e)))?;
 
         // Render graph with selection highlighting
         self.render_graph_with_selection()?;
 
         // Present frame
-        self.renderer.present()
+        self.renderer
+            .present()
             .map_err(|e| JsValue::from_str(&format!("Present error: {:?}", e)))?;
         Ok(())
     }
@@ -191,7 +202,8 @@ impl InteractionHandler {
     fn render_graph_with_selection(&mut self) -> Result<(), JsValue> {
         // For now, just render the normal graph
         // TODO: Add selection highlighting
-        self.renderer.render_graph_dyn(&self.graph, &self.viewport)
+        self.renderer
+            .render_graph_dyn(&self.graph, &self.viewport)
             .map_err(|e| JsValue::from_str(&format!("Graph render error: {:?}", e)))?;
         Ok(())
     }

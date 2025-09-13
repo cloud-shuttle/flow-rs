@@ -3,7 +3,7 @@
 //! Provides comprehensive edge connection functionality including connection validation,
 //! handle detection, edge creation, and connection management.
 
-use flow_core::{Graph, Position, NodeId, EdgeId, Edge, Node};
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
 
 /// Result of a connection validation operation
 #[derive(Debug, Clone, PartialEq)]
@@ -164,7 +164,11 @@ impl HandleDetector {
     }
 
     /// Detect which handle (if any) is at the given position
-    pub fn detect_handle(&self, node: &Node<impl Clone>, position: Position) -> Option<ConnectionHandle> {
+    pub fn detect_handle(
+        &self,
+        node: &Node<impl Clone>,
+        position: Position,
+    ) -> Option<ConnectionHandle> {
         let handle_size = 8.0; // Size of connection handle area
 
         // Check input handle (left side)
@@ -184,10 +188,7 @@ impl HandleDetector {
 
     /// Get the position of the input handle for a node
     pub fn get_input_handle_position(&self, node: &Node<impl Clone>) -> Position {
-        Position::new(
-            node.position.x,
-            node.position.y + node.size.height / 2.0,
-        )
+        Position::new(node.position.x, node.position.y + node.size.height / 2.0)
     }
 
     /// Get the position of the output handle for a node
@@ -225,8 +226,12 @@ impl ConnectionPreview {
     }
 
     /// Start a connection preview
-    pub fn start_connection<N, E>(&mut self, _graph: &Graph<N, E>, source: &NodeId, start_pos: Position)
-    where
+    pub fn start_connection<N, E>(
+        &mut self,
+        _graph: &Graph<N, E>,
+        source: &NodeId,
+        start_pos: Position,
+    ) where
         N: Clone,
         E: Clone,
     {
@@ -405,7 +410,8 @@ impl ConnectionHistory {
             match operation {
                 ConnectionOperation::CreateEdge { source, target } => {
                     // Find and remove the edge
-                    let edge_to_remove = graph.edges()
+                    let edge_to_remove = graph
+                        .edges()
                         .find(|e| e.source == *source && e.target == *target)
                         .map(|e| e.id.clone());
 
@@ -433,7 +439,8 @@ impl ConnectionHistory {
             match operation {
                 ConnectionOperation::CreateEdge { source, target } => {
                     let edge_id = EdgeId::new(&format!("edge_{}_{}", source, target));
-                    let edge = Edge::new(edge_id, source.clone(), target.clone(), Default::default());
+                    let edge =
+                        Edge::new(edge_id, source.clone(), target.clone(), Default::default());
                     let _ = graph.add_edge(edge);
                 }
                 ConnectionOperation::DeleteEdge { edge_id } => {

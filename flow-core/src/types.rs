@@ -187,7 +187,12 @@ pub struct Rect {
 impl Rect {
     /// Create a new rectangle
     pub const fn new(x: f64, y: f64, width: f64, height: f64) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     /// Create rectangle from position and size
@@ -227,10 +232,7 @@ impl Rect {
 
     /// Get the center position
     pub fn center(self) -> Position {
-        Position::new(
-            self.x + self.width / 2.0,
-            self.y + self.height / 2.0,
-        )
+        Position::new(self.x + self.width / 2.0, self.y + self.height / 2.0)
     }
 
     /// Check if rectangle contains a point
@@ -275,9 +277,12 @@ impl Rect {
 
     /// Check if rectangle is valid
     pub fn is_valid(self) -> bool {
-        self.width >= 0.0 && self.height >= 0.0
-            && self.x.is_finite() && self.y.is_finite()
-            && self.width.is_finite() && self.height.is_finite()
+        self.width >= 0.0
+            && self.height >= 0.0
+            && self.x.is_finite()
+            && self.y.is_finite()
+            && self.width.is_finite()
+            && self.height.is_finite()
     }
 
     /// Expand rectangle by margin
@@ -293,7 +298,11 @@ impl Rect {
 
 impl fmt::Display for Rect {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}, {}, {}x{}]", self.x, self.y, self.width, self.height)
+        write!(
+            f,
+            "[{}, {}, {}x{}]",
+            self.x, self.y, self.width, self.height
+        )
     }
 }
 
@@ -312,7 +321,14 @@ pub struct Viewport {
 impl Viewport {
     /// Create a new viewport
     pub const fn new(x: f64, y: f64, width: f64, height: f64, zoom: f64) -> Self {
-        Self { x, y, width, height, zoom, offset: Position::zero() }
+        Self {
+            x,
+            y,
+            width,
+            height,
+            zoom,
+            offset: Position::zero(),
+        }
     }
 
     /// Create viewport with default zoom
@@ -321,8 +337,22 @@ impl Viewport {
     }
 
     /// Create viewport with offset
-    pub const fn with_offset(x: f64, y: f64, width: f64, height: f64, zoom: f64, offset: Position) -> Self {
-        Self { x, y, width, height, zoom, offset }
+    pub const fn with_offset(
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        zoom: f64,
+        offset: Position,
+    ) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+            zoom,
+            offset,
+        }
     }
 
     /// Get the bounds as a rectangle
@@ -332,10 +362,7 @@ impl Viewport {
 
     /// Get the center position
     pub fn center(self) -> Position {
-        Position::new(
-            self.x + self.width / 2.0,
-            self.y + self.height / 2.0,
-        )
+        Position::new(self.x + self.width / 2.0, self.y + self.height / 2.0)
     }
 
     /// Check if viewport contains a point
@@ -387,17 +414,24 @@ impl Viewport {
 
     /// Check if viewport is valid
     pub fn is_valid(self) -> bool {
-        self.width > 0.0 && self.height > 0.0 && self.zoom > 0.0
-            && self.x.is_finite() && self.y.is_finite()
-            && self.width.is_finite() && self.height.is_finite()
+        self.width > 0.0
+            && self.height > 0.0
+            && self.zoom > 0.0
+            && self.x.is_finite()
+            && self.y.is_finite()
+            && self.width.is_finite()
+            && self.height.is_finite()
             && self.zoom.is_finite()
     }
 }
 
 impl fmt::Display for Viewport {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Viewport[{}, {}, {}x{} @ {}x]",
-               self.x, self.y, self.width, self.height, self.zoom)
+        write!(
+            f,
+            "Viewport[{}, {}, {}x{} @ {}x]",
+            self.x, self.y, self.width, self.height, self.zoom
+        )
     }
 }
 
@@ -706,12 +740,18 @@ mod tests {
         let rect2 = Rect::from_pos_size(Position::new(5.0, 5.0), Size::new(10.0, 10.0));
 
         let union = rect1.union(rect2);
-        assert_eq!(union, Rect::from_pos_size(Position::new(0.0, 0.0), Size::new(15.0, 15.0)));
+        assert_eq!(
+            union,
+            Rect::from_pos_size(Position::new(0.0, 0.0), Size::new(15.0, 15.0))
+        );
 
         // Test with non-overlapping rectangles
         let rect3 = Rect::from_pos_size(Position::new(20.0, 20.0), Size::new(5.0, 5.0));
         let union2 = rect1.union(rect3);
-        assert_eq!(union2, Rect::from_pos_size(Position::new(0.0, 0.0), Size::new(25.0, 25.0)));
+        assert_eq!(
+            union2,
+            Rect::from_pos_size(Position::new(0.0, 0.0), Size::new(25.0, 25.0))
+        );
     }
 
     #[test]
@@ -720,7 +760,13 @@ mod tests {
         let rect2 = Rect::from_pos_size(Position::new(5.0, 5.0), Size::new(10.0, 10.0));
 
         let intersection = rect1.intersection(rect2);
-        assert_eq!(intersection, Some(Rect::from_pos_size(Position::new(5.0, 5.0), Size::new(5.0, 5.0))));
+        assert_eq!(
+            intersection,
+            Some(Rect::from_pos_size(
+                Position::new(5.0, 5.0),
+                Size::new(5.0, 5.0)
+            ))
+        );
 
         // Test with non-overlapping rectangles
         let rect3 = Rect::from_pos_size(Position::new(20.0, 20.0), Size::new(5.0, 5.0));
@@ -776,7 +822,10 @@ mod tests {
 
         // Test bounds calculation
         let bounds = viewport.bounds();
-        assert_eq!(bounds, Rect::from_pos_size(Position::new(10.0, 10.0), Size::new(100.0, 100.0)));
+        assert_eq!(
+            bounds,
+            Rect::from_pos_size(Position::new(10.0, 10.0), Size::new(100.0, 100.0))
+        );
 
         // Test center calculation
         let center = viewport.center();
@@ -850,8 +899,12 @@ mod tests {
         // Use approximate equality for floating point precision
         let expected_area = 1e-20;
         let actual_area = tiny_size.area();
-        assert!((actual_area - expected_area).abs() < f64::EPSILON,
-                "Expected area {} but got {}", expected_area, actual_area);
+        assert!(
+            (actual_area - expected_area).abs() < f64::EPSILON,
+            "Expected area {} but got {}",
+            expected_area,
+            actual_area
+        );
 
         // Test with very large sizes
         let huge_size = Size::new(1e10, 1e10);
@@ -891,7 +944,10 @@ mod tests {
         // Test with very small viewport
         let viewport_tiny = Viewport::new(0.0, 0.0, 1e-10, 1e-10, 1.0);
         let bounds = viewport_tiny.bounds();
-        assert_eq!(bounds, Rect::from_pos_size(Position::new(0.0, 0.0), Size::new(1e-10, 1e-10)));
+        assert_eq!(
+            bounds,
+            Rect::from_pos_size(Position::new(0.0, 0.0), Size::new(1e-10, 1e-10))
+        );
     }
 
     #[test]

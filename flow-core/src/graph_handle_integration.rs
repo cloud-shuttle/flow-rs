@@ -5,8 +5,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
     use crate::handle::*;
+    use crate::*;
 
     #[test]
     fn test_node_with_handles() {
@@ -14,8 +14,10 @@ mod tests {
         let mut node = Node::simple("node1", Position::new(100.0, 100.0));
 
         // Should be able to add handles to a node
-        node.add_handle(Handle::source("output", HandlePosition::Right)).unwrap();
-        node.add_handle(Handle::target("input", HandlePosition::Left)).unwrap();
+        node.add_handle(Handle::source("output", HandlePosition::Right))
+            .unwrap();
+        node.add_handle(Handle::target("input", HandlePosition::Left))
+            .unwrap();
 
         assert_eq!(node.handles().len(), 2);
         assert!(node.get_handle(&"output".into()).is_some());
@@ -26,7 +28,8 @@ mod tests {
     fn test_node_handle_hit_detection() {
         let mut node = Node::simple("node1", Position::new(100.0, 100.0));
         node.set_size(Size::new(80.0, 60.0));
-        node.add_handle(Handle::source("right", HandlePosition::Right)).unwrap();
+        node.add_handle(Handle::source("right", HandlePosition::Right))
+            .unwrap();
 
         // Should find handle at correct position
         let handle = node.handle_at_position(Position::new(180.0, 130.0), 10.0);
@@ -55,10 +58,14 @@ mod tests {
 
         // Create nodes with handles
         let mut node1 = Node::simple("node1", Position::new(0.0, 0.0));
-        node1.add_handle(Handle::source("out", HandlePosition::Right)).unwrap();
+        node1
+            .add_handle(Handle::source("out", HandlePosition::Right))
+            .unwrap();
 
         let mut node2 = Node::simple("node2", Position::new(200.0, 0.0));
-        node2.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        node2
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
 
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();
@@ -79,10 +86,14 @@ mod tests {
 
         // Create nodes with handles
         let mut node1 = Node::simple("node1", Position::new(0.0, 0.0));
-        node1.add_handle(Handle::source("out", HandlePosition::Right)).unwrap();
+        node1
+            .add_handle(Handle::source("out", HandlePosition::Right))
+            .unwrap();
 
         let mut node2 = Node::simple("node2", Position::new(200.0, 0.0));
-        node2.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        node2
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
 
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();
@@ -102,16 +113,20 @@ mod tests {
 
         // Create nodes with typed handles
         let mut node1 = Node::simple("node1", Position::new(0.0, 0.0));
-        node1.add_handle(
-            Handle::source("data_out", HandlePosition::Right)
-                .with_connection_types(vec!["data".to_string()])
-        ).unwrap();
+        node1
+            .add_handle(
+                Handle::source("data_out", HandlePosition::Right)
+                    .with_connection_types(vec!["data".to_string()]),
+            )
+            .unwrap();
 
         let mut node2 = Node::simple("node2", Position::new(200.0, 0.0));
-        node2.add_handle(
-            Handle::target("control_in", HandlePosition::Left)
-                .with_connection_types(vec!["control".to_string()])
-        ).unwrap();
+        node2
+            .add_handle(
+                Handle::target("control_in", HandlePosition::Left)
+                    .with_connection_types(vec!["control".to_string()]),
+            )
+            .unwrap();
 
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();
@@ -123,7 +138,10 @@ mod tests {
 
         let result = graph.add_handle_edge(edge);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::InvalidConnection { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::InvalidConnection { .. }
+        ));
     }
 
     #[test]
@@ -132,16 +150,19 @@ mod tests {
 
         // Create node with limited handle
         let mut node1 = Node::simple("node1", Position::new(0.0, 0.0));
-        node1.add_handle(
-            Handle::source("out", HandlePosition::Right)
-                .with_connection_limit(1)
-        ).unwrap();
+        node1
+            .add_handle(Handle::source("out", HandlePosition::Right).with_connection_limit(1))
+            .unwrap();
 
         let mut node2 = Node::simple("node2", Position::new(200.0, 0.0));
-        node2.add_handle(Handle::target("in1", HandlePosition::Left)).unwrap();
+        node2
+            .add_handle(Handle::target("in1", HandlePosition::Left))
+            .unwrap();
 
         let mut node3 = Node::simple("node3", Position::new(200.0, 100.0));
-        node3.add_handle(Handle::target("in2", HandlePosition::Left)).unwrap();
+        node3
+            .add_handle(Handle::target("in2", HandlePosition::Left))
+            .unwrap();
 
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();
@@ -159,7 +180,10 @@ mod tests {
             .with_target_handle("in2");
         let result = graph.add_handle_edge(edge2);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::ConnectionLimitExceeded { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::ConnectionLimitExceeded { .. }
+        ));
     }
 
     #[test]
@@ -168,10 +192,14 @@ mod tests {
 
         // Set up nodes with handles
         let mut node1 = Node::simple("node1", Position::new(0.0, 0.0));
-        node1.add_handle(Handle::source("out", HandlePosition::Right)).unwrap();
+        node1
+            .add_handle(Handle::source("out", HandlePosition::Right))
+            .unwrap();
 
         let mut node2 = Node::simple("node2", Position::new(200.0, 0.0));
-        node2.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        node2
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
 
         graph.add_node(node1).unwrap();
         graph.add_node(node2).unwrap();

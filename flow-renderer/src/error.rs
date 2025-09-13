@@ -126,10 +126,7 @@ mod tests {
     #[test]
     fn test_error_creation() {
         let error = RendererError::initialization_failed("Test message");
-        assert_eq!(
-            error.to_string(),
-            "Initialization failed: Test message"
-        );
+        assert_eq!(error.to_string(), "Initialization failed: Test message");
 
         let error = RendererError::unsupported_feature("WebGPU");
         assert_eq!(error.to_string(), "Unsupported feature: WebGPU");

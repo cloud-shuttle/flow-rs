@@ -2,20 +2,28 @@
 //!
 //! These tests verify the selection system works correctly with the Leptos reactive system
 
-use wasm_bindgen_test::*;
-use leptos::*;
-use flow_core::{Graph, Node, Position, SelectionManager, SelectionMode, NavigationDirection};
 use crate::signals::ViewportState;
+use flow_core::{Graph, NavigationDirection, Node, Position, SelectionManager, SelectionMode};
+use leptos::*;
+use wasm_bindgen_test::*;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
 
-    graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-    graph.add_node(Node::simple("node2", Position::new(200.0, 150.0))).unwrap();
-    graph.add_node(Node::simple("node3", Position::new(300.0, 200.0))).unwrap();
-    graph.add_node(Node::simple("node4", Position::new(150.0, 250.0))).unwrap();
+    graph
+        .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node2", Position::new(200.0, 150.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node3", Position::new(300.0, 200.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node4", Position::new(150.0, 250.0)))
+        .unwrap();
 
     graph
 }
@@ -32,9 +40,7 @@ fn test_selection_manager_integration_with_leptos_signals() {
     });
 
     // Verify selection
-    let selected_nodes = selection_manager.with(|manager| {
-        manager.selected_nodes().clone()
-    });
+    let selected_nodes = selection_manager.with(|manager| manager.selected_nodes().clone());
 
     assert_eq!(selected_nodes.len(), 1);
     assert!(selected_nodes.contains(&"node1".into()));

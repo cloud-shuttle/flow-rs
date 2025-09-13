@@ -5,12 +5,12 @@ use criterion::{criterion_group, criterion_main, Criterion};
 
 fn configure_criterion() -> Criterion {
     Criterion::default()
-        .sample_size(100)  // Number of samples to collect
-        .measurement_time(std::time::Duration::from_secs(10))  // How long to measure
-        .warm_up_time(std::time::Duration::from_secs(3))  // Warm-up time
-        .confidence_level(0.95)  // Statistical confidence level
-        .significance_level(0.01)  // Significance level for comparisons
-        .noise_threshold(0.02)  // Noise threshold for detecting changes
+        .sample_size(100) // Number of samples to collect
+        .measurement_time(std::time::Duration::from_secs(10)) // How long to measure
+        .warm_up_time(std::time::Duration::from_secs(3)) // Warm-up time
+        .confidence_level(0.95) // Statistical confidence level
+        .significance_level(0.01) // Significance level for comparisons
+        .noise_threshold(0.02) // Noise threshold for detecting changes
 }
 
 // Empty benchmark group for configuration

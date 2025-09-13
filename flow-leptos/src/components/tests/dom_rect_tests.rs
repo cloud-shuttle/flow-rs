@@ -2,19 +2,24 @@
 //!
 //! Tests for DOM element bounding rectangle access and coordinate conversion utilities.
 
+use flow_core::{Position, Rect, Size};
+use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_test::*;
 use web_sys::{Element, HtmlElement};
-use wasm_bindgen::{JsValue, JsCast};
-use flow_core::{Position, Size, Rect};
 
 // Import the DOM rect utilities (these will be implemented)
-use crate::dom_rect::{DomRectUtils, ElementRect, CoordinateConverter};
+use crate::dom_rect::{CoordinateConverter, DomRectUtils, ElementRect};
 
 /// Helper function to create a mock DOM element for testing
 fn create_mock_element() -> web_sys::Element {
     // Create a mock element using js_sys
     let element = js_sys::Object::new();
-    js_sys::Reflect::set(&element, &"getBoundingClientRect".into(), &js_sys::Function::new_no_args("return {x: 100, y: 200, width: 300, height: 150}")).unwrap();
+    js_sys::Reflect::set(
+        &element,
+        &"getBoundingClientRect".into(),
+        &js_sys::Function::new_no_args("return {x: 100, y: 200, width: 300, height: 150}"),
+    )
+    .unwrap();
     element.unchecked_into()
 }
 

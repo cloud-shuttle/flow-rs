@@ -1,12 +1,12 @@
 //! Integration tests for DOM rect access with mouse event handling
 
+use js_sys::Object;
+use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_test::*;
 use web_sys::{Element, MouseEvent};
-use wasm_bindgen::{JsValue, JsCast};
-use js_sys::Object;
 
-use crate::mouse_integration::{MouseEventConverter, utils};
 use crate::dom_rect::DomRectUtils;
+use crate::mouse_integration::{utils, MouseEventConverter};
 use flow_core::{Position, Viewport};
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -16,17 +16,27 @@ fn create_mock_mouse_event(client_x: f64, client_y: f64) -> MouseEvent {
     let event = Object::new();
     js_sys::Reflect::set(&event, &"clientX".into(), &client_x.into()).unwrap();
     js_sys::Reflect::set(&event, &"clientY".into(), &client_y.into()).unwrap();
-    js_sys::Reflect::set(&event, &"preventDefault".into(), &js_sys::Function::new_no_args("")).unwrap();
+    js_sys::Reflect::set(
+        &event,
+        &"preventDefault".into(),
+        &js_sys::Function::new_no_args(""),
+    )
+    .unwrap();
     event.unchecked_into()
 }
 
 /// Create a mock canvas element with specific bounding rect
 fn create_mock_canvas_element(x: f64, y: f64, width: f64, height: f64) -> Element {
     let element = Object::new();
-    js_sys::Reflect::set(&element, &"getBoundingClientRect".into(), &js_sys::Function::new_no_args(&format!(
+    js_sys::Reflect::set(
+        &element,
+        &"getBoundingClientRect".into(),
+        &js_sys::Function::new_no_args(&format!(
         "return {{x: {}, y: {}, width: {}, height: {}, top: {}, right: {}, bottom: {}, left: {}}}",
         x, y, width, height, y, x + width, y + height, x
-    ))).unwrap();
+    )),
+    )
+    .unwrap();
     element.unchecked_into()
 }
 
@@ -37,7 +47,9 @@ fn test_mouse_event_to_canvas_coordinates() {
     let mouse_event = create_mock_mouse_event(250.0, 350.0);
 
     let mut rect_utils = DomRectUtils::new();
-    let canvas_pos = utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils).unwrap();
+    let canvas_pos =
+        utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils)
+            .unwrap();
 
     assert_eq!(canvas_pos.x, 150.0); // 250 - 100
     assert_eq!(canvas_pos.y, 150.0); // 350 - 200
@@ -51,7 +63,13 @@ fn test_canvas_to_world_coordinate_conversion() {
 
     let mut rect_utils = DomRectUtils::new();
     let viewport = Viewport::new(100.0, 50.0, 0.0, 0.0, 2.0);
-    let world_pos = utils::mouse_event_to_world_coords(&mouse_event, &canvas_element, &mut rect_utils, &viewport).unwrap();
+    let world_pos = utils::mouse_event_to_world_coords(
+        &mouse_event,
+        &canvas_element,
+        &mut rect_utils,
+        &viewport,
+    )
+    .unwrap();
 
     // Expected: (400 / 2.0) + 100 = 300, (300 / 2.0) + 50 = 200
     assert_eq!(world_pos.x, 300.0);
@@ -81,7 +99,9 @@ fn test_mouse_event_integration_with_scroll() {
     let mouse_event = create_mock_mouse_event(400.0, 200.0);
 
     let mut rect_utils = DomRectUtils::new();
-    let canvas_pos = utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils).unwrap();
+    let canvas_pos =
+        utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils)
+            .unwrap();
 
     // Canvas position should account for scroll
     assert_eq!(canvas_pos.x, 400.0); // 400 - 0
@@ -96,7 +116,13 @@ fn test_mouse_event_integration_with_zoom() {
 
     let mut rect_utils = DomRectUtils::new();
     let viewport = Viewport::new(0.0, 0.0, 0.0, 0.0, 0.5); // Zoomed out
-    let world_pos = utils::mouse_event_to_world_coords(&mouse_event, &canvas_element, &mut rect_utils, &viewport).unwrap();
+    let world_pos = utils::mouse_event_to_world_coords(
+        &mouse_event,
+        &canvas_element,
+        &mut rect_utils,
+        &viewport,
+    )
+    .unwrap();
 
     // With 0.5 zoom: 400 / 0.5 = 800, 300 / 0.5 = 600
     assert_eq!(world_pos.x, 800.0);
@@ -120,7 +146,9 @@ fn test_mouse_event_coordinate_precision() {
     let mouse_event = create_mock_mouse_event(250.75, 350.125);
 
     let mut rect_utils = DomRectUtils::new();
-    let canvas_pos = utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils).unwrap();
+    let canvas_pos =
+        utils::mouse_event_to_canvas_coords(&mouse_event, &canvas_element, &mut rect_utils)
+            .unwrap();
 
     // Test precision with fractional values
     assert!((canvas_pos.x - 150.25).abs() < 0.001);
@@ -135,7 +163,13 @@ fn test_mouse_event_with_viewport_offset() {
 
     let mut rect_utils = DomRectUtils::new();
     let viewport = Viewport::new(200.0, 150.0, 0.0, 0.0, 1.0);
-    let world_pos = utils::mouse_event_to_world_coords(&mouse_event, &canvas_element, &mut rect_utils, &viewport).unwrap();
+    let world_pos = utils::mouse_event_to_world_coords(
+        &mouse_event,
+        &canvas_element,
+        &mut rect_utils,
+        &viewport,
+    )
+    .unwrap();
 
     // With offset: 400 + 200 = 600, 300 + 150 = 450
     assert_eq!(world_pos.x, 600.0);
@@ -150,13 +184,17 @@ fn test_mouse_event_boundary_conditions() {
 
     // Test top-left corner
     let top_left_event = create_mock_mouse_event(100.0, 200.0);
-    let top_left_canvas = utils::mouse_event_to_canvas_coords(&top_left_event, &canvas_element, &mut rect_utils).unwrap();
+    let top_left_canvas =
+        utils::mouse_event_to_canvas_coords(&top_left_event, &canvas_element, &mut rect_utils)
+            .unwrap();
     assert_eq!(top_left_canvas.x, 0.0);
     assert_eq!(top_left_canvas.y, 0.0);
 
     // Test bottom-right corner
     let bottom_right_event = create_mock_mouse_event(900.0, 800.0);
-    let bottom_right_canvas = utils::mouse_event_to_canvas_coords(&bottom_right_event, &canvas_element, &mut rect_utils).unwrap();
+    let bottom_right_canvas =
+        utils::mouse_event_to_canvas_coords(&bottom_right_event, &canvas_element, &mut rect_utils)
+            .unwrap();
     assert_eq!(bottom_right_canvas.x, 800.0);
     assert_eq!(bottom_right_canvas.y, 600.0);
 }
@@ -171,7 +209,13 @@ fn test_mouse_event_integration_performance() {
     // Perform multiple coordinate conversions
     for i in 0..100 {
         let mouse_event = create_mock_mouse_event(i as f64, i as f64);
-        let _world_pos = utils::mouse_event_to_world_coords(&mouse_event, &canvas_element, &mut rect_utils, &viewport).unwrap();
+        let _world_pos = utils::mouse_event_to_world_coords(
+            &mouse_event,
+            &canvas_element,
+            &mut rect_utils,
+            &viewport,
+        )
+        .unwrap();
     }
 
     // If we get here without panicking, performance is acceptable

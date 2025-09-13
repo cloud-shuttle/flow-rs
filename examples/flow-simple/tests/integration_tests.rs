@@ -2,12 +2,12 @@
 //!
 //! These tests verify the complete application works end-to-end
 
-use wasm_bindgen_test::*;
-use flow_core::{Graph, Node, Edge, Position, Viewport};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_core::{Edge, Graph, Node, Position, Viewport};
 use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
-use web_sys::HtmlCanvasElement;
+use flow_renderer::{Canvas2DRenderer, Renderer};
 use wasm_bindgen::JsCast;
+use wasm_bindgen_test::*;
+use web_sys::HtmlCanvasElement;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
@@ -47,7 +47,10 @@ fn test_canvas2d_renderer_initialization() {
     let canvas = create_test_canvas();
     let renderer = Canvas2DRenderer::new(&canvas);
 
-    assert!(renderer.is_ok(), "Canvas2D renderer should initialize successfully");
+    assert!(
+        renderer.is_ok(),
+        "Canvas2D renderer should initialize successfully"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -145,5 +148,8 @@ fn test_renderer_capabilities() {
 
     // Should have basic capabilities
     assert!(capabilities.name.len() > 0, "Renderer should have a name");
-    assert!(capabilities.max_texture_size > 0, "Renderer should support textures");
+    assert!(
+        capabilities.max_texture_size > 0,
+        "Renderer should support textures"
+    );
 }

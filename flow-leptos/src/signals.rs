@@ -3,7 +3,10 @@
 use leptos::*;
 use serde::{Deserialize, Serialize};
 
-use flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Viewport, SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut, GroupManager, GroupId};
+use flow_core::{
+    Edge, EdgeId, Graph, GroupId, GroupManager, KeyboardShortcut, NavigationDirection, Node,
+    NodeId, Position, SelectionManager, SelectionMode, Viewport,
+};
 use flow_renderer::traits::RenderStats;
 
 #[cfg(feature = "canvas2d")]
@@ -60,7 +63,12 @@ impl FlowState {
     pub fn select_node(&mut self, node_id: NodeId) {
         self.selection_manager.select_node(node_id.clone());
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Add node to selection (multi-select)
@@ -68,21 +76,36 @@ impl FlowState {
         self.selection_manager.set_mode(SelectionMode::Multi);
         self.selection_manager.select_node(node_id);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Toggle node selection (for Ctrl+Click)
     pub fn toggle_node_selection(&mut self, node_id: NodeId) {
         self.selection_manager.toggle_node(node_id);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Remove node from selection
     pub fn remove_node_from_selection(&mut self, node_id: &NodeId) {
         self.selection_manager.deselect_node(node_id);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Check if node is selected
@@ -106,14 +129,23 @@ impl FlowState {
     }
 
     /// Navigate selection using keyboard
-    pub fn navigate_selection<N, E>(&mut self, graph: &Graph<N, E>, direction: NavigationDirection) -> Option<NodeId>
+    pub fn navigate_selection<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        direction: NavigationDirection,
+    ) -> Option<NodeId>
     where
         N: Clone,
         E: Clone,
     {
         let result = self.selection_manager.navigate_selection(graph, direction);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
         result
     }
 
@@ -135,7 +167,12 @@ impl FlowState {
     {
         let result = self.selection_manager.complete_rectangle_selection(graph);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
         result
     }
 
@@ -147,29 +184,52 @@ impl FlowState {
     {
         self.selection_manager.select_all(graph);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Handle keyboard shortcuts using the new keyboard shortcut system
-    pub fn handle_keyboard_shortcut<N, E>(&mut self, graph: &Graph<N, E>, shortcut: KeyboardShortcut)
-    where
+    pub fn handle_keyboard_shortcut<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        shortcut: KeyboardShortcut,
+    ) where
         N: Clone,
         E: Clone,
     {
-        self.selection_manager.handle_keyboard_shortcut(graph, shortcut);
+        self.selection_manager
+            .handle_keyboard_shortcut(graph, shortcut);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Handle destructive keyboard shortcuts that modify the graph
-    pub fn handle_destructive_keyboard_shortcut<N, E>(&mut self, graph: &mut Graph<N, E>, shortcut: KeyboardShortcut)
-    where
+    pub fn handle_destructive_keyboard_shortcut<N, E>(
+        &mut self,
+        graph: &mut Graph<N, E>,
+        shortcut: KeyboardShortcut,
+    ) where
         N: Clone,
         E: Clone,
     {
-        self.selection_manager.handle_destructive_keyboard_shortcut(graph, shortcut);
+        self.selection_manager
+            .handle_destructive_keyboard_shortcut(graph, shortcut);
         // Sync legacy fields after modification
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Get bounds of all selected nodes for rendering selection indicators
@@ -200,18 +260,37 @@ impl FlowState {
     pub fn select_group(&mut self, group_manager: &GroupManager, group_id: &GroupId) {
         self.selection_manager.select_group(group_manager, group_id);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Select node with optional group selection
-    pub fn select_node_with_group(&mut self, group_manager: &GroupManager, node_id: NodeId, select_whole_group: bool) {
-        self.selection_manager.select_node_with_group(group_manager, node_id, select_whole_group);
+    pub fn select_node_with_group(
+        &mut self,
+        group_manager: &GroupManager,
+        node_id: NodeId,
+        select_whole_group: bool,
+    ) {
+        self.selection_manager
+            .select_node_with_group(group_manager, node_id, select_whole_group);
         // Sync legacy fields
-        self.selected_nodes = self.selection_manager.selected_nodes().iter().cloned().collect();
+        self.selected_nodes = self
+            .selection_manager
+            .selected_nodes()
+            .iter()
+            .cloned()
+            .collect();
     }
 
     /// Get selected groups
-    pub fn get_selected_groups(&self, group_manager: &GroupManager) -> std::collections::HashSet<GroupId> {
+    pub fn get_selected_groups(
+        &self,
+        group_manager: &GroupManager,
+    ) -> std::collections::HashSet<GroupId> {
         self.selection_manager.get_selected_groups(group_manager)
     }
 
@@ -252,7 +331,11 @@ impl FlowState {
     }
 
     /// Start drag with handle for precise manipulation
-    pub fn start_drag_with_handle(&mut self, mouse_pos: Position, _handle: crate::drag::DragHandle) {
+    pub fn start_drag_with_handle(
+        &mut self,
+        mouse_pos: Position,
+        _handle: crate::drag::DragHandle,
+    ) {
         self.start_drag(mouse_pos);
     }
 
@@ -479,7 +562,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{Size, NodeBuilder};
+    use flow_core::prelude::{NodeBuilder, Size};
 
     #[test]
     fn test_flow_state_selection() {

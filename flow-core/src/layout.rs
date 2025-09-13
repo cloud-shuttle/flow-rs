@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::error::{FlowError, Result};
 use crate::graph::Graph;
-use crate::types::{Position, NodeId};
+use crate::types::{NodeId, Position};
 
 /// Trait for layout algorithms
 pub trait LayoutAlgorithm<N, E> {
@@ -15,16 +15,24 @@ pub trait LayoutAlgorithm<N, E> {
     fn apply(&mut self, graph: &mut Graph<N, E>) -> Result<()>;
 
     /// Check if the algorithm is running
-    fn is_running(&self) -> bool { false }
+    fn is_running(&self) -> bool {
+        false
+    }
 
     /// Stop the algorithm if it's running
-    fn stop(&mut self) -> Result<()> { Ok(()) }
+    fn stop(&mut self) -> Result<()> {
+        Ok(())
+    }
 
     /// Get the progress (0.0 to 1.0)
-    fn progress(&self) -> f64 { 1.0 }
+    fn progress(&self) -> f64 {
+        1.0
+    }
 
     /// Check if the algorithm can be interrupted
-    fn can_interrupt(&self) -> bool { false }
+    fn can_interrupt(&self) -> bool {
+        false
+    }
 }
 
 /// Force-directed layout algorithm
@@ -80,10 +88,9 @@ impl ForceDirectedLayout {
         let mut forces = HashMap::new();
 
         for edge in graph.edges() {
-            if let (Some(source), Some(target)) = (
-                graph.get_node(&edge.source),
-                graph.get_node(&edge.target),
-            ) {
+            if let (Some(source), Some(target)) =
+                (graph.get_node(&edge.source), graph.get_node(&edge.target))
+            {
                 let delta = target.position - source.position;
                 let distance = delta.x.hypot(delta.y).max(0.1);
                 let displacement = distance - self.spring_length;
@@ -93,8 +100,12 @@ impl ForceDirectedLayout {
                 let force = force_direction * force_magnitude;
 
                 // Apply force to both nodes (opposite directions)
-                *forces.entry(edge.source.clone()).or_insert(Position::zero()) += force;
-                *forces.entry(edge.target.clone()).or_insert(Position::zero()) -= force;
+                *forces
+                    .entry(edge.source.clone())
+                    .or_insert(Position::zero()) += force;
+                *forces
+                    .entry(edge.target.clone())
+                    .or_insert(Position::zero()) -= force;
             }
         }
 
@@ -114,7 +125,8 @@ impl ForceDirectedLayout {
                     let delta = node1.position - node2.position;
                     let distance_squared = delta.x * delta.x + delta.y * delta.y;
 
-                    if distance_squared > 0.01 { // Avoid division by zero
+                    if distance_squared > 0.01 {
+                        // Avoid division by zero
                         let distance = distance_squared.sqrt();
                         let force_magnitude = self.repulsion_strength / distance_squared;
                         let force_direction = Position::new(delta.x / distance, delta.y / distance);
@@ -162,8 +174,7 @@ impl ForceDirectedLayout {
         for node in graph.nodes_mut() {
             if let Some(&force) = forces.get(&node.id) {
                 // Update velocity
-                let velocity = self.node_velocities.entry(node.id.clone())
-                    .or_default();
+                let velocity = self.node_velocities.entry(node.id.clone()).or_default();
 
                 *velocity = *velocity * self.damping + force * dt;
 
@@ -310,8 +321,7 @@ impl<N, E> LayoutAlgorithm<N, E> for ForceDirectedLayout {
 }
 
 /// Builder for force-directed layout
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ForceDirectedLayoutBuilder {
     layout: ForceDirectedLayout,
 }
@@ -425,9 +435,9 @@ impl<N, E> LayoutAlgorithm<N, E> for GridLayout {
         }
 
         // Calculate columns
-        let columns = self.columns.unwrap_or_else(|| {
-            (node_count as f64).sqrt().ceil() as usize
-        });
+        let columns = self
+            .columns
+            .unwrap_or_else(|| (node_count as f64).sqrt().ceil() as usize);
 
         // Ensure columns is at least 1 to avoid division by zero
         let columns = columns.max(1);
@@ -530,7 +540,9 @@ impl HierarchicalLayout {
         }
 
         if root_nodes.is_empty() {
-            return Err(FlowError::layout("No root nodes found - graph may be cyclic"));
+            return Err(FlowError::layout(
+                "No root nodes found - graph may be cyclic",
+            ));
         }
 
         Ok(root_nodes)
@@ -550,7 +562,8 @@ impl HierarchicalLayout {
 
         visited.insert(node_id.clone());
 
-        let node = graph.get_node(node_id)
+        let node = graph
+            .get_node(node_id)
             .ok_or_else(|| FlowError::node_not_found(node_id.as_str()))?;
 
         let mut children = Vec::new();
@@ -568,8 +581,8 @@ impl HierarchicalLayout {
             size: node.size,
             children,
             position: Position::zero(), // Will be calculated during layout
-            width: 0.0,  // Will be calculated
-            height: 0.0, // Will be calculated
+            width: 0.0,                 // Will be calculated
+            height: 0.0,                // Will be calculated
         })
     }
 
@@ -596,9 +609,7 @@ impl HierarchicalLayout {
             }
 
             // Calculate width as sum of children plus separations
-            let total_child_width: f64 = node.children.iter()
-                .map(|child| child.width)
-                .sum();
+            let total_child_width: f64 = node.children.iter().map(|child| child.width).sum();
             let separations = (node.children.len().saturating_sub(1)) as f64 * self.node_separation;
 
             node.width = total_child_width + separations;
@@ -823,7 +834,11 @@ impl LayoutUtils {
     }
 
     /// Scale a graph to fit within given bounds
-    pub fn scale_to_fit<N: Clone, E>(graph: &mut Graph<N, E>, target_width: f64, target_height: f64) {
+    pub fn scale_to_fit<N: Clone, E>(
+        graph: &mut Graph<N, E>,
+        target_width: f64,
+        target_height: f64,
+    ) {
         if let Some(bounds) = graph.bounds() {
             if bounds.width > 0.0 && bounds.height > 0.0 {
                 let scale_x = target_width / bounds.width;
@@ -851,21 +866,33 @@ impl LayoutUtils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::graph::{Node, Edge};
+    use crate::graph::{Edge, Node};
     use std::collections::HashMap;
 
     fn create_test_graph() -> Graph<(), ()> {
         let mut graph = Graph::new();
 
         // Add nodes
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("3").position(50.0, 100.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("3").position(50.0, 100.0).build())
+            .unwrap();
 
         // Add edges
-        graph.add_edge(Edge::builder().connect("1", "2").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("2", "3").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("3", "1").build().unwrap()).unwrap();
+        graph
+            .add_edge(Edge::builder().connect("1", "2").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("2", "3").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("3", "1").build().unwrap())
+            .unwrap();
 
         graph
     }
@@ -879,7 +906,8 @@ mod tests {
             .build();
 
         // Store initial positions
-        let initial_positions: HashMap<_, _> = graph.nodes()
+        let initial_positions: HashMap<_, _> = graph
+            .nodes()
             .map(|node| (node.id.clone(), node.position))
             .collect();
 
@@ -905,9 +933,7 @@ mod tests {
     #[test]
     fn test_grid_layout() {
         let mut graph = create_test_graph();
-        let mut layout = GridLayout::new()
-            .columns(Some(2))
-            .cell_size(100.0, 80.0);
+        let mut layout = GridLayout::new().columns(Some(2)).cell_size(100.0, 80.0);
 
         layout.apply(&mut graph).unwrap();
 
@@ -975,9 +1001,7 @@ mod tests {
     #[test]
     fn test_layout_interruption() {
         let _graph = create_test_graph();
-        let mut layout = ForceDirectedLayout::builder()
-            .iterations(1000)
-            .build();
+        let mut layout = ForceDirectedLayout::builder().iterations(1000).build();
 
         assert!(LayoutAlgorithm::<(), ()>::can_interrupt(&layout));
 
@@ -1004,7 +1028,8 @@ mod tests {
             .build();
 
         // Store initial positions
-        let initial_positions: HashMap<_, _> = graph.nodes()
+        let initial_positions: HashMap<_, _> = graph
+            .nodes()
             .map(|node| (node.id.clone(), node.position))
             .collect();
 
@@ -1021,7 +1046,10 @@ mod tests {
                 }
             }
         }
-        assert!(positions_changed, "Hierarchical layout should change node positions");
+        assert!(
+            positions_changed,
+            "Hierarchical layout should change node positions"
+        );
 
         // Verify hierarchical structure
         let root = graph.get_node(&"root".into()).unwrap();
@@ -1069,7 +1097,8 @@ mod tests {
             .clockwise(false);
 
         // Store initial positions
-        let initial_positions: HashMap<_, _> = graph.nodes()
+        let initial_positions: HashMap<_, _> = graph
+            .nodes()
             .map(|node| (node.id.clone(), node.position))
             .collect();
 
@@ -1086,7 +1115,10 @@ mod tests {
                 }
             }
         }
-        assert!(positions_changed, "Circular layout should change node positions");
+        assert!(
+            positions_changed,
+            "Circular layout should change node positions"
+        );
 
         // Verify nodes are arranged in a circle
         let nodes: Vec<_> = graph.nodes().collect();
@@ -1094,8 +1126,12 @@ mod tests {
 
         for node in &nodes {
             // Distance from origin should be approximately the radius
-            let distance = (node.position.x * node.position.x + node.position.y * node.position.y).sqrt();
-            assert!((distance - 150.0).abs() < 1e-10, "Node should be at radius distance from origin");
+            let distance =
+                (node.position.x * node.position.x + node.position.y * node.position.y).sqrt();
+            assert!(
+                (distance - 150.0).abs() < 1e-10,
+                "Node should be at radius distance from origin"
+            );
         }
     }
 
@@ -1135,14 +1171,33 @@ mod tests {
         //   |
         // grandchild
 
-        graph.add_node(Node::builder("root").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("child1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("child2").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("grandchild").position(0.0, 0.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("root").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("child1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("child2").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("grandchild").position(0.0, 0.0).build())
+            .unwrap();
 
-        graph.add_edge(Edge::builder().connect("root", "child1").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("root", "child2").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("child1", "grandchild").build().unwrap()).unwrap();
+        graph
+            .add_edge(Edge::builder().connect("root", "child1").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("root", "child2").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(
+                Edge::builder()
+                    .connect("child1", "grandchild")
+                    .build()
+                    .unwrap(),
+            )
+            .unwrap();
 
         graph
     }
@@ -1150,14 +1205,26 @@ mod tests {
     fn create_cyclic_graph() -> Graph<(), ()> {
         let mut graph = Graph::new();
 
-        graph.add_node(Node::builder("a").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("b").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("c").position(0.0, 0.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("a").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("b").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("c").position(0.0, 0.0).build())
+            .unwrap();
 
         // Create a cycle: a -> b -> c -> a
-        graph.add_edge(Edge::builder().connect("a", "b").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("b", "c").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("c", "a").build().unwrap()).unwrap();
+        graph
+            .add_edge(Edge::builder().connect("a", "b").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("b", "c").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("c", "a").build().unwrap())
+            .unwrap();
 
         graph
     }
@@ -1167,9 +1234,15 @@ mod tests {
     #[test]
     fn test_force_directed_energy_calculation() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 0.0).build()).unwrap();
-        graph.add_edge(Edge::builder().connect("1", "2").build().unwrap()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("1", "2").build().unwrap())
+            .unwrap();
 
         let layout = ForceDirectedLayout::builder()
             .spring_length(100.0)
@@ -1184,21 +1257,28 @@ mod tests {
 
         // Test with different node positions
         let mut graph2: Graph<(), ()> = Graph::new();
-        graph2.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph2.add_node(Node::builder("2").position(50.0, 0.0).build()).unwrap();
-        graph2.add_edge(Edge::builder().connect("1", "2").build().unwrap()).unwrap();
+        graph2
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph2
+            .add_node(Node::builder("2").position(50.0, 0.0).build())
+            .unwrap();
+        graph2
+            .add_edge(Edge::builder().connect("1", "2").build().unwrap())
+            .unwrap();
 
         let energy2 = layout.calculate_energy(&graph2);
 
         // Different positions should result in different energy
-        assert_ne!(energy, energy2, "Different positions should have different energy");
+        assert_ne!(
+            energy, energy2,
+            "Different positions should have different energy"
+        );
     }
 
     #[test]
     fn test_force_directed_convergence_detection() {
-        let layout = ForceDirectedLayout::builder()
-            .iterations(100)
-            .build();
+        let layout = ForceDirectedLayout::builder().iterations(100).build();
 
         // Test convergence with zero iterations
         let mut layout_zero = layout.clone();
@@ -1223,12 +1303,14 @@ mod tests {
     #[test]
     fn test_force_directed_position_randomization() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(0.0, 0.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(0.0, 0.0).build())
+            .unwrap();
 
-        let layout = ForceDirectedLayout::builder()
-            .randomize_start(true)
-            .build();
+        let layout = ForceDirectedLayout::builder().randomize_start(true).build();
 
         // Store initial positions
         let initial_positions: Vec<_> = graph.nodes().map(|n| n.position).collect();
@@ -1238,7 +1320,9 @@ mod tests {
 
         // Check that at least one position changed (with high probability)
         let new_positions: Vec<_> = graph.nodes().map(|n| n.position).collect();
-        let positions_changed = initial_positions.iter().zip(new_positions.iter())
+        let positions_changed = initial_positions
+            .iter()
+            .zip(new_positions.iter())
             .any(|(old, new)| old != new);
 
         // Note: This test might occasionally fail due to randomness
@@ -1250,7 +1334,9 @@ mod tests {
     fn test_grid_layout_cell_calculations() {
         let mut graph: Graph<(), ()> = Graph::new();
         for i in 0..6 {
-            graph.add_node(Node::builder(format!("{}", i)).position(0.0, 0.0).build()).unwrap();
+            graph
+                .add_node(Node::builder(format!("{}", i)).position(0.0, 0.0).build())
+                .unwrap();
         }
 
         let mut layout = GridLayout::new()
@@ -1289,7 +1375,9 @@ mod tests {
     fn test_circular_layout_angle_calculations() {
         let mut graph: Graph<(), ()> = Graph::new();
         for i in 0..4 {
-            graph.add_node(Node::builder(format!("{}", i)).position(0.0, 0.0).build()).unwrap();
+            graph
+                .add_node(Node::builder(format!("{}", i)).position(0.0, 0.0).build())
+                .unwrap();
         }
 
         let mut layout = CircularLayout::new()
@@ -1305,8 +1393,12 @@ mod tests {
 
         for node in &nodes {
             // Distance from origin should be approximately the radius
-            let distance = (node.position.x * node.position.x + node.position.y * node.position.y).sqrt();
-            assert!((distance - 100.0).abs() < 1e-10, "Node should be at radius distance from origin");
+            let distance =
+                (node.position.x * node.position.x + node.position.y * node.position.y).sqrt();
+            assert!(
+                (distance - 100.0).abs() < 1e-10,
+                "Node should be at radius distance from origin"
+            );
         }
 
         // Test with different start angle
@@ -1319,8 +1411,10 @@ mod tests {
 
         // First node should be at (0, 100) with 90-degree start angle
         let first_node = graph.nodes().next().unwrap();
-        assert!((first_node.position.x.abs() < 1e-10) && (first_node.position.y - 100.0).abs() < 1e-10,
-                "First node should be at (0, 100) with 90-degree start angle");
+        assert!(
+            (first_node.position.x.abs() < 1e-10) && (first_node.position.y - 100.0).abs() < 1e-10,
+            "First node should be at (0, 100) with 90-degree start angle"
+        );
     }
 
     #[test]
@@ -1353,15 +1447,24 @@ mod tests {
 
         // Children should be separated horizontally by node_separation
         let horizontal_distance = (child1.position.x - child2.position.x).abs();
-        assert!(horizontal_distance >= 100.0, "Children should be separated by node_separation");
+        assert!(
+            horizontal_distance >= 100.0,
+            "Children should be separated by node_separation"
+        );
     }
 
     #[test]
     fn test_layout_utils_center_calculations() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(100.0, 100.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(200.0, 200.0).build()).unwrap();
-        graph.add_node(Node::builder("3").position(300.0, 300.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(100.0, 100.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(200.0, 200.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("3").position(300.0, 300.0).build())
+            .unwrap();
 
         // Center should be at (200, 200)
         LayoutUtils::center_graph(&mut graph);
@@ -1377,8 +1480,12 @@ mod tests {
     fn test_layout_utils_scale_calculations() {
         // Test with graph that needs scaling down
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(1000.0, 1000.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(1000.0, 1000.0).build())
+            .unwrap();
 
         // Scale to fit within 200x200 - should complete without error
         LayoutUtils::scale_to_fit(&mut graph, 200.0, 200.0);
@@ -1390,16 +1497,24 @@ mod tests {
 
         // Test with small graph
         let mut small_graph: Graph<(), ()> = Graph::new();
-        small_graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        small_graph.add_node(Node::builder("2").position(50.0, 50.0).build()).unwrap();
+        small_graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        small_graph
+            .add_node(Node::builder("2").position(50.0, 50.0).build())
+            .unwrap();
 
         LayoutUtils::scale_to_fit(&mut small_graph, 200.0, 200.0);
         // Should complete without error
 
         // Test with zero target size (edge case)
         let mut edge_graph: Graph<(), ()> = Graph::new();
-        edge_graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        edge_graph.add_node(Node::builder("2").position(100.0, 100.0).build()).unwrap();
+        edge_graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        edge_graph
+            .add_node(Node::builder("2").position(100.0, 100.0).build())
+            .unwrap();
 
         LayoutUtils::scale_to_fit(&mut edge_graph, 0.0, 0.0);
         // Should complete without error
@@ -1408,8 +1523,12 @@ mod tests {
     #[test]
     fn test_layout_utils_padding_calculations() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 100.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 100.0).build())
+            .unwrap();
 
         let initial_positions: Vec<_> = graph.nodes().map(|n| n.position).collect();
 
@@ -1428,9 +1547,15 @@ mod tests {
     #[test]
     fn test_force_directed_spring_force_calculations() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 0.0).build()).unwrap();
-        graph.add_edge(Edge::builder().connect("1", "2").build().unwrap()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("1", "2").build().unwrap())
+            .unwrap();
 
         let layout = ForceDirectedLayout::builder()
             .spring_length(50.0)
@@ -1453,8 +1578,12 @@ mod tests {
     #[test]
     fn test_force_directed_repulsion_force_calculations() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 0.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 0.0).build())
+            .unwrap();
 
         let layout = ForceDirectedLayout::builder()
             .repulsion_strength(1000.0)
@@ -1479,28 +1608,24 @@ mod tests {
     fn test_force_directed_edge_cases() {
         // Test with single node
         let mut single_node_graph: Graph<(), ()> = Graph::new();
-        single_node_graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
+        single_node_graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
 
-        let mut layout = ForceDirectedLayout::builder()
-            .iterations(1)
-            .build();
+        let mut layout = ForceDirectedLayout::builder().iterations(1).build();
 
         // Should complete without error
         let result = layout.apply(&mut single_node_graph);
         assert!(result.is_ok());
 
         // Test with very small iteration count
-        let mut layout_min = ForceDirectedLayout::builder()
-            .iterations(0)
-            .build();
+        let mut layout_min = ForceDirectedLayout::builder().iterations(0).build();
 
         let result_min = layout_min.apply(&mut single_node_graph);
         assert!(result_min.is_ok());
 
         // Test with very large iteration count
-        let mut layout_max = ForceDirectedLayout::builder()
-            .iterations(10000)
-            .build();
+        let mut layout_max = ForceDirectedLayout::builder().iterations(10000).build();
 
         let result_max = layout_max.apply(&mut single_node_graph);
         assert!(result_max.is_ok());
@@ -1517,28 +1642,27 @@ mod tests {
 
         // Test with single node
         let mut single_graph: Graph<(), ()> = Graph::new();
-        single_graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
+        single_graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
 
         let result_single = layout.apply(&mut single_graph);
         assert!(result_single.is_ok());
 
         // Test with very small cell size
-        let mut layout_tiny = GridLayout::new()
-            .cell_size(1e-10, 1e-10);
+        let mut layout_tiny = GridLayout::new().cell_size(1e-10, 1e-10);
 
         let result_tiny = layout_tiny.apply(&mut single_graph);
         assert!(result_tiny.is_ok());
 
         // Test with very large cell size
-        let mut layout_huge = GridLayout::new()
-            .cell_size(1e10, 1e10);
+        let mut layout_huge = GridLayout::new().cell_size(1e10, 1e10);
 
         let result_huge = layout_huge.apply(&mut single_graph);
         assert!(result_huge.is_ok());
 
         // Test with zero columns
-        let mut layout_zero_cols = GridLayout::new()
-            .columns(Some(0));
+        let mut layout_zero_cols = GridLayout::new().columns(Some(0));
 
         let result_zero = layout_zero_cols.apply(&mut single_graph);
         assert!(result_zero.is_ok());
@@ -1555,28 +1679,27 @@ mod tests {
 
         // Test with single node
         let mut single_graph: Graph<(), ()> = Graph::new();
-        single_graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
+        single_graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
 
         let result_single = layout.apply(&mut single_graph);
         assert!(result_single.is_ok());
 
         // Test with zero radius
-        let mut layout_zero_radius = CircularLayout::new()
-            .radius(0.0);
+        let mut layout_zero_radius = CircularLayout::new().radius(0.0);
 
         let result_zero = layout_zero_radius.apply(&mut single_graph);
         assert!(result_zero.is_ok());
 
         // Test with very large radius
-        let mut layout_huge_radius = CircularLayout::new()
-            .radius(1e10);
+        let mut layout_huge_radius = CircularLayout::new().radius(1e10);
 
         let result_huge = layout_huge_radius.apply(&mut single_graph);
         assert!(result_huge.is_ok());
 
         // Test with negative radius
-        let mut layout_neg_radius = CircularLayout::new()
-            .radius(-100.0);
+        let mut layout_neg_radius = CircularLayout::new().radius(-100.0);
 
         let result_neg = layout_neg_radius.apply(&mut single_graph);
         assert!(result_neg.is_ok());
@@ -1593,7 +1716,9 @@ mod tests {
 
         // Test with single node
         let mut single_graph: Graph<(), ()> = Graph::new();
-        single_graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
+        single_graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
 
         let result_single = layout.apply(&mut single_graph);
         assert!(result_single.is_ok());
@@ -1634,8 +1759,12 @@ mod tests {
 
         // Test scale_to_fit with zero target dimensions
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 100.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 100.0).build())
+            .unwrap();
 
         LayoutUtils::scale_to_fit(&mut graph, 0.0, 0.0);
         // Should complete without error
@@ -1661,9 +1790,15 @@ mod tests {
     fn test_force_directed_parameter_edge_cases() {
         // Test with zero spring strength
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("2").position(100.0, 100.0).build()).unwrap();
-        graph.add_edge(Edge::builder().connect("1", "2").build().unwrap()).unwrap();
+        graph
+            .add_node(Node::builder("1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("2").position(100.0, 100.0).build())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("1", "2").build().unwrap())
+            .unwrap();
 
         let mut layout_zero_spring = ForceDirectedLayout::builder()
             .spring_strength(0.0)

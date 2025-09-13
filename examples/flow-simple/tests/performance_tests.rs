@@ -2,9 +2,9 @@
 //!
 //! These tests verify that the application performs well under various conditions
 
-use wasm_bindgen_test::*;
-use flow_core::{Graph, Node, Edge, Position};
+use flow_core::{Edge, Graph, Node, Position};
 use flow_renderer::{Canvas2DRenderer, Renderer};
+use wasm_bindgen_test::*;
 
 mod common;
 use common::*;
@@ -25,7 +25,11 @@ fn test_small_graph_rendering_performance() {
     });
 
     // Small graph should render in under 100ms
-    assert!(duration <= 100.0, "Small graph rendering took {}ms, expected <= 100ms", duration);
+    assert!(
+        duration <= 100.0,
+        "Small graph rendering took {}ms, expected <= 100ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -42,7 +46,11 @@ fn test_large_graph_rendering_performance() {
     });
 
     // Large graph should render in under 500ms
-    assert!(duration <= 500.0, "Large graph rendering took {}ms, expected <= 500ms", duration);
+    assert!(
+        duration <= 500.0,
+        "Large graph rendering took {}ms, expected <= 500ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -58,7 +66,11 @@ fn test_background_rendering_performance() {
     });
 
     // Background rendering should be very fast
-    assert!(duration <= 50.0, "Background rendering took {}ms, expected <= 50ms", duration);
+    assert!(
+        duration <= 50.0,
+        "Background rendering took {}ms, expected <= 50ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -72,7 +84,11 @@ fn test_canvas_resize_performance() {
     });
 
     // Canvas resize should be very fast
-    assert!(duration <= 10.0, "Canvas resize took {}ms, expected <= 10ms", duration);
+    assert!(
+        duration <= 10.0,
+        "Canvas resize took {}ms, expected <= 10ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -89,7 +105,11 @@ fn test_viewport_operations_performance() {
     });
 
     // 100 viewport operations should be very fast
-    assert!(duration <= 10.0, "100 viewport operations took {}ms, expected <= 10ms", duration);
+    assert!(
+        duration <= 10.0,
+        "100 viewport operations took {}ms, expected <= 10ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -117,7 +137,11 @@ fn test_graph_operations_performance() {
     });
 
     // Graph operations should be fast
-    assert!(duration <= 50.0, "Graph operations took {}ms, expected <= 50ms", duration);
+    assert!(
+        duration <= 50.0,
+        "Graph operations took {}ms, expected <= 50ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -128,7 +152,10 @@ fn test_memory_usage() {
 
     // Memory test is not available in all browsers
     // For now, just verify the renderer was created successfully
-    assert!(renderer.capabilities().name.len() > 0, "Renderer should have a name");
+    assert!(
+        renderer.capabilities().name.len() > 0,
+        "Renderer should have a name"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -141,7 +168,11 @@ fn test_renderer_initialization_performance() {
     });
 
     // Renderer initialization should be fast
-    assert!(duration <= 100.0, "Renderer initialization took {}ms, expected <= 100ms", duration);
+    assert!(
+        duration <= 100.0,
+        "Renderer initialization took {}ms, expected <= 100ms",
+        duration
+    );
 }
 
 #[wasm_bindgen_test]
@@ -167,5 +198,9 @@ fn test_concurrent_operations() {
     });
 
     // All operations should complete quickly
-    assert!(duration <= 200.0, "Concurrent operations took {}ms, expected <= 200ms", duration);
+    assert!(
+        duration <= 200.0,
+        "Concurrent operations took {}ms, expected <= 200ms",
+        duration
+    );
 }

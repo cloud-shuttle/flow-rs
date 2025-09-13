@@ -1,9 +1,12 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use leptos_flow_core::{
-    Graph, Node, Edge, Position, Size,
+    layout::{
+        CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
+        LayoutDirection,
+    },
     prelude::SpatialIndex,
-    layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, CircularLayout, HierarchicalLayout, LayoutDirection},
-    types::{NodeId, EdgeId}
+    types::{EdgeId, NodeId},
+    Edge, Graph, Node, Position, Size,
 };
 use std::collections::HashMap;
 
@@ -25,12 +28,7 @@ fn create_test_graph(node_count: usize, edge_count: usize) -> Graph<(), ()> {
     for i in 0..edge_count {
         let source = NodeId::new(format!("node_{}", i % node_count));
         let target = NodeId::new(format!("node_{}", (i + 1) % node_count));
-        let edge = Edge::new(
-            EdgeId::new(format!("edge_{}", i)),
-            source,
-            target,
-            (),
-        );
+        let edge = Edge::new(EdgeId::new(format!("edge_{}", i)), source, target, ());
         let _ = graph.add_edge(edge);
     }
 
@@ -101,27 +99,35 @@ fn benchmark_graph_operations(c: &mut Criterion) {
             })
         });
 
-        group.bench_with_input(BenchmarkId::new("bounds_calculation", size), &graph, |b, graph| {
-            b.iter(|| {
-                black_box(graph.bounds())
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("bounds_calculation", size),
+            &graph,
+            |b, graph| b.iter(|| black_box(graph.bounds())),
+        );
 
-        group.bench_with_input(BenchmarkId::new("node_iteration", size), &graph, |b, graph| {
-            b.iter(|| {
-                for node in graph.nodes() {
-                    black_box(node);
-                }
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("node_iteration", size),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    for node in graph.nodes() {
+                        black_box(node);
+                    }
+                })
+            },
+        );
 
-        group.bench_with_input(BenchmarkId::new("edge_iteration", size), &graph, |b, graph| {
-            b.iter(|| {
-                for edge in graph.edges() {
-                    black_box(edge);
-                }
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("edge_iteration", size),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    for edge in graph.edges() {
+                        black_box(edge);
+                    }
+                })
+            },
+        );
     }
 
     group.finish();
@@ -133,32 +139,44 @@ fn benchmark_spatial_index_operations(c: &mut Criterion) {
     for size in [100, 1000, 5000, 10000].iter() {
         let index = create_test_spatial_index(*size);
 
-        group.bench_with_input(BenchmarkId::new("query_rect", size), &index, |b, index: &SpatialIndex| {
-            b.iter(|| {
-                let rect = leptos_flow_core::Rect::new(0.0, 0.0, 1000.0, 1000.0);
-                black_box(index.query_rect(&rect))
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("query_rect", size),
+            &index,
+            |b, index: &SpatialIndex| {
+                b.iter(|| {
+                    let rect = leptos_flow_core::Rect::new(0.0, 0.0, 1000.0, 1000.0);
+                    black_box(index.query_rect(&rect))
+                })
+            },
+        );
 
-        group.bench_with_input(BenchmarkId::new("query_radius", size), &index, |b, index: &SpatialIndex| {
-            b.iter(|| {
-                let center = Position::new(500.0, 500.0);
-                black_box(index.query_radius(center, 200.0))
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("query_radius", size),
+            &index,
+            |b, index: &SpatialIndex| {
+                b.iter(|| {
+                    let center = Position::new(500.0, 500.0);
+                    black_box(index.query_radius(center, 200.0))
+                })
+            },
+        );
 
-        group.bench_with_input(BenchmarkId::new("nearest", size), &index, |b, index: &SpatialIndex| {
-            b.iter(|| {
-                let center = Position::new(500.0, 500.0);
-                black_box(index.nearest(center))
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("nearest", size),
+            &index,
+            |b, index: &SpatialIndex| {
+                b.iter(|| {
+                    let center = Position::new(500.0, 500.0);
+                    black_box(index.nearest(center))
+                })
+            },
+        );
 
-        group.bench_with_input(BenchmarkId::new("bounds", size), &index, |b, index: &SpatialIndex| {
-            b.iter(|| {
-                black_box(index.bounds())
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("bounds", size),
+            &index,
+            |b, index: &SpatialIndex| b.iter(|| black_box(index.bounds())),
+        );
     }
 
     group.finish();
@@ -221,19 +239,23 @@ fn benchmark_layout_algorithms(c: &mut Criterion) {
     for size in [10, 50, 100, 500].iter() {
         let graph = create_test_graph(*size, *size / 2);
 
-        group.bench_with_input(BenchmarkId::new("force_directed", size), &graph, |b, graph| {
-            b.iter(|| {
-                let mut test_graph = graph.clone();
-                let mut layout = ForceDirectedLayout::builder()
-                    .iterations(50)
-                    .spring_length(100.0)
-                    .repulsion_strength(1000.0)
-                    .damping(0.8)
-                    .build();
-                layout.apply(&mut test_graph).unwrap();
-                black_box(test_graph)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("force_directed", size),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    let mut test_graph = graph.clone();
+                    let mut layout = ForceDirectedLayout::builder()
+                        .iterations(50)
+                        .spring_length(100.0)
+                        .repulsion_strength(1000.0)
+                        .damping(0.8)
+                        .build();
+                    layout.apply(&mut test_graph).unwrap();
+                    black_box(test_graph)
+                })
+            },
+        );
 
         group.bench_with_input(BenchmarkId::new("grid", size), &graph, |b, graph| {
             b.iter(|| {
@@ -259,18 +281,22 @@ fn benchmark_layout_algorithms(c: &mut Criterion) {
             })
         });
 
-        group.bench_with_input(BenchmarkId::new("hierarchical", size), &graph, |b, graph| {
-            b.iter(|| {
-                let mut test_graph = graph.clone();
-                let mut layout = HierarchicalLayout::builder()
-                    .node_separation(100.0)
-                    .level_separation(150.0)
-                    .direction(LayoutDirection::TopToBottom)
-                    .build();
-                let _ = layout.apply(&mut test_graph);
-                black_box(test_graph)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("hierarchical", size),
+            &graph,
+            |b, graph| {
+                b.iter(|| {
+                    let mut test_graph = graph.clone();
+                    let mut layout = HierarchicalLayout::builder()
+                        .node_separation(100.0)
+                        .level_separation(150.0)
+                        .direction(LayoutDirection::TopToBottom)
+                        .build();
+                    let _ = layout.apply(&mut test_graph);
+                    black_box(test_graph)
+                })
+            },
+        );
     }
 
     group.finish();
@@ -287,12 +313,16 @@ fn benchmark_memory_usage(c: &mut Criterion) {
             })
         });
 
-        group.bench_with_input(BenchmarkId::new("spatial_index_memory", size), size, |b, &size| {
-            b.iter(|| {
-                let index = create_test_spatial_index(size);
-                black_box(index)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("spatial_index_memory", size),
+            size,
+            |b, &size| {
+                b.iter(|| {
+                    let index = create_test_spatial_index(size);
+                    black_box(index)
+                })
+            },
+        );
     }
 
     group.finish();
@@ -307,19 +337,23 @@ fn benchmark_scaling_characteristics(c: &mut Criterion) {
         let edge_count = (node_count as f64 * density) as usize;
         let graph = create_test_graph(node_count, edge_count);
 
-        group.bench_with_input(BenchmarkId::new("bounds_with_density", density), &graph, |b, graph| {
-            b.iter(|| {
-                black_box(graph.bounds())
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("bounds_with_density", density),
+            &graph,
+            |b, graph| b.iter(|| black_box(graph.bounds())),
+        );
 
         let index = create_test_spatial_index(node_count);
-        group.bench_with_input(BenchmarkId::new("query_with_density", density), &index, |b, index: &SpatialIndex| {
-            b.iter(|| {
-                let rect = leptos_flow_core::Rect::new(0.0, 0.0, 1000.0, 1000.0);
-                black_box(index.query_rect(&rect))
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("query_with_density", density),
+            &index,
+            |b, index: &SpatialIndex| {
+                b.iter(|| {
+                    let rect = leptos_flow_core::Rect::new(0.0, 0.0, 1000.0, 1000.0);
+                    black_box(index.query_rect(&rect))
+                })
+            },
+        );
     }
 
     group.finish();

@@ -3,9 +3,9 @@
 //! A basic demonstration of the Leptos Flow Canvas2D renderer
 //! showing nodes and edges in a simple flow diagram.
 
-use flow_core::{Graph, Node, Edge, Position, Viewport};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_core::{Edge, Graph, Node, Position, Viewport};
 use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
+use flow_renderer::{Canvas2DRenderer, Renderer};
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
@@ -43,12 +43,8 @@ pub fn run() {
     let viewport = Viewport::default();
 
     // Create interaction handler
-    let mut interaction_handler = interactions::InteractionHandler::new(
-        canvas.clone(),
-        renderer,
-        graph,
-        viewport,
-    );
+    let mut interaction_handler =
+        interactions::InteractionHandler::new(canvas.clone(), renderer, graph, viewport);
 
     // Render the initial graph
     if let Err(e) = interaction_handler.render() {
@@ -130,7 +126,9 @@ fn setup_event_handlers(canvas: &HtmlCanvasElement) {
 
     // Set up basic mouse event handlers (simplified for now)
     let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-        web_sys::console::log_1(&format!("Mouse down at: {}, {}", event.client_x(), event.client_y()).into());
+        web_sys::console::log_1(
+            &format!("Mouse down at: {}, {}", event.client_x(), event.client_y()).into(),
+        );
     }) as Box<dyn FnMut(web_sys::MouseEvent)>);
     canvas.set_onmousedown(Some(closure.as_ref().unchecked_ref()));
     closure.forget();

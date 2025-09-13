@@ -3,24 +3,38 @@
 //! Tests for the minimap functionality including rendering, interaction,
 //! viewport synchronization, and configuration.
 
-use wasm_bindgen_test::*;
-use flow_core::{Graph, Node, Edge, NodeId, EdgeId, Position, Size, Viewport};
 use flow_core::prelude::*;
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size, Viewport};
+use wasm_bindgen_test::*;
 
 /// Create a test graph with nodes for minimap testing
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
 
     // Add nodes with different sizes and positions
-    graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-    graph.add_node(Node::simple("node2", Position::new(300.0, 150.0))).unwrap();
-    graph.add_node(Node::simple("node3", Position::new(500.0, 200.0))).unwrap();
-    graph.add_node(Node::simple("node4", Position::new(700.0, 100.0))).unwrap();
+    graph
+        .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node2", Position::new(300.0, 150.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node3", Position::new(500.0, 200.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node4", Position::new(700.0, 100.0)))
+        .unwrap();
 
     // Add some edges
-    graph.add_edge(Edge::new("edge1", "node1", "node2", ())).unwrap();
-    graph.add_edge(Edge::new("edge2", "node2", "node3", ())).unwrap();
-    graph.add_edge(Edge::new("edge3", "node3", "node4", ())).unwrap();
+    graph
+        .add_edge(Edge::new("edge1", "node1", "node2", ()))
+        .unwrap();
+    graph
+        .add_edge(Edge::new("edge2", "node2", "node3", ()))
+        .unwrap();
+    graph
+        .add_edge(Edge::new("edge3", "node3", "node4", ()))
+        .unwrap();
 
     graph
 }
@@ -28,7 +42,7 @@ fn create_test_graph() -> Graph<(), ()> {
 #[wasm_bindgen_test]
 fn test_minimap_rendering_basic() {
     // Test: Minimap should render nodes and edges correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -51,7 +65,7 @@ fn test_minimap_rendering_basic() {
 #[wasm_bindgen_test]
 fn test_minimap_viewport_sync() {
     // Test: Minimap should sync with main viewport
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -75,7 +89,7 @@ fn test_minimap_viewport_sync() {
 #[wasm_bindgen_test]
 fn test_minimap_click_navigation() {
     // Test: Clicking on minimap should navigate main viewport
-    use crate::minimap::{MinimapRenderer, MinimapConfig, MinimapInteraction};
+    use crate::minimap::{MinimapConfig, MinimapInteraction, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -100,7 +114,7 @@ fn test_minimap_click_navigation() {
 #[wasm_bindgen_test]
 fn test_minimap_zoom_handling() {
     // Test: Minimap should handle different zoom levels correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -108,9 +122,9 @@ fn test_minimap_zoom_handling() {
 
     // Test with different zoom levels
     let viewports = vec![
-        Viewport::new(0.0, 0.0, 800.0, 600.0, 0.5),  // Zoomed out
-        Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0),  // Normal
-        Viewport::new(0.0, 0.0, 800.0, 600.0, 2.0),  // Zoomed in
+        Viewport::new(0.0, 0.0, 800.0, 600.0, 0.5), // Zoomed out
+        Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0), // Normal
+        Viewport::new(0.0, 0.0, 800.0, 600.0, 2.0), // Zoomed in
     ];
 
     for viewport in viewports {
@@ -126,7 +140,7 @@ fn test_minimap_zoom_handling() {
 #[wasm_bindgen_test]
 fn test_minimap_bounds_calculation() {
     // Test: Minimap should calculate correct bounds for the graph
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -145,7 +159,7 @@ fn test_minimap_bounds_calculation() {
 #[wasm_bindgen_test]
 fn test_minimap_scale_calculation() {
     // Test: Minimap should calculate correct scale for fitting graph
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig {
         width: 200.0,
@@ -166,7 +180,7 @@ fn test_minimap_scale_calculation() {
 #[wasm_bindgen_test]
 fn test_minimap_node_visibility() {
     // Test: Minimap should handle node visibility correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -190,7 +204,7 @@ fn test_minimap_node_visibility() {
 #[wasm_bindgen_test]
 fn test_minimap_edge_visibility() {
     // Test: Minimap should handle edge visibility correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -214,7 +228,7 @@ fn test_minimap_edge_visibility() {
 #[wasm_bindgen_test]
 fn test_minimap_configuration() {
     // Test: Minimap should respect configuration settings
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig {
         width: 300.0,
@@ -243,7 +257,7 @@ fn test_minimap_configuration() {
 #[wasm_bindgen_test]
 fn test_minimap_performance() {
     // Test: Minimap should handle large graphs efficiently
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -254,7 +268,9 @@ fn test_minimap_performance() {
         let node_id = format!("node{}", i);
         let x = (i % 10) as f64 * 100.0;
         let y = (i / 10) as f64 * 100.0;
-        graph.add_node(Node::simple(node_id, Position::new(x, y))).unwrap();
+        graph
+            .add_node(Node::simple(node_id, Position::new(x, y)))
+            .unwrap();
     }
 
     // Add many edges
@@ -262,7 +278,9 @@ fn test_minimap_performance() {
         let edge_id = format!("edge{}", i);
         let source = format!("node{}", i);
         let target = format!("node{}", i + 1);
-        graph.add_edge(Edge::new(edge_id, source, target, ())).unwrap();
+        graph
+            .add_edge(Edge::new(edge_id, source, target, ()))
+            .unwrap();
     }
 
     // Test rendering performance
@@ -278,7 +296,7 @@ fn test_minimap_performance() {
 #[wasm_bindgen_test]
 fn test_minimap_viewport_rectangle() {
     // Test: Minimap should render viewport rectangle correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig::default();
     let mut renderer = MinimapRenderer::new(config);
@@ -302,7 +320,7 @@ fn test_minimap_viewport_rectangle() {
 #[wasm_bindgen_test]
 fn test_minimap_coordinate_conversion() {
     // Test: Minimap should convert coordinates correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig {
         width: 200.0,
@@ -334,7 +352,7 @@ fn test_minimap_coordinate_conversion() {
 #[wasm_bindgen_test]
 fn test_minimap_resize_handling() {
     // Test: Minimap should handle resize events correctly
-    use crate::minimap::{MinimapRenderer, MinimapConfig};
+    use crate::minimap::{MinimapConfig, MinimapRenderer};
 
     let config = MinimapConfig {
         width: 200.0,

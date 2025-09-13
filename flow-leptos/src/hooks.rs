@@ -3,13 +3,13 @@
 use leptos::*;
 use std::rc::Rc;
 use wasm_bindgen::{closure::Closure, JsCast};
-use web_sys::{HtmlCanvasElement, MouseEvent, WheelEvent, KeyboardEvent};
+use web_sys::{HtmlCanvasElement, KeyboardEvent, MouseEvent, WheelEvent};
 
-use flow_core::{Graph, Position};
-use crate::events::{FlowEvent, NodeEvent, KeyboardModifiers, MouseButton};
-use crate::signals::{FlowState, ViewportState};
 use crate::drag::DragHandler;
-use crate::edge_connection::{HandleDetector, ConnectionPreview, EdgeCreator, ConnectionHandle};
+use crate::edge_connection::{ConnectionHandle, ConnectionPreview, EdgeCreator, HandleDetector};
+use crate::events::{FlowEvent, KeyboardModifiers, MouseButton, NodeEvent};
+use crate::signals::{FlowState, ViewportState};
+use flow_core::{Graph, Position};
 
 /// Hook for managing canvas mouse interactions
 pub fn use_canvas_mouse<N, E>(
@@ -36,7 +36,8 @@ pub fn use_canvas_mouse<N, E>(
             // Create interaction system components
             let _drag_handler = DragHandler::new();
             let _handle_detector = HandleDetector::new();
-            let connection_preview = std::rc::Rc::new(std::cell::RefCell::new(ConnectionPreview::new()));
+            let connection_preview =
+                std::rc::Rc::new(std::cell::RefCell::new(ConnectionPreview::new()));
             let edge_creator = EdgeCreator::new();
 
             // Mouse down handler
@@ -56,21 +57,21 @@ pub fn use_canvas_mouse<N, E>(
                     let modifiers = KeyboardModifiers::from_mouse_event(&event);
 
                     if let Some(MouseButton::Left) = button {
-                        let canvas_element = (*canvas).clone().unchecked_into::<HtmlCanvasElement>();
+                        let canvas_element =
+                            (*canvas).clone().unchecked_into::<HtmlCanvasElement>();
                         // Use proper DOM rect access with mouse integration
                         let mut rect_utils = crate::dom_rect::DomRectUtils::new();
                         let viewport_state = viewport.get_untracked();
-                        let canvas_pos = crate::mouse_integration::utils::mouse_event_to_canvas_coords(
-                            &event,
-                            &canvas_element,
-                            &mut rect_utils,
-                        ).unwrap_or_else(|_| {
-                            // Fallback to simple calculation if DOM rect access fails
-                            Position::new(
-                                event.client_x() as f64,
-                                event.client_y() as f64,
+                        let canvas_pos =
+                            crate::mouse_integration::utils::mouse_event_to_canvas_coords(
+                                &event,
+                                &canvas_element,
+                                &mut rect_utils,
                             )
-                        });
+                            .unwrap_or_else(|_| {
+                                // Fallback to simple calculation if DOM rect access fails
+                                Position::new(event.client_x() as f64, event.client_y() as f64)
+                            });
                         let world_pos = crate::events::utils::canvas_to_world(
                             canvas_pos,
                             viewport_state.viewport.offset,
@@ -88,7 +89,8 @@ pub fn use_canvas_mouse<N, E>(
                             Some(node) => {
                                 // Check if we clicked on a connection handle
                                 let handle_detector = HandleDetector::new();
-                                let detected_handle = handle_detector.detect_handle(&node, world_pos);
+                                let detected_handle =
+                                    handle_detector.detect_handle(&node, world_pos);
 
                                 match detected_handle {
                                     Some(ConnectionHandle::Output) => {
@@ -101,7 +103,11 @@ pub fn use_canvas_mouse<N, E>(
                                             state.set_connection_start_position(Some(canvas_pos));
                                         });
 
-                                        connection_preview.borrow_mut().start_connection(&graph_value, &node_id, canvas_pos);
+                                        connection_preview.borrow_mut().start_connection(
+                                            &graph_value,
+                                            &node_id,
+                                            canvas_pos,
+                                        );
 
                                         if let Some(handler) = &on_flow_event {
                                             handler(FlowEvent::ConnectionStart {
@@ -114,12 +120,20 @@ pub fn use_canvas_mouse<N, E>(
                                         // Complete connection to input handle
                                         // This attempts to create an edge between the source and target nodes
                                         let flow_state_val = flow_state.get_untracked();
-                                        if let Some(source_node_id) = flow_state_val.connection_source() {
+                                        if let Some(source_node_id) =
+                                            flow_state_val.connection_source()
+                                        {
                                             // Complete the connection - need to get a fresh copy of the graph
                                             let mut graph_value = graph.get_untracked();
-                                            let result = edge_creator.create_edge(&mut graph_value, source_node_id, &node.id);
+                                            let result = edge_creator.create_edge(
+                                                &mut graph_value,
+                                                source_node_id,
+                                                &node.id,
+                                            );
 
-                                            if result == crate::edge_connection::ConnectionResult::Valid {
+                                            if result
+                                                == crate::edge_connection::ConnectionResult::Valid
+                                            {
                                                 // Connection successful
                                                 graph.set(graph_value);
 
@@ -162,7 +176,9 @@ pub fn use_canvas_mouse<N, E>(
                                         if let Some(handler) = &on_flow_event {
                                             handler(FlowEvent::DragStart {
                                                 position: world_pos,
-                                                target: crate::events::DragTarget::Node(node.id.clone()),
+                                                target: crate::events::DragTarget::Node(
+                                                    node.id.clone(),
+                                                ),
                                             });
                                         }
                                     }
@@ -211,12 +227,10 @@ pub fn use_canvas_mouse<N, E>(
                         &event,
                         &canvas_element,
                         &mut rect_utils,
-                    ).unwrap_or_else(|_| {
+                    )
+                    .unwrap_or_else(|_| {
                         // Fallback to simple calculation if DOM rect access fails
-                        Position::new(
-                            event.client_x() as f64,
-                            event.client_y() as f64,
-                        )
+                        Position::new(event.client_x() as f64, event.client_y() as f64)
                     });
 
                     // Use get_untracked to avoid reactivity issues
@@ -268,7 +282,11 @@ pub fn use_canvas_mouse<N, E>(
                                 // Get flow state before entering the graph update closure
                                 let current_flow_state = flow_state.get_untracked();
                                 graph.update(|graph_mut| {
-                                    drag_handler.apply_drag_to_nodes(graph_mut, &current_flow_state, world_delta);
+                                    drag_handler.apply_drag_to_nodes(
+                                        graph_mut,
+                                        &current_flow_state,
+                                        world_delta,
+                                    );
                                 });
                             } else {
                                 // Dragging canvas (panning)
@@ -320,7 +338,8 @@ pub fn use_canvas_mouse<N, E>(
                             handler(FlowEvent::ConnectionCancel);
                         }
                     } else if flow_state_val.is_dragging {
-                        let _canvas_element = (*canvas).clone().unchecked_into::<HtmlCanvasElement>();
+                        let _canvas_element =
+                            (*canvas).clone().unchecked_into::<HtmlCanvasElement>();
                         // TODO: Implement proper DOM rect access
                         // For now, use placeholder values
                         let canvas_rect = (0.0, 0.0, 800.0, 600.0); // (left, top, width, height)
@@ -339,9 +358,13 @@ pub fn use_canvas_mouse<N, E>(
                         // Determine drag target
                         let drag_target = if !flow_state_val.selected_nodes.is_empty() {
                             if flow_state_val.selected_nodes.len() == 1 {
-                                crate::events::DragTarget::Node(flow_state_val.selected_nodes[0].clone())
+                                crate::events::DragTarget::Node(
+                                    flow_state_val.selected_nodes[0].clone(),
+                                )
                             } else {
-                                crate::events::DragTarget::Nodes(flow_state_val.selected_nodes.clone())
+                                crate::events::DragTarget::Nodes(
+                                    flow_state_val.selected_nodes.clone(),
+                                )
                             }
                         } else {
                             crate::events::DragTarget::Canvas
@@ -430,10 +453,8 @@ pub fn use_canvas_wheel(
                 }
             }) as Box<dyn FnMut(_)>);
 
-            let _ = canvas_element.add_event_listener_with_callback(
-                "wheel",
-                wheel_handler.as_ref().unchecked_ref(),
-            );
+            let _ = canvas_element
+                .add_event_listener_with_callback("wheel", wheel_handler.as_ref().unchecked_ref());
 
             wheel_handler.forget();
         }
@@ -441,9 +462,7 @@ pub fn use_canvas_wheel(
 }
 
 /// Hook for managing keyboard shortcuts
-pub fn use_keyboard_shortcuts(
-    on_flow_event: Option<Rc<dyn Fn(FlowEvent)>>,
-) {
+pub fn use_keyboard_shortcuts(on_flow_event: Option<Rc<dyn Fn(FlowEvent)>>) {
     create_effect(move |_| {
         let on_flow_event_clone = on_flow_event.clone();
 
@@ -490,9 +509,7 @@ pub fn use_keyboard_shortcuts(
 }
 
 /// Hook for managing graph operations with undo/redo
-pub fn use_graph_operations<N, E>(
-    graph: RwSignal<Graph<N, E>>,
-) -> GraphOperationsHandle<N, E>
+pub fn use_graph_operations<N, E>(graph: RwSignal<Graph<N, E>>) -> GraphOperationsHandle<N, E>
 where
     N: Clone + 'static,
     E: Clone + 'static,

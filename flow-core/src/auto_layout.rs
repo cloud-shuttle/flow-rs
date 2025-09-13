@@ -3,12 +3,14 @@
 //! This module provides automatic layout algorithm selection based on graph characteristics,
 //! dynamic layout switching, and smooth transitions between different layout styles.
 
-use std::collections::{HashMap, HashSet, hash_map::DefaultHasher};
+use std::collections::{hash_map::DefaultHasher, HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 
 use crate::error::Result;
 use crate::graph::Graph;
-use crate::layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, HierarchicalLayout, CircularLayout};
+use crate::layout::{
+    CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
+};
 use crate::types::{NodeId, Position};
 
 // Layout algorithm names as constants
@@ -187,7 +189,9 @@ impl AutoLayoutManager {
         match self.config.strategy {
             AutoLayoutStrategy::Smart => self.smart_algorithm_selection(&analysis),
             AutoLayoutStrategy::HierarchyFirst => self.hierarchy_first_selection(&analysis),
-            AutoLayoutStrategy::ForceDirectedFirst => self.force_directed_first_selection(&analysis),
+            AutoLayoutStrategy::ForceDirectedFirst => {
+                self.force_directed_first_selection(&analysis)
+            }
             AutoLayoutStrategy::SimpleFirst => self.simple_first_selection(&analysis),
         }
     }
@@ -225,7 +229,11 @@ impl AutoLayoutManager {
     }
 
     /// Update transition state (should be called each frame during animation)
-    pub fn update_transition<N, E>(&mut self, graph: &mut Graph<N, E>, delta_time: f64) -> Result<bool> {
+    pub fn update_transition<N, E>(
+        &mut self,
+        graph: &mut Graph<N, E>,
+        delta_time: f64,
+    ) -> Result<bool> {
         let should_remove_state = if let Some(ref mut state) = self.transition_state {
             state.progress += delta_time / state.duration;
 
@@ -240,10 +248,13 @@ impl AutoLayoutManager {
             } else {
                 // Interpolate positions - collect data first to avoid borrowing issues
                 let progress = state.progress;
-                let transitions: Vec<_> = graph.nodes()
+                let transitions: Vec<_> = graph
+                    .nodes()
                     .filter_map(|node| {
-                        if let (Some(&from_pos), Some(&to_pos)) =
-                            (state.from_positions.get(&node.id), state.to_positions.get(&node.id)) {
+                        if let (Some(&from_pos), Some(&to_pos)) = (
+                            state.from_positions.get(&node.id),
+                            state.to_positions.get(&node.id),
+                        ) {
                             Some((node.id.clone(), from_pos, to_pos))
                         } else {
                             None
@@ -360,7 +371,11 @@ impl AutoLayoutManager {
         self.last_graph_hash = Some(self.calculate_graph_hash(graph));
     }
 
-    fn apply_layout_with_algorithm<N: Clone, E>(&mut self, graph: &mut Graph<N, E>, algorithm: &str) -> Result<()> {
+    fn apply_layout_with_algorithm<N: Clone, E>(
+        &mut self,
+        graph: &mut Graph<N, E>,
+        algorithm: &str,
+    ) -> Result<()> {
         match algorithm {
             ALGORITHM_HIERARCHICAL => {
                 let mut layout = HierarchicalLayout::new();
@@ -405,8 +420,13 @@ impl AutoLayoutManager {
     }
 
     #[allow(clippy::only_used_in_recursion)]
-    fn dfs_cycle_detection<N, E>(&self, graph: &Graph<N, E>, node_id: &NodeId,
-                                visited: &mut HashSet<NodeId>, rec_stack: &mut HashSet<NodeId>) -> bool {
+    fn dfs_cycle_detection<N, E>(
+        &self,
+        graph: &Graph<N, E>,
+        node_id: &NodeId,
+        visited: &mut HashSet<NodeId>,
+        rec_stack: &mut HashSet<NodeId>,
+    ) -> bool {
         visited.insert(node_id.clone());
         rec_stack.insert(node_id.clone());
 
@@ -482,26 +502,33 @@ fn ease_in_out(t: f64) -> f64 {
 
 /// Helper function for position interpolation
 fn interpolate_position(from: Position, to: Position, t: f64) -> Position {
-    Position::new(
-        from.x + (to.x - from.x) * t,
-        from.y + (to.y - from.y) * t,
-    )
+    Position::new(from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::graph::{Node, Edge};
+    use crate::graph::{Edge, Node};
 
     // Test fixtures
     fn create_small_tree() -> Graph<(), ()> {
         let mut graph = Graph::new();
-        graph.add_node(Node::builder("root").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("child1").position(0.0, 0.0).build()).unwrap();
-        graph.add_node(Node::builder("child2").position(0.0, 0.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("root").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("child1").position(0.0, 0.0).build())
+            .unwrap();
+        graph
+            .add_node(Node::builder("child2").position(0.0, 0.0).build())
+            .unwrap();
 
-        graph.add_edge(Edge::builder().connect("root", "child1").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("root", "child2").build().unwrap()).unwrap();
+        graph
+            .add_edge(Edge::builder().connect("root", "child1").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("root", "child2").build().unwrap())
+            .unwrap();
 
         graph
     }
@@ -509,13 +536,27 @@ mod tests {
     fn create_cyclic_graph() -> Graph<(), ()> {
         let mut graph = Graph::new();
         for i in 1..=4 {
-            graph.add_node(Node::builder(format!("node{}", i)).position(0.0, 0.0).build()).unwrap();
+            graph
+                .add_node(
+                    Node::builder(format!("node{}", i))
+                        .position(0.0, 0.0)
+                        .build(),
+                )
+                .unwrap();
         }
 
-        graph.add_edge(Edge::builder().connect("node1", "node2").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("node2", "node3").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("node3", "node4").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("node4", "node1").build().unwrap()).unwrap();
+        graph
+            .add_edge(Edge::builder().connect("node1", "node2").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("node2", "node3").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("node3", "node4").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("node4", "node1").build().unwrap())
+            .unwrap();
 
         graph
     }
@@ -525,14 +566,28 @@ mod tests {
 
         // Create 20 nodes
         for i in 1..=20 {
-            graph.add_node(Node::builder(format!("node{}", i)).position(0.0, 0.0).build()).unwrap();
+            graph
+                .add_node(
+                    Node::builder(format!("node{}", i))
+                        .position(0.0, 0.0)
+                        .build(),
+                )
+                .unwrap();
         }
 
         // Create a dense network of connections
         for i in 1..=20 {
-            for j in (i+1)..=20 {
-                if (i + j) % 3 == 0 { // Create some connections based on a pattern
-                    graph.add_edge(Edge::builder().connect(format!("node{}", i), format!("node{}", j)).build().unwrap()).unwrap();
+            for j in (i + 1)..=20 {
+                if (i + j) % 3 == 0 {
+                    // Create some connections based on a pattern
+                    graph
+                        .add_edge(
+                            Edge::builder()
+                                .connect(format!("node{}", i), format!("node{}", j))
+                                .build()
+                                .unwrap(),
+                        )
+                        .unwrap();
                 }
             }
         }
@@ -691,8 +746,12 @@ mod tests {
         let _first_algorithm = manager.current_algorithm().unwrap().to_string();
 
         // Modify graph to make it cyclic
-        graph.add_edge(Edge::builder().connect("child1", "child2").build().unwrap()).unwrap();
-        graph.add_edge(Edge::builder().connect("child2", "root").build().unwrap()).unwrap();
+        graph
+            .add_edge(Edge::builder().connect("child1", "child2").build().unwrap())
+            .unwrap();
+        graph
+            .add_edge(Edge::builder().connect("child2", "root").build().unwrap())
+            .unwrap();
 
         // Apply layout again
         manager.apply_auto_layout(&mut graph).unwrap();
@@ -726,7 +785,9 @@ mod tests {
     fn test_single_node_graph_handling() {
         let mut manager = AutoLayoutManager::new();
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(Node::builder("solo").position(0.0, 0.0).build()).unwrap();
+        graph
+            .add_node(Node::builder("solo").position(0.0, 0.0).build())
+            .unwrap();
 
         let result = manager.apply_auto_layout(&mut graph);
         assert!(result.is_ok());
@@ -769,7 +830,11 @@ mod tests {
             assert!(result.is_ok(), "Strategy {:?} failed", strategy);
 
             let algorithm = result.unwrap();
-            assert!(!algorithm.is_empty(), "Strategy {:?} returned empty algorithm", strategy);
+            assert!(
+                !algorithm.is_empty(),
+                "Strategy {:?} returned empty algorithm",
+                strategy
+            );
         }
     }
 
@@ -796,10 +861,19 @@ mod tests {
         let default_config = AutoLayoutConfig::default();
 
         assert_eq!(config.strategy, default_config.strategy);
-        assert_eq!(config.small_graph_threshold, default_config.small_graph_threshold);
+        assert_eq!(
+            config.small_graph_threshold,
+            default_config.small_graph_threshold
+        );
         assert_eq!(config.enable_transitions, default_config.enable_transitions);
-        assert_eq!(config.transition_duration, default_config.transition_duration);
-        assert_eq!(config.force_relayout_on_change, default_config.force_relayout_on_change);
+        assert_eq!(
+            config.transition_duration,
+            default_config.transition_duration
+        );
+        assert_eq!(
+            config.force_relayout_on_change,
+            default_config.force_relayout_on_change
+        );
     }
 
     #[test]

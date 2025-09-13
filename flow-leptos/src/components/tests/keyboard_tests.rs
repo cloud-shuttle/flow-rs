@@ -2,9 +2,9 @@
 //!
 //! Tests that verify keyboard interactions work correctly for node selection
 
-use leptos::*;
-use flow_core::{Graph, Node, Position, NodeId, NavigationDirection, KeyboardShortcut};
 use crate::signals::FlowState;
+use flow_core::{Graph, KeyboardShortcut, NavigationDirection, Node, NodeId, Position};
+use leptos::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
@@ -12,10 +12,18 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
 
-    graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-    graph.add_node(Node::simple("node2", Position::new(200.0, 150.0))).unwrap();
-    graph.add_node(Node::simple("node3", Position::new(300.0, 200.0))).unwrap();
-    graph.add_node(Node::simple("node4", Position::new(150.0, 250.0))).unwrap();
+    graph
+        .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node2", Position::new(200.0, 150.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node3", Position::new(300.0, 200.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node4", Position::new(150.0, 250.0)))
+        .unwrap();
 
     graph
 }

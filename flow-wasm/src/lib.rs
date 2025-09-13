@@ -20,8 +20,8 @@ pub fn init() {
 
     #[cfg(feature = "debug")]
     {
-        use tracing_wasm::{WASMLayerConfigBuilder};
         use tracing::Level;
+        use tracing_wasm::WASMLayerConfigBuilder;
 
         let config = WASMLayerConfigBuilder::default()
             .set_max_level(Level::INFO)

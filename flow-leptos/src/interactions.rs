@@ -5,11 +5,11 @@
 
 use leptos::*;
 use wasm_bindgen::JsCast;
-use web_sys::{MouseEvent, WheelEvent, KeyboardEvent};
+use web_sys::{KeyboardEvent, MouseEvent, WheelEvent};
 
-use flow_core::{Graph, Node, Edge, Position, NodeId, EdgeId};
-use crate::events::{FlowEvent, NodeEvent, EdgeEvent, KeyboardModifiers, MouseButton, DragTarget};
+use crate::events::{DragTarget, EdgeEvent, FlowEvent, KeyboardModifiers, MouseButton, NodeEvent};
 use crate::signals::{FlowState, ViewportState};
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
 
 /// Interaction manager for handling flow editor events
 pub struct InteractionManager {
@@ -278,7 +278,11 @@ impl InteractionManager {
     }
 
     /// Hit test for nodes at world position
-    fn hit_test_nodes<N: Clone, E>(&self, world_pos: Position, graph: &Graph<N, E>) -> Option<NodeId> {
+    fn hit_test_nodes<N: Clone, E>(
+        &self,
+        world_pos: Position,
+        graph: &Graph<N, E>,
+    ) -> Option<NodeId> {
         // Test nodes in reverse z-order (front to back)
         let mut nodes: Vec<_> = graph.nodes().collect();
         nodes.sort_by(|a, b| {
@@ -304,14 +308,19 @@ impl InteractionManager {
 
     /// Get all currently selected node IDs
     fn get_selected_nodes<N: Clone, E>(&self, graph: &Graph<N, E>) -> Vec<NodeId> {
-        graph.nodes()
+        graph
+            .nodes()
             .filter(|node| node.selected)
             .map(|node| node.id.clone())
             .collect()
     }
 
     /// Capture initial positions for nodes involved in drag
-    fn capture_node_positions<N: Clone, E>(&self, target: &DragTarget, graph: &Graph<N, E>) -> Vec<(NodeId, Position)> {
+    fn capture_node_positions<N: Clone, E>(
+        &self,
+        target: &DragTarget,
+        graph: &Graph<N, E>,
+    ) -> Vec<(NodeId, Position)> {
         match target {
             DragTarget::Node(node_id) => {
                 if let Some(node) = graph.get_node(node_id) {
@@ -320,11 +329,10 @@ impl InteractionManager {
                     Vec::new()
                 }
             }
-            DragTarget::Nodes(node_ids) => {
-                node_ids.iter()
-                    .filter_map(|id| graph.get_node(id).map(|node| (id.clone(), node.position)))
-                    .collect()
-            }
+            DragTarget::Nodes(node_ids) => node_ids
+                .iter()
+                .filter_map(|id| graph.get_node(id).map(|node| (id.clone(), node.position)))
+                .collect(),
             _ => Vec::new(),
         }
     }
@@ -333,7 +341,10 @@ impl InteractionManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::{Graph, prelude::{NodeBuilder, EdgeBuilder}};
+    use flow_core::{
+        prelude::{EdgeBuilder, NodeBuilder},
+        Graph,
+    };
 
     fn create_test_graph() -> Graph<(), ()> {
         let mut graph = Graph::new();

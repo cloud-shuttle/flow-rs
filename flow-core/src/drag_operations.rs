@@ -2,9 +2,9 @@
 //!
 //! Provides drag operation types and utilities for moving nodes in a graph.
 
-use std::collections::HashSet;
-use crate::{Result, NodeId, Position};
 use crate::graph::Graph;
+use crate::{NodeId, Position, Result};
+use std::collections::HashSet;
 
 /// A drag operation that can be applied to nodes
 #[derive(Debug, Clone)]

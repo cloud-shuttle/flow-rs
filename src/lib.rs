@@ -15,7 +15,7 @@ pub use flow_leptos as leptos;
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::core::prelude::*;
-    pub use crate::renderer::{Renderer, RendererType, RendererCapabilities};
+    pub use crate::renderer::{Renderer, RendererCapabilities, RendererType};
 
     #[cfg(feature = "canvas2d")]
     pub use crate::renderer::Canvas2DRenderer;

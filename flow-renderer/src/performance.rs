@@ -1,8 +1,8 @@
 //! Performance optimization utilities for the Canvas2D renderer
 
-use std::collections::HashMap;
+use crate::traits::{BackgroundConfig, EdgeStyle, NodeStyle};
 use flow_core::{Position, Rect, Viewport};
-use crate::traits::{NodeStyle, EdgeStyle, BackgroundConfig};
+use std::collections::HashMap;
 
 /// Performance monitoring and optimization utilities
 pub struct PerformanceMonitor {
@@ -145,7 +145,10 @@ impl SpatialIndex {
         }
 
         // Add to new cell
-        self.cells.entry((new_cell_x, new_cell_y)).or_default().push(index);
+        self.cells
+            .entry((new_cell_x, new_cell_y))
+            .or_default()
+            .push(index);
 
         // Update position and size
         self.node_positions[index] = position;
@@ -463,7 +466,12 @@ impl PerformanceManager {
         self.monitor.end_frame();
     }
 
-    pub fn should_render_node(&self, position: Position, size: (f64, f64), viewport: &Viewport) -> bool {
+    pub fn should_render_node(
+        &self,
+        position: Position,
+        size: (f64, f64),
+        viewport: &Viewport,
+    ) -> bool {
         if !self.settings.enable_culling {
             return true;
         }
@@ -486,7 +494,12 @@ impl PerformanceManager {
         true
     }
 
-    pub fn should_render_edge(&self, source_pos: Position, target_pos: Position, viewport: &Viewport) -> bool {
+    pub fn should_render_edge(
+        &self,
+        source_pos: Position,
+        target_pos: Position,
+        viewport: &Viewport,
+    ) -> bool {
         if !self.settings.enable_culling {
             return true;
         }

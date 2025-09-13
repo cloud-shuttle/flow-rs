@@ -5,9 +5,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
-    use crate::types::Position;
     use crate::handle::{Handle, HandlePosition};
+    use crate::types::Position;
+    use crate::*;
 
     #[test]
     fn test_connection_count_with_no_edges() {
@@ -16,13 +16,19 @@ mod tests {
 
         // Create a node with handles
         let mut node = Node::simple("node1", Position::new(100.0, 100.0));
-        node.add_handle(Handle::source("output", HandlePosition::Right)).unwrap();
-        node.add_handle(Handle::target("input", HandlePosition::Left)).unwrap();
+        node.add_handle(Handle::source("output", HandlePosition::Right))
+            .unwrap();
+        node.add_handle(Handle::target("input", HandlePosition::Left))
+            .unwrap();
         graph.add_node(node).unwrap();
 
         // Get the node and check connection counts
-        let output_count = graph.get_handle_connections(&"node1".into(), &"output".into()).len();
-        let input_count = graph.get_handle_connections(&"node1".into(), &"input".into()).len();
+        let output_count = graph
+            .get_handle_connections(&"node1".into(), &"output".into())
+            .len();
+        let input_count = graph
+            .get_handle_connections(&"node1".into(), &"input".into())
+            .len();
 
         assert_eq!(output_count, 0);
         assert_eq!(input_count, 0);
@@ -35,11 +41,15 @@ mod tests {
 
         // Create source and target nodes with handles
         let mut source_node = Node::simple("source", Position::new(100.0, 100.0));
-        source_node.add_handle(Handle::source("out", HandlePosition::Right)).unwrap();
+        source_node
+            .add_handle(Handle::source("out", HandlePosition::Right))
+            .unwrap();
         graph.add_node(source_node).unwrap();
 
         let mut target_node = Node::simple("target", Position::new(300.0, 100.0));
-        target_node.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        target_node
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
         graph.add_node(target_node).unwrap();
 
         // Create an edge connecting the handles
@@ -49,8 +59,12 @@ mod tests {
         graph.add_edge(edge).unwrap();
 
         // Check connection counts
-        let source_count = graph.get_handle_connections(&"source".into(), &"out".into()).len();
-        let target_count = graph.get_handle_connections(&"target".into(), &"in".into()).len();
+        let source_count = graph
+            .get_handle_connections(&"source".into(), &"out".into())
+            .len();
+        let target_count = graph
+            .get_handle_connections(&"target".into(), &"in".into())
+            .len();
 
         assert_eq!(source_count, 1);
         assert_eq!(target_count, 1);
@@ -63,13 +77,20 @@ mod tests {
 
         // Create hub node with one output handle
         let mut hub_node = Node::simple("hub", Position::new(100.0, 100.0));
-        hub_node.add_handle(Handle::source("output", HandlePosition::Right)).unwrap();
+        hub_node
+            .add_handle(Handle::source("output", HandlePosition::Right))
+            .unwrap();
         graph.add_node(hub_node).unwrap();
 
         // Create multiple target nodes
         for i in 1..=3 {
-            let mut target_node = Node::simple(format!("target{}", i), Position::new(300.0, i as f64 * 100.0));
-            target_node.add_handle(Handle::target("input", HandlePosition::Left)).unwrap();
+            let mut target_node = Node::simple(
+                format!("target{}", i),
+                Position::new(300.0, i as f64 * 100.0),
+            );
+            target_node
+                .add_handle(Handle::target("input", HandlePosition::Left))
+                .unwrap();
             graph.add_node(target_node).unwrap();
 
             // Connect hub to each target
@@ -80,12 +101,16 @@ mod tests {
         }
 
         // Check hub output handle has 3 connections
-        let output_count = graph.get_handle_connections(&"hub".into(), &"output".into()).len();
+        let output_count = graph
+            .get_handle_connections(&"hub".into(), &"output".into())
+            .len();
         assert_eq!(output_count, 3);
 
         // Check each target has 1 connection
         for i in 1..=3 {
-            let input_count = graph.get_handle_connections(&format!("target{}", i).into(), &"input".into()).len();
+            let input_count = graph
+                .get_handle_connections(&format!("target{}", i).into(), &"input".into())
+                .len();
             assert_eq!(input_count, 1);
         }
     }
@@ -97,18 +122,25 @@ mod tests {
 
         // Create node with multiple handles
         let mut node = Node::simple("multi_handle", Position::new(100.0, 100.0));
-        node.add_handle(Handle::source("output1", HandlePosition::Right)).unwrap();
-        node.add_handle(Handle::source("output2", HandlePosition::Top)).unwrap();
-        node.add_handle(Handle::target("input1", HandlePosition::Left)).unwrap();
+        node.add_handle(Handle::source("output1", HandlePosition::Right))
+            .unwrap();
+        node.add_handle(Handle::source("output2", HandlePosition::Top))
+            .unwrap();
+        node.add_handle(Handle::target("input1", HandlePosition::Left))
+            .unwrap();
         graph.add_node(node).unwrap();
 
         // Create target nodes for each handle
         let mut target1 = Node::simple("target1", Position::new(300.0, 100.0));
-        target1.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        target1
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
         graph.add_node(target1).unwrap();
 
         let mut target2 = Node::simple("target2", Position::new(100.0, 300.0));
-        target2.add_handle(Handle::target("in", HandlePosition::Bottom)).unwrap();
+        target2
+            .add_handle(Handle::target("in", HandlePosition::Bottom))
+            .unwrap();
         graph.add_node(target2).unwrap();
 
         // Connect only output1 to target1
@@ -124,9 +156,24 @@ mod tests {
         graph.add_edge(edge2).unwrap();
 
         // Check each handle has exactly 1 connection
-        assert_eq!(graph.get_handle_connections(&"multi_handle".into(), &"output1".into()).len(), 1);
-        assert_eq!(graph.get_handle_connections(&"multi_handle".into(), &"output2".into()).len(), 1);
-        assert_eq!(graph.get_handle_connections(&"multi_handle".into(), &"input1".into()).len(), 0);
+        assert_eq!(
+            graph
+                .get_handle_connections(&"multi_handle".into(), &"output1".into())
+                .len(),
+            1
+        );
+        assert_eq!(
+            graph
+                .get_handle_connections(&"multi_handle".into(), &"output2".into())
+                .len(),
+            1
+        );
+        assert_eq!(
+            graph
+                .get_handle_connections(&"multi_handle".into(), &"input1".into())
+                .len(),
+            0
+        );
     }
 
     #[test]
@@ -136,11 +183,15 @@ mod tests {
 
         // Create connected nodes
         let mut source_node = Node::simple("source", Position::new(100.0, 100.0));
-        source_node.add_handle(Handle::source("out", HandlePosition::Right)).unwrap();
+        source_node
+            .add_handle(Handle::source("out", HandlePosition::Right))
+            .unwrap();
         graph.add_node(source_node).unwrap();
 
         let mut target_node = Node::simple("target", Position::new(300.0, 100.0));
-        target_node.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        target_node
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
         graph.add_node(target_node).unwrap();
 
         // Create edge
@@ -150,15 +201,35 @@ mod tests {
         graph.add_edge(edge).unwrap();
 
         // Verify initial counts
-        assert_eq!(graph.get_handle_connections(&"source".into(), &"out".into()).len(), 1);
-        assert_eq!(graph.get_handle_connections(&"target".into(), &"in".into()).len(), 1);
+        assert_eq!(
+            graph
+                .get_handle_connections(&"source".into(), &"out".into())
+                .len(),
+            1
+        );
+        assert_eq!(
+            graph
+                .get_handle_connections(&"target".into(), &"in".into())
+                .len(),
+            1
+        );
 
         // Remove edge
         graph.remove_edge(&"edge1".into()).unwrap();
 
         // Verify counts are now zero
-        assert_eq!(graph.get_handle_connections(&"source".into(), &"out".into()).len(), 0);
-        assert_eq!(graph.get_handle_connections(&"target".into(), &"in".into()).len(), 0);
+        assert_eq!(
+            graph
+                .get_handle_connections(&"source".into(), &"out".into())
+                .len(),
+            0
+        );
+        assert_eq!(
+            graph
+                .get_handle_connections(&"target".into(), &"in".into())
+                .len(),
+            0
+        );
     }
 
     #[test]
@@ -169,7 +240,9 @@ mod tests {
         let node = Node::simple("node1", Position::new(100.0, 100.0));
         graph.add_node(node).unwrap();
 
-        let count = graph.get_handle_connections(&"node1".into(), &"nonexistent".into()).len();
+        let count = graph
+            .get_handle_connections(&"node1".into(), &"nonexistent".into())
+            .len();
 
         assert_eq!(count, 0);
     }
@@ -180,7 +253,8 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         let mut node = Node::simple("node1", Position::new(100.0, 100.0));
-        node.add_handle(Handle::source("unlimited", HandlePosition::Right)).unwrap();
+        node.add_handle(Handle::source("unlimited", HandlePosition::Right))
+            .unwrap();
         graph.add_node(node).unwrap();
 
         let can_accept = graph.can_handle_accept_connection(&"node1".into(), &"unlimited".into());
@@ -194,13 +268,17 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         let mut source_node = Node::simple("source", Position::new(100.0, 100.0));
-        source_node.add_handle(
-            Handle::source("limited_out", HandlePosition::Right).with_connection_limit(2)
-        ).unwrap();
+        source_node
+            .add_handle(
+                Handle::source("limited_out", HandlePosition::Right).with_connection_limit(2),
+            )
+            .unwrap();
         graph.add_node(source_node).unwrap();
 
         let mut target_node = Node::simple("target", Position::new(300.0, 100.0));
-        target_node.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        target_node
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
         graph.add_node(target_node).unwrap();
 
         // Add one connection (under limit of 2)
@@ -209,7 +287,8 @@ mod tests {
             .with_target_handle("in");
         graph.add_edge(edge).unwrap();
 
-        let can_accept = graph.can_handle_accept_connection(&"source".into(), &"limited_out".into());
+        let can_accept =
+            graph.can_handle_accept_connection(&"source".into(), &"limited_out".into());
 
         assert!(can_accept);
     }
@@ -220,13 +299,17 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         let mut source_node = Node::simple("source", Position::new(100.0, 100.0));
-        source_node.add_handle(
-            Handle::source("limited_out", HandlePosition::Right).with_connection_limit(1)
-        ).unwrap();
+        source_node
+            .add_handle(
+                Handle::source("limited_out", HandlePosition::Right).with_connection_limit(1),
+            )
+            .unwrap();
         graph.add_node(source_node).unwrap();
 
         let mut target_node = Node::simple("target", Position::new(300.0, 100.0));
-        target_node.add_handle(Handle::target("in", HandlePosition::Left)).unwrap();
+        target_node
+            .add_handle(Handle::target("in", HandlePosition::Left))
+            .unwrap();
         graph.add_node(target_node).unwrap();
 
         // Add connection that reaches limit
@@ -235,7 +318,8 @@ mod tests {
             .with_target_handle("in");
         graph.add_edge(edge).unwrap();
 
-        let can_accept = graph.can_handle_accept_connection(&"source".into(), &"limited_out".into());
+        let can_accept =
+            graph.can_handle_accept_connection(&"source".into(), &"limited_out".into());
 
         assert!(!can_accept);
     }
@@ -247,14 +331,20 @@ mod tests {
 
         // Create a hub node
         let mut hub = Node::simple("hub", Position::new(100.0, 100.0));
-        hub.add_handle(Handle::source("output", HandlePosition::Right)).unwrap();
+        hub.add_handle(Handle::source("output", HandlePosition::Right))
+            .unwrap();
         graph.add_node(hub).unwrap();
 
         // Create many target nodes and edges
         let edge_count = 100;
         for i in 0..edge_count {
-            let mut target = Node::simple(format!("target{}", i), Position::new(300.0, i as f64 * 10.0));
-            target.add_handle(Handle::target("input", HandlePosition::Left)).unwrap();
+            let mut target = Node::simple(
+                format!("target{}", i),
+                Position::new(300.0, i as f64 * 10.0),
+            );
+            target
+                .add_handle(Handle::target("input", HandlePosition::Left))
+                .unwrap();
             graph.add_node(target).unwrap();
 
             let edge = Edge::new(format!("edge{}", i), "hub", format!("target{}", i), ())
@@ -266,12 +356,18 @@ mod tests {
         // Measure performance of connection counting
         let start_time = std::time::Instant::now();
 
-        let connection_count = graph.get_handle_connections(&"hub".into(), &"output".into()).len();
+        let connection_count = graph
+            .get_handle_connections(&"hub".into(), &"output".into())
+            .len();
 
         let elapsed = start_time.elapsed();
 
         assert_eq!(connection_count, edge_count);
-        assert!(elapsed.as_millis() < 50, "Connection counting took too long: {:?}", elapsed);
+        assert!(
+            elapsed.as_millis() < 50,
+            "Connection counting took too long: {:?}",
+            elapsed
+        );
     }
 
     #[test]
@@ -281,7 +377,9 @@ mod tests {
 
         // Create nodes with handles
         let mut source_node = Node::simple("source", Position::new(100.0, 100.0));
-        source_node.add_handle(Handle::source("specific_handle", HandlePosition::Right)).unwrap();
+        source_node
+            .add_handle(Handle::source("specific_handle", HandlePosition::Right))
+            .unwrap();
         graph.add_node(source_node).unwrap();
 
         let target_node = Node::simple("target", Position::new(300.0, 100.0));
@@ -297,7 +395,9 @@ mod tests {
         graph.add_edge(edge_without_handle).unwrap();
 
         // Connection count for specific handle should only count the edge that references it
-        let specific_count = graph.get_handle_connections(&"source".into(), &"specific_handle".into()).len();
+        let specific_count = graph
+            .get_handle_connections(&"source".into(), &"specific_handle".into())
+            .len();
 
         assert_eq!(specific_count, 1); // Only the edge that specifically references this handle
     }

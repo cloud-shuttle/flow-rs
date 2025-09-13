@@ -5,8 +5,8 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
     use crate::types::Position;
+    use crate::*;
 
     #[test]
     fn test_has_cycle_empty_graph() {
@@ -21,7 +21,9 @@ mod tests {
         // Test: Single node with no edges should have no cycles
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
 
         assert!(!graph.has_cycle());
     }
@@ -31,10 +33,16 @@ mod tests {
         // Test: Two nodes with single edge should have no cycles
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("node2", Position::new(200.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::new(200.0, 100.0)))
+            .unwrap();
 
-        graph.add_edge(Edge::simple("edge1", "node1", "node2")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "node1", "node2"))
+            .unwrap();
 
         assert!(!graph.has_cycle());
     }
@@ -44,11 +52,19 @@ mod tests {
         // Test: Two nodes with bidirectional edges should form a cycle
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("node2", Position::new(200.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::new(200.0, 100.0)))
+            .unwrap();
 
-        graph.add_edge(Edge::simple("edge1", "node1", "node2")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "node2", "node1")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "node1", "node2"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "node2", "node1"))
+            .unwrap();
 
         assert!(graph.has_cycle());
     }
@@ -58,13 +74,25 @@ mod tests {
         // Test: Three node cycle (A -> B -> C -> A) should be detected
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("nodeA", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeB", Position::new(200.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeC", Position::new(150.0, 200.0))).unwrap();
+        graph
+            .add_node(Node::simple("nodeA", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeB", Position::new(200.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeC", Position::new(150.0, 200.0)))
+            .unwrap();
 
-        graph.add_edge(Edge::simple("edge1", "nodeA", "nodeB")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "nodeB", "nodeC")).unwrap();
-        graph.add_edge(Edge::simple("edge3", "nodeC", "nodeA")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "nodeA", "nodeB"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "nodeB", "nodeC"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge3", "nodeC", "nodeA"))
+            .unwrap();
 
         assert!(graph.has_cycle());
     }
@@ -74,8 +102,12 @@ mod tests {
         // Test: Self-loop (node pointing to itself) should be detected as cycle
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_edge(Edge::simple("self_loop", "node1", "node1")).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("self_loop", "node1", "node1"))
+            .unwrap();
 
         assert!(graph.has_cycle());
     }
@@ -86,20 +118,38 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create a DAG (Directed Acyclic Graph)
-        graph.add_node(Node::simple("root", Position::new(100.0, 50.0))).unwrap();
-        graph.add_node(Node::simple("left", Position::new(50.0, 150.0))).unwrap();
-        graph.add_node(Node::simple("right", Position::new(150.0, 150.0))).unwrap();
-        graph.add_node(Node::simple("leaf1", Position::new(25.0, 250.0))).unwrap();
-        graph.add_node(Node::simple("leaf2", Position::new(75.0, 250.0))).unwrap();
-        graph.add_node(Node::simple("leaf3", Position::new(125.0, 250.0))).unwrap();
-        graph.add_node(Node::simple("leaf4", Position::new(175.0, 250.0))).unwrap();
+        graph
+            .add_node(Node::simple("root", Position::new(100.0, 50.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("left", Position::new(50.0, 150.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("right", Position::new(150.0, 150.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("leaf1", Position::new(25.0, 250.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("leaf2", Position::new(75.0, 250.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("leaf3", Position::new(125.0, 250.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("leaf4", Position::new(175.0, 250.0)))
+            .unwrap();
 
         graph.add_edge(Edge::simple("e1", "root", "left")).unwrap();
         graph.add_edge(Edge::simple("e2", "root", "right")).unwrap();
         graph.add_edge(Edge::simple("e3", "left", "leaf1")).unwrap();
         graph.add_edge(Edge::simple("e4", "left", "leaf2")).unwrap();
-        graph.add_edge(Edge::simple("e5", "right", "leaf3")).unwrap();
-        graph.add_edge(Edge::simple("e6", "right", "leaf4")).unwrap();
+        graph
+            .add_edge(Edge::simple("e5", "right", "leaf3"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("e6", "right", "leaf4"))
+            .unwrap();
 
         assert!(!graph.has_cycle());
     }
@@ -110,21 +160,39 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create mostly DAG with one cycle
-        graph.add_node(Node::simple("root", Position::new(100.0, 50.0))).unwrap();
-        graph.add_node(Node::simple("left", Position::new(50.0, 150.0))).unwrap();
-        graph.add_node(Node::simple("right", Position::new(150.0, 150.0))).unwrap();
-        graph.add_node(Node::simple("middle", Position::new(100.0, 200.0))).unwrap();
-        graph.add_node(Node::simple("leaf", Position::new(100.0, 300.0))).unwrap();
+        graph
+            .add_node(Node::simple("root", Position::new(100.0, 50.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("left", Position::new(50.0, 150.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("right", Position::new(150.0, 150.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("middle", Position::new(100.0, 200.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("leaf", Position::new(100.0, 300.0)))
+            .unwrap();
 
         // DAG structure
         graph.add_edge(Edge::simple("e1", "root", "left")).unwrap();
         graph.add_edge(Edge::simple("e2", "root", "right")).unwrap();
-        graph.add_edge(Edge::simple("e3", "left", "middle")).unwrap();
-        graph.add_edge(Edge::simple("e4", "right", "middle")).unwrap();
-        graph.add_edge(Edge::simple("e5", "middle", "leaf")).unwrap();
+        graph
+            .add_edge(Edge::simple("e3", "left", "middle"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("e4", "right", "middle"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("e5", "middle", "leaf"))
+            .unwrap();
 
         // Add cycle: leaf -> root (creates root -> ... -> leaf -> root cycle)
-        graph.add_edge(Edge::simple("cycle_edge", "leaf", "root")).unwrap();
+        graph
+            .add_edge(Edge::simple("cycle_edge", "leaf", "root"))
+            .unwrap();
 
         assert!(graph.has_cycle());
     }
@@ -134,13 +202,23 @@ mod tests {
         // Test: Check if adding specific edge would create a cycle
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("nodeA", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeB", Position::new(200.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeC", Position::new(150.0, 200.0))).unwrap();
+        graph
+            .add_node(Node::simple("nodeA", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeB", Position::new(200.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeC", Position::new(150.0, 200.0)))
+            .unwrap();
 
         // Create partial cycle: A -> B -> C
-        graph.add_edge(Edge::simple("edge1", "nodeA", "nodeB")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "nodeB", "nodeC")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "nodeA", "nodeB"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "nodeB", "nodeC"))
+            .unwrap();
 
         // Should not have cycle yet
         assert!(!graph.has_cycle());
@@ -160,7 +238,9 @@ mod tests {
         // Test: creates_cycle should handle nonexistent nodes gracefully
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
 
         // Should return false for nonexistent source
         assert!(!graph.creates_cycle(&"nonexistent".into(), &"node1".into()));
@@ -177,10 +257,16 @@ mod tests {
         // Test: find_cycle should return None for acyclic graph
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("node2", Position::new(200.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::new(200.0, 100.0)))
+            .unwrap();
 
-        graph.add_edge(Edge::simple("edge1", "node1", "node2")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "node1", "node2"))
+            .unwrap();
 
         let cycle = graph.find_cycle();
         assert!(cycle.is_none());
@@ -191,13 +277,25 @@ mod tests {
         // Test: find_cycle should return the cycle path
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("nodeA", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeB", Position::new(200.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeC", Position::new(150.0, 200.0))).unwrap();
+        graph
+            .add_node(Node::simple("nodeA", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeB", Position::new(200.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeC", Position::new(150.0, 200.0)))
+            .unwrap();
 
-        graph.add_edge(Edge::simple("edge1", "nodeA", "nodeB")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "nodeB", "nodeC")).unwrap();
-        graph.add_edge(Edge::simple("edge3", "nodeC", "nodeA")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "nodeA", "nodeB"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "nodeB", "nodeC"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge3", "nodeC", "nodeA"))
+            .unwrap();
 
         let cycle = graph.find_cycle().expect("Should find a cycle");
 
@@ -213,8 +311,12 @@ mod tests {
         // Test: find_cycle should detect self-loops
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_edge(Edge::simple("self_loop", "node1", "node1")).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("self_loop", "node1", "node1"))
+            .unwrap();
 
         let cycle = graph.find_cycle().expect("Should find self-loop cycle");
 
@@ -229,18 +331,38 @@ mod tests {
 
         // Create two separate cycles
         // Cycle 1: A -> B -> A
-        graph.add_node(Node::simple("nodeA", Position::new(50.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeB", Position::new(100.0, 100.0))).unwrap();
-        graph.add_edge(Edge::simple("edge1", "nodeA", "nodeB")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "nodeB", "nodeA")).unwrap();
+        graph
+            .add_node(Node::simple("nodeA", Position::new(50.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeB", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "nodeA", "nodeB"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "nodeB", "nodeA"))
+            .unwrap();
 
         // Cycle 2: C -> D -> E -> C
-        graph.add_node(Node::simple("nodeC", Position::new(200.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeD", Position::new(250.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeE", Position::new(225.0, 150.0))).unwrap();
-        graph.add_edge(Edge::simple("edge3", "nodeC", "nodeD")).unwrap();
-        graph.add_edge(Edge::simple("edge4", "nodeD", "nodeE")).unwrap();
-        graph.add_edge(Edge::simple("edge5", "nodeE", "nodeC")).unwrap();
+        graph
+            .add_node(Node::simple("nodeC", Position::new(200.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeD", Position::new(250.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeE", Position::new(225.0, 150.0)))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge3", "nodeC", "nodeD"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge4", "nodeD", "nodeE"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge5", "nodeE", "nodeC"))
+            .unwrap();
 
         let cycle = graph.find_cycle().expect("Should find a cycle");
 
@@ -248,14 +370,13 @@ mod tests {
         assert!(cycle.len() >= 2);
 
         // Verify it's a valid cycle (first cycle or second cycle)
-        let is_first_cycle = cycle.len() == 2 &&
-            cycle.contains(&"nodeA".into()) &&
-            cycle.contains(&"nodeB".into());
+        let is_first_cycle =
+            cycle.len() == 2 && cycle.contains(&"nodeA".into()) && cycle.contains(&"nodeB".into());
 
-        let is_second_cycle = cycle.len() == 3 &&
-            cycle.contains(&"nodeC".into()) &&
-            cycle.contains(&"nodeD".into()) &&
-            cycle.contains(&"nodeE".into());
+        let is_second_cycle = cycle.len() == 3
+            && cycle.contains(&"nodeC".into())
+            && cycle.contains(&"nodeD".into())
+            && cycle.contains(&"nodeE".into());
 
         assert!(is_first_cycle || is_second_cycle);
     }
@@ -268,19 +389,23 @@ mod tests {
         // Create a large DAG
         let node_count = 1000;
         for i in 0..node_count {
-            graph.add_node(Node::simple(
-                format!("node{}", i),
-                Position::new(i as f64 * 10.0, i as f64 * 10.0)
-            )).unwrap();
+            graph
+                .add_node(Node::simple(
+                    format!("node{}", i),
+                    Position::new(i as f64 * 10.0, i as f64 * 10.0),
+                ))
+                .unwrap();
         }
 
         // Add edges to create long chains
-        for i in 0..node_count-1 {
-            graph.add_edge(Edge::simple(
-                format!("edge{}", i),
-                format!("node{}", i),
-                format!("node{}", i + 1)
-            )).unwrap();
+        for i in 0..node_count - 1 {
+            graph
+                .add_edge(Edge::simple(
+                    format!("edge{}", i),
+                    format!("node{}", i),
+                    format!("node{}", i + 1),
+                ))
+                .unwrap();
         }
 
         // Measure performance
@@ -289,7 +414,11 @@ mod tests {
         let elapsed = start_time.elapsed();
 
         assert!(!has_cycle); // Should be acyclic
-        assert!(elapsed.as_millis() < 1000, "Cycle detection took too long: {:?}", elapsed);
+        assert!(
+            elapsed.as_millis() < 1000,
+            "Cycle detection took too long: {:?}",
+            elapsed
+        );
     }
 
     #[test]
@@ -298,20 +427,36 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Component 1: Acyclic
-        graph.add_node(Node::simple("comp1_a", Position::new(50.0, 50.0))).unwrap();
-        graph.add_node(Node::simple("comp1_b", Position::new(100.0, 50.0))).unwrap();
-        graph.add_edge(Edge::simple("comp1_edge", "comp1_a", "comp1_b")).unwrap();
+        graph
+            .add_node(Node::simple("comp1_a", Position::new(50.0, 50.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("comp1_b", Position::new(100.0, 50.0)))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("comp1_edge", "comp1_a", "comp1_b"))
+            .unwrap();
 
         // Component 2: Has cycle
-        graph.add_node(Node::simple("comp2_x", Position::new(200.0, 50.0))).unwrap();
-        graph.add_node(Node::simple("comp2_y", Position::new(250.0, 50.0))).unwrap();
-        graph.add_edge(Edge::simple("comp2_edge1", "comp2_x", "comp2_y")).unwrap();
-        graph.add_edge(Edge::simple("comp2_edge2", "comp2_y", "comp2_x")).unwrap();
+        graph
+            .add_node(Node::simple("comp2_x", Position::new(200.0, 50.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("comp2_y", Position::new(250.0, 50.0)))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("comp2_edge1", "comp2_x", "comp2_y"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("comp2_edge2", "comp2_y", "comp2_x"))
+            .unwrap();
 
         // Should detect the cycle in component 2
         assert!(graph.has_cycle());
 
-        let cycle = graph.find_cycle().expect("Should find cycle in disconnected components");
+        let cycle = graph
+            .find_cycle()
+            .expect("Should find cycle in disconnected components");
         assert!(cycle.contains(&"comp2_x".into()) || cycle.contains(&"comp2_y".into()));
     }
 
@@ -321,13 +466,25 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create simple DAG: A -> B -> C, A -> C
-        graph.add_node(Node::simple("nodeA", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeB", Position::new(150.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeC", Position::new(200.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("nodeA", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeB", Position::new(150.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeC", Position::new(200.0, 100.0)))
+            .unwrap();
 
-        graph.add_edge(Edge::simple("edge1", "nodeA", "nodeB")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "nodeB", "nodeC")).unwrap();
-        graph.add_edge(Edge::simple("edge3", "nodeA", "nodeC")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "nodeA", "nodeB"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "nodeB", "nodeC"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge3", "nodeA", "nodeC"))
+            .unwrap();
 
         let topo_sort = graph.topological_sort().expect("Should succeed on DAG");
 
@@ -349,14 +506,26 @@ mod tests {
         // Test: Topological sort should fail on cyclic graph
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("nodeA", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeB", Position::new(150.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("nodeC", Position::new(200.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("nodeA", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeB", Position::new(150.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("nodeC", Position::new(200.0, 100.0)))
+            .unwrap();
 
         // Create cycle: A -> B -> C -> A
-        graph.add_edge(Edge::simple("edge1", "nodeA", "nodeB")).unwrap();
-        graph.add_edge(Edge::simple("edge2", "nodeB", "nodeC")).unwrap();
-        graph.add_edge(Edge::simple("edge3", "nodeC", "nodeA")).unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "nodeA", "nodeB"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge2", "nodeB", "nodeC"))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge3", "nodeC", "nodeA"))
+            .unwrap();
 
         let result = graph.topological_sort();
         assert!(result.is_err());

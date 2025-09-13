@@ -1,15 +1,13 @@
 //! WASM bindings for JavaScript interoperability
 
-use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 #[allow(unused_imports)]
 use std::collections::HashMap;
+use wasm_bindgen::prelude::*;
 
-use flow_core::{
-    Graph, Node, Edge, NodeId, EdgeId, Position, Size, Viewport
-};
-use flow_renderer::Renderer;
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size, Viewport};
 use flow_renderer::traits::RenderStats;
+use flow_renderer::Renderer;
 
 /// WASM-compatible position structure
 #[wasm_bindgen]
@@ -27,10 +25,14 @@ impl WasmPosition {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn x(&self) -> f64 { self.x }
+    pub fn x(&self) -> f64 {
+        self.x
+    }
 
     #[wasm_bindgen(getter)]
-    pub fn y(&self) -> f64 { self.y }
+    pub fn y(&self) -> f64 {
+        self.y
+    }
 }
 
 impl From<Position> for WasmPosition {
@@ -61,15 +63,22 @@ impl WasmSize {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn width(&self) -> f64 { self.width }
+    pub fn width(&self) -> f64 {
+        self.width
+    }
 
     #[wasm_bindgen(getter)]
-    pub fn height(&self) -> f64 { self.height }
+    pub fn height(&self) -> f64 {
+        self.height
+    }
 }
 
 impl From<Size> for WasmSize {
     fn from(size: Size) -> Self {
-        Self { width: size.width, height: size.height }
+        Self {
+            width: size.width,
+            height: size.height,
+        }
     }
 }
 
@@ -449,7 +458,8 @@ impl WasmFlowEditor {
 
     pub fn render(&mut self) -> Result<WasmRenderStats, JsValue> {
         if let Some(renderer) = &mut self.renderer {
-            renderer.clear(Some("#f8f9fa"))
+            renderer
+                .clear(Some("#f8f9fa"))
                 .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
             // For now, we'll use a simple approach without the dyn renderer
@@ -465,7 +475,8 @@ impl WasmFlowEditor {
                 memory_used: 0,
             };
 
-            renderer.present()
+            renderer
+                .present()
                 .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
             Ok(stats.into())
@@ -476,7 +487,8 @@ impl WasmFlowEditor {
 
     pub fn resize(&mut self, width: u32, height: u32) -> Result<(), JsValue> {
         if let Some(renderer) = &mut self.renderer {
-            renderer.resize(width, height)
+            renderer
+                .resize(width, height)
                 .map_err(|e| JsValue::from_str(&e.to_string()))
         } else {
             Err(JsValue::from_str("No renderer available"))

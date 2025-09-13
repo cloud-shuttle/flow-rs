@@ -3,7 +3,7 @@
 //! Provides a minimap overview of the flow graph with navigation capabilities,
 //! viewport synchronization, and configurable rendering options.
 
-use flow_core::{Graph, Position, NodeId, EdgeId, Viewport, Node, Edge};
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Viewport};
 
 /// Configuration for the minimap component
 #[derive(Debug, Clone)]
@@ -44,7 +44,12 @@ pub struct GraphBounds {
 
 impl GraphBounds {
     pub fn new(min_x: f64, min_y: f64, max_x: f64, max_y: f64) -> Self {
-        Self { min_x, min_y, max_x, max_y }
+        Self {
+            min_x,
+            min_y,
+            max_x,
+            max_y,
+        }
     }
 
     pub fn width(&self) -> f64 {
@@ -67,7 +72,12 @@ pub struct ViewportRectangle {
 
 impl ViewportRectangle {
     pub fn new(x: f64, y: f64, width: f64, height: f64) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 }
 
@@ -120,7 +130,11 @@ impl MinimapRenderer {
     }
 
     /// Render the minimap with the given graph and viewport
-    pub fn render_minimap<N, E>(&mut self, graph: &Graph<N, E>, viewport: &Viewport) -> Result<(), String>
+    pub fn render_minimap<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        viewport: &Viewport,
+    ) -> Result<(), String>
     where
         N: Clone,
         E: Clone,
@@ -150,8 +164,11 @@ impl MinimapRenderer {
         // Render edges
         for edge in graph.edges() {
             if !edge.hidden {
-                if let (Some(source_node), Some(target_node)) = (graph.get_node(&edge.source), graph.get_node(&edge.target)) {
-                    let rendered_edge = self.render_edge(edge, source_node, target_node, &bounds, scale);
+                if let (Some(source_node), Some(target_node)) =
+                    (graph.get_node(&edge.source), graph.get_node(&edge.target))
+                {
+                    let rendered_edge =
+                        self.render_edge(edge, source_node, target_node, &bounds, scale);
                     self.rendered_edges.push(rendered_edge);
                 }
             }
@@ -255,7 +272,12 @@ impl MinimapRenderer {
     }
 
     /// Render a node for the minimap
-    fn render_node(&self, node: &Node<impl Clone>, bounds: &GraphBounds, scale: f64) -> RenderedNode {
+    fn render_node(
+        &self,
+        node: &Node<impl Clone>,
+        bounds: &GraphBounds,
+        scale: f64,
+    ) -> RenderedNode {
         let x = (node.position.x - bounds.min_x) * scale;
         let y = (node.position.y - bounds.min_y) * scale;
         let width = node.size.width * scale;
@@ -280,7 +302,8 @@ impl MinimapRenderer {
         scale: f64,
     ) -> RenderedEdge {
         let start_x = (source_node.position.x + source_node.size.width - bounds.min_x) * scale;
-        let start_y = (source_node.position.y + source_node.size.height / 2.0 - bounds.min_y) * scale;
+        let start_y =
+            (source_node.position.y + source_node.size.height / 2.0 - bounds.min_y) * scale;
         let end_x = (target_node.position.x - bounds.min_x) * scale;
         let end_y = (target_node.position.y + target_node.size.height / 2.0 - bounds.min_y) * scale;
 
@@ -348,11 +371,21 @@ impl MinimapInteraction {
     }
 
     /// Handle click on minimap
-    pub fn handle_click(&self, renderer: &MinimapRenderer, click_pos: Position) -> Result<Viewport, String> {
+    pub fn handle_click(
+        &self,
+        renderer: &MinimapRenderer,
+        click_pos: Position,
+    ) -> Result<Viewport, String> {
         // For now, just return a simple navigation result
         // In a real implementation, this would calculate the new viewport position
         let new_position = Position::new(click_pos.x * 2.0, click_pos.y * 2.0);
-        Ok(Viewport::new(new_position.x, new_position.y, 800.0, 600.0, 1.0))
+        Ok(Viewport::new(
+            new_position.x,
+            new_position.y,
+            800.0,
+            600.0,
+            1.0,
+        ))
     }
 }
 

@@ -6,12 +6,12 @@
 //! REFACTOR phase: Enhanced with proper error handling, validation,
 //! and improved code structure for maintainability.
 
-use wasm_bindgen_test::*;
-use flow_core::{Graph, Node, Edge, Position, Viewport, NodeId};
+use flow_core::{Edge, Graph, Node, NodeId, Position, Viewport};
 use flow_renderer::{Canvas2DRenderer, Renderer};
-use web_sys::HtmlCanvasElement;
-use wasm_bindgen::JsCast;
 use std::collections::HashSet;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_test::*;
+use web_sys::HtmlCanvasElement;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
@@ -105,7 +105,7 @@ fn drag_node(
     graph: &mut Graph<(), ()>,
     node_id: &str,
     start_pos: Position,
-    end_pos: Position
+    end_pos: Position,
 ) -> Result<(), String> {
     // REFACTOR phase: Input validation
     if node_id.is_empty() {
@@ -115,7 +115,8 @@ fn drag_node(
     let node_id = NodeId::new(node_id);
 
     // Verify node exists and get mutable reference
-    let node = graph.get_node_mut(&node_id)
+    let node = graph
+        .get_node_mut(&node_id)
         .ok_or_else(|| format!("Node '{}' not found in graph", node_id.as_str()))?;
 
     // REFACTOR: Add drag validation (could check if node is draggable)
@@ -124,21 +125,21 @@ fn drag_node(
     }
 
     // Record the drag operation (start position validation)
-    let _drag_delta = Position::new(
-        end_pos.x - start_pos.x,
-        end_pos.y - start_pos.y
-    );
+    let _drag_delta = Position::new(end_pos.x - start_pos.x, end_pos.y - start_pos.y);
 
     // Update node position
     node.position = end_pos;
 
     // REFACTOR: Could trigger drag events here
-    web_sys::console::log_1(&format!(
-        "Dragged node '{}' from {:?} to {:?}",
-        node_id.as_str(),
-        start_pos,
-        end_pos
-    ).into());
+    web_sys::console::log_1(
+        &format!(
+            "Dragged node '{}' from {:?} to {:?}",
+            node_id.as_str(),
+            start_pos,
+            end_pos
+        )
+        .into(),
+    );
 
     Ok(())
 }
@@ -148,7 +149,7 @@ fn drag_node(
 fn select_node(
     _renderer: &mut Canvas2DRenderer,
     click_pos: Position,
-    ctrl_held: bool
+    ctrl_held: bool,
 ) -> Result<(), String> {
     // REFACTOR: Input validation
     if click_pos.x < 0.0 || click_pos.y < 0.0 {
@@ -163,19 +164,18 @@ fn select_node(
     } else {
         return Err(format!(
             "No node found at position ({:.1}, {:.1})",
-            click_pos.x,
-            click_pos.y
+            click_pos.x, click_pos.y
         ));
     };
 
     // REFACTOR: Enhanced logging with context
-    web_sys::console::log_1(&format!(
-        "Selected node '{}' at ({:.1}, {:.1}) [Ctrl: {}]",
-        node_id,
-        click_pos.x,
-        click_pos.y,
-        ctrl_held
-    ).into());
+    web_sys::console::log_1(
+        &format!(
+            "Selected node '{}' at ({:.1}, {:.1}) [Ctrl: {}]",
+            node_id, click_pos.x, click_pos.y, ctrl_held
+        )
+        .into(),
+    );
 
     select_node_for_test_multi(node_id, ctrl_held);
     Ok(())
@@ -204,17 +204,20 @@ fn get_selected_nodes(_renderer: &Canvas2DRenderer) -> Vec<&'static str> {
                     .collect();
 
                 // REFACTOR: Enhanced logging
-                web_sys::console::log_1(&format!(
-                    "Retrieved {} selected node(s): {:?}",
-                    selected_nodes.len(),
-                    selected_nodes
-                ).into());
+                web_sys::console::log_1(
+                    &format!(
+                        "Retrieved {} selected node(s): {:?}",
+                        selected_nodes.len(),
+                        selected_nodes
+                    )
+                    .into(),
+                );
 
                 selected_nodes
             }
             None => {
                 web_sys::console::warn_1(
-                    &"Selection state not initialized - returning empty selection".into()
+                    &"Selection state not initialized - returning empty selection".into(),
                 );
                 Vec::new()
             }
@@ -228,7 +231,7 @@ fn render_graph_with_selection(
     _renderer: &mut Canvas2DRenderer,
     _graph: &Graph<(), ()>,
     _viewport: &Viewport,
-    selected_nodes: &[&str]
+    selected_nodes: &[&str],
 ) -> Result<(), String> {
     // REFACTOR: Input validation
     if selected_nodes.is_empty() {
@@ -250,25 +253,26 @@ fn render_graph_with_selection(
             .filter(|&&node_id| !graph_nodes.contains(&node_id))
             .copied()
             .collect();
-        web_sys::console::warn_1(&format!(
-            "Invalid node selections ignored: {:?}",
-            invalid_nodes
-        ).into());
+        web_sys::console::warn_1(
+            &format!("Invalid node selections ignored: {:?}", invalid_nodes).into(),
+        );
     }
 
     // REFACTOR: Enhanced logging with operation context
-    web_sys::console::log_1(&format!(
-        "Rendering visual feedback for {} valid selections: {:?}",
-        valid_selections.len(),
-        valid_selections
-    ).into());
+    web_sys::console::log_1(
+        &format!(
+            "Rendering visual feedback for {} valid selections: {:?}",
+            valid_selections.len(),
+            valid_selections
+        )
+        .into(),
+    );
 
     // REFACTOR: Simulate selection rendering (would draw highlights in real implementation)
     for &node_id in &valid_selections {
-        web_sys::console::log_1(&format!(
-            "Applying selection highlight to node: '{}'",
-            node_id
-        ).into());
+        web_sys::console::log_1(
+            &format!("Applying selection highlight to node: '{}'", node_id).into(),
+        );
     }
 
     Ok(())
@@ -284,31 +288,40 @@ fn has_selection_highlight(canvas: &HtmlCanvasElement, node_id: &str) -> bool {
     }
 
     // REFACTOR: Enhanced logging with validation context
-    web_sys::console::log_1(&format!(
-        "Checking selection highlight for node: '{}' [Canvas: {}x{}]",
-        node_id,
-        canvas.width(),
-        canvas.height()
-    ).into());
+    web_sys::console::log_1(
+        &format!(
+            "Checking selection highlight for node: '{}' [Canvas: {}x{}]",
+            node_id,
+            canvas.width(),
+            canvas.height()
+        )
+        .into(),
+    );
 
     // REFACTOR: More robust state checking with error handling
     let is_selected = unsafe {
         match TEST_SELECTION_STATE {
             Some(ref selection) => {
                 let result = selection.contains(node_id);
-                web_sys::console::log_1(&format!(
-                    "Selection state check: node '{}' {} selected (total selected: {})",
-                    node_id,
-                    if result { "IS" } else { "NOT" },
-                    selection.len()
-                ).into());
+                web_sys::console::log_1(
+                    &format!(
+                        "Selection state check: node '{}' {} selected (total selected: {})",
+                        node_id,
+                        if result { "IS" } else { "NOT" },
+                        selection.len()
+                    )
+                    .into(),
+                );
                 result
             }
             None => {
-                web_sys::console::warn_1(&format!(
-                    "Selection state not initialized when checking node '{}'",
-                    node_id
-                ).into());
+                web_sys::console::warn_1(
+                    &format!(
+                        "Selection state not initialized when checking node '{}'",
+                        node_id
+                    )
+                    .into(),
+                );
                 false
             }
         }
@@ -317,11 +330,13 @@ fn has_selection_highlight(canvas: &HtmlCanvasElement, node_id: &str) -> bool {
     // REFACTOR: Additional validation - check known valid nodes
     const VALID_NODES: &[&str] = &["node1", "node2"];
     if !VALID_NODES.contains(&node_id) {
-        web_sys::console::warn_1(&format!(
-            "Checking highlight for unknown node '{}' - valid nodes: {:?}",
-            node_id,
-            VALID_NODES
-        ).into());
+        web_sys::console::warn_1(
+            &format!(
+                "Checking highlight for unknown node '{}' - valid nodes: {:?}",
+                node_id, VALID_NODES
+            )
+            .into(),
+        );
     }
 
     is_selected
@@ -332,14 +347,12 @@ fn has_selection_highlight(canvas: &HtmlCanvasElement, node_id: &str) -> bool {
 fn create_edge_by_drag(
     graph: &mut Graph<(), ()>,
     source_id: &str,
-    target_id: &str
+    target_id: &str,
 ) -> Result<String, String> {
     // GREEN phase: Log the attempted operation
-    web_sys::console::log_1(&format!(
-        "Creating edge from '{}' to '{}'",
-        source_id,
-        target_id
-    ).into());
+    web_sys::console::log_1(
+        &format!("Creating edge from '{}' to '{}'", source_id, target_id).into(),
+    );
 
     // GREEN: Minimal implementation - create edge and return success
     let edge_id = format!("edge_{}_to_{}", source_id, target_id);
@@ -348,18 +361,11 @@ fn create_edge_by_drag(
     // Add the edge to the graph
     match graph.add_edge(edge) {
         Ok(_) => {
-            web_sys::console::log_1(&format!(
-                "Successfully created edge '{}'",
-                edge_id
-            ).into());
+            web_sys::console::log_1(&format!("Successfully created edge '{}'", edge_id).into());
             Ok(edge_id)
         }
         Err(e) => {
-            web_sys::console::error_1(&format!(
-                "Failed to add edge '{}': {:?}",
-                edge_id,
-                e
-            ).into());
+            web_sys::console::error_1(&format!("Failed to add edge '{}': {:?}", edge_id, e).into());
             Err(format!("Failed to add edge: {:?}", e))
         }
     }
@@ -382,8 +388,7 @@ fn pan_viewport(viewport: &mut Viewport, pan_offset: Position) -> Result<(), Str
     if pan_magnitude > MAX_PAN_DISTANCE {
         return Err(format!(
             "Pan offset too large: {:.1} exceeds maximum {:.1}",
-            pan_magnitude,
-            MAX_PAN_DISTANCE
+            pan_magnitude, MAX_PAN_DISTANCE
         ));
     }
 
@@ -391,15 +396,18 @@ fn pan_viewport(viewport: &mut Viewport, pan_offset: Position) -> Result<(), Str
     viewport.offset = viewport.offset.add(pan_offset);
 
     // REFACTOR: Enhanced logging with context
-    web_sys::console::log_1(&format!(
-        "Panned viewport from ({:.1}, {:.1}) to ({:.1}, {:.1}) [offset: ({:.1}, {:.1})]",
-        original_offset.x,
-        original_offset.y,
-        viewport.offset.x,
-        viewport.offset.y,
-        pan_offset.x,
-        pan_offset.y
-    ).into());
+    web_sys::console::log_1(
+        &format!(
+            "Panned viewport from ({:.1}, {:.1}) to ({:.1}, {:.1}) [offset: ({:.1}, {:.1})]",
+            original_offset.x,
+            original_offset.y,
+            viewport.offset.x,
+            viewport.offset.y,
+            pan_offset.x,
+            pan_offset.y
+        )
+        .into(),
+    );
 
     Ok(())
 }
@@ -425,7 +433,11 @@ fn test_node_selection_on_click() {
 
     // Verify that the node is selected
     let selected_node = get_selected_node(&renderer);
-    assert_eq!(selected_node, Some("node1"), "Node1 should be selected after click");
+    assert_eq!(
+        selected_node,
+        Some("node1"),
+        "Node1 should be selected after click"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -448,7 +460,10 @@ fn test_node_drag_functionality() {
 
     // Verify that node moved to new position
     let node = graph.get_node(&"node1".into()).unwrap();
-    assert_eq!(node.position, end_pos, "Node should move to new position after drag");
+    assert_eq!(
+        node.position, end_pos,
+        "Node should move to new position after drag"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -504,7 +519,10 @@ fn test_canvas_pan_functionality() {
 
     // Verify that viewport panned by the expected offset
     let expected_offset = initial_offset.add(pan_offset);
-    assert_eq!(viewport.offset, expected_offset, "Viewport offset should be updated by pan amount");
+    assert_eq!(
+        viewport.offset, expected_offset,
+        "Viewport offset should be updated by pan amount"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -523,15 +541,14 @@ fn test_node_visual_feedback() {
     select_node_for_test(selected_node_id);
 
     // RED phase: This should fail - visual feedback not implemented yet
-    let render_result = render_graph_with_selection(
-        &mut renderer,
-        &graph,
-        &viewport,
-        &[selected_node_id]
-    );
+    let render_result =
+        render_graph_with_selection(&mut renderer, &graph, &viewport, &[selected_node_id]);
 
     // Verify rendering succeeds (will fail in RED phase)
-    assert!(render_result.is_ok(), "Graph rendering with selection should succeed");
+    assert!(
+        render_result.is_ok(),
+        "Graph rendering with selection should succeed"
+    );
 
     // RED phase: This should fail - highlight detection not implemented yet
     let has_highlight = has_selection_highlight(&canvas, selected_node_id);
@@ -554,10 +571,7 @@ fn test_edge_creation_on_drag() {
 
     // Count initial edges to verify addition
     let initial_edge_count = graph.edges().count();
-    web_sys::console::log_1(&format!(
-        "Initial edge count: {}",
-        initial_edge_count
-    ).into());
+    web_sys::console::log_1(&format!("Initial edge count: {}", initial_edge_count).into());
 
     // RED phase: This should fail - edge creation not implemented yet
     let edge_creation_result = create_edge_by_drag(&mut graph, "node1", "node2");
@@ -577,8 +591,7 @@ fn test_edge_creation_on_drag() {
     let edge_id = edge_creation_result.unwrap();
     assert!(!edge_id.is_empty(), "Created edge should have valid ID");
 
-    web_sys::console::log_1(&format!(
-        "Created edge '{}' connecting node1 to node2",
-        edge_id
-    ).into());
+    web_sys::console::log_1(
+        &format!("Created edge '{}' connecting node1 to node2", edge_id).into(),
+    );
 }

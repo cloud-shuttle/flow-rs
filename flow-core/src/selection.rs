@@ -2,10 +2,10 @@
 //!
 //! Manages multi-node selection, keyboard navigation, and selection state.
 
-use std::collections::{HashSet, HashMap};
-use crate::types::{NodeId, Position, GroupId};
 use crate::graph::Graph;
 use crate::groups::GroupManager;
+use crate::types::{GroupId, NodeId, Position};
+use std::collections::{HashMap, HashSet};
 
 /// Visual feedback state for nodes
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -105,7 +105,6 @@ pub struct SelectionManager {
     visual_feedback: HashMap<NodeId, VisualFeedback>,
 }
 
-
 impl SelectionManager {
     /// Create a new selection manager
     pub fn new() -> Self {
@@ -150,7 +149,8 @@ impl SelectionManager {
         }
 
         // Update visual feedback for selected node
-        self.visual_feedback.entry(node_id)
+        self.visual_feedback
+            .entry(node_id)
             .or_default()
             .set_selected(true);
     }
@@ -264,7 +264,11 @@ impl SelectionManager {
     }
 
     /// Select nodes by keyboard navigation (move selection to next/previous node)
-    pub fn navigate_selection<N, E>(&mut self, graph: &Graph<N, E>, direction: NavigationDirection) -> Option<NodeId>
+    pub fn navigate_selection<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        direction: NavigationDirection,
+    ) -> Option<NodeId>
     where
         N: Clone,
         E: Clone,
@@ -358,12 +362,21 @@ impl SelectionManager {
     }
 
     /// Check if selecting a node should automatically select its group
-    pub fn should_select_group(&self, group_manager: &GroupManager, node_id: &NodeId) -> Option<GroupId> {
+    pub fn should_select_group(
+        &self,
+        group_manager: &GroupManager,
+        node_id: &NodeId,
+    ) -> Option<GroupId> {
         group_manager.get_node_group(node_id).cloned()
     }
 
     /// Select a node and optionally its entire group
-    pub fn select_node_with_group(&mut self, group_manager: &GroupManager, node_id: NodeId, select_whole_group: bool) {
+    pub fn select_node_with_group(
+        &mut self,
+        group_manager: &GroupManager,
+        node_id: NodeId,
+        select_whole_group: bool,
+    ) {
         if select_whole_group {
             if let Some(group_id) = group_manager.get_node_group(&node_id) {
                 self.select_group(group_manager, group_id);
@@ -389,7 +402,11 @@ impl SelectionManager {
     }
 
     /// Check if all nodes in a group are selected
-    pub fn is_group_fully_selected(&self, group_manager: &GroupManager, group_id: &GroupId) -> bool {
+    pub fn is_group_fully_selected(
+        &self,
+        group_manager: &GroupManager,
+        group_id: &GroupId,
+    ) -> bool {
         if let Some(group) = group_manager.get_group(group_id) {
             for node_id in &group.members {
                 if !self.selected_nodes.contains(node_id) {
@@ -412,8 +429,11 @@ impl SelectionManager {
     }
 
     /// Handle keyboard shortcuts for selection management (read-only operations)
-    pub fn handle_keyboard_shortcut<N, E>(&mut self, graph: &Graph<N, E>, shortcut: KeyboardShortcut)
-    where
+    pub fn handle_keyboard_shortcut<N, E>(
+        &mut self,
+        graph: &Graph<N, E>,
+        shortcut: KeyboardShortcut,
+    ) where
         N: Clone,
         E: Clone,
     {
@@ -450,8 +470,11 @@ impl SelectionManager {
     }
 
     /// Handle destructive keyboard shortcuts that modify the graph
-    pub fn handle_destructive_keyboard_shortcut<N, E>(&mut self, graph: &mut Graph<N, E>, shortcut: KeyboardShortcut)
-    where
+    pub fn handle_destructive_keyboard_shortcut<N, E>(
+        &mut self,
+        graph: &mut Graph<N, E>,
+        shortcut: KeyboardShortcut,
+    ) where
         N: Clone,
         E: Clone,
     {
@@ -491,8 +514,7 @@ impl SelectionManager {
 
     /// Set hover state for a node
     pub fn set_hover_state(&mut self, node_id: &NodeId, hovered: bool) {
-        let feedback = self.visual_feedback.entry(node_id.clone())
-            .or_default();
+        let feedback = self.visual_feedback.entry(node_id.clone()).or_default();
         feedback.set_hovered(hovered);
 
         // Clean up if no states are active
@@ -503,8 +525,7 @@ impl SelectionManager {
 
     /// Set highlight state for a node
     pub fn set_highlight_state(&mut self, node_id: &NodeId, highlighted: bool) {
-        let feedback = self.visual_feedback.entry(node_id.clone())
-            .or_default();
+        let feedback = self.visual_feedback.entry(node_id.clone()).or_default();
         feedback.set_highlighted(highlighted);
 
         // Clean up if no states are active
@@ -568,10 +589,18 @@ mod tests {
         let mut graph = Graph::new();
 
         // Add test nodes
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("node2", Position::new(200.0, 150.0))).unwrap();
-        graph.add_node(Node::simple("node3", Position::new(300.0, 200.0))).unwrap();
-        graph.add_node(Node::simple("node4", Position::new(150.0, 250.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::new(200.0, 150.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node3", Position::new(300.0, 200.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node4", Position::new(150.0, 250.0)))
+            .unwrap();
 
         graph
     }
@@ -769,7 +798,9 @@ mod tests {
             .map(|&s| NodeId::new(s))
             .collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), nodes.clone()).unwrap();
+        group_manager
+            .create_group(group_id.clone(), nodes.clone())
+            .unwrap();
 
         // Test single mode - should clear previous selection and select all group nodes
         selection.select_node("other_node".into());
@@ -850,13 +881,19 @@ mod tests {
         let mut group_manager = GroupManager::new();
 
         // Create two groups
-        let group1_nodes: HashSet<NodeId> = ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
-        let group2_nodes: HashSet<NodeId> = ["node3", "node4"].iter().map(|&s| NodeId::new(s)).collect();
+        let group1_nodes: HashSet<NodeId> =
+            ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
+        let group2_nodes: HashSet<NodeId> =
+            ["node3", "node4"].iter().map(|&s| NodeId::new(s)).collect();
         let group1_id = GroupId::new("group1");
         let group2_id = GroupId::new("group2");
 
-        group_manager.create_group(group1_id.clone(), group1_nodes).unwrap();
-        group_manager.create_group(group2_id.clone(), group2_nodes).unwrap();
+        group_manager
+            .create_group(group1_id.clone(), group1_nodes)
+            .unwrap();
+        group_manager
+            .create_group(group2_id.clone(), group2_nodes)
+            .unwrap();
 
         // Select nodes from both groups
         selection.select_node("node1".into());
@@ -880,7 +917,10 @@ mod tests {
         let mut group_manager = GroupManager::new();
 
         // Create a group
-        let nodes: HashSet<NodeId> = ["node1", "node2", "node3"].iter().map(|&s| NodeId::new(s)).collect();
+        let nodes: HashSet<NodeId> = ["node1", "node2", "node3"]
+            .iter()
+            .map(|&s| NodeId::new(s))
+            .collect();
         let group_id = GroupId::new("test_group");
         group_manager.create_group(group_id.clone(), nodes).unwrap();
 
@@ -910,7 +950,10 @@ mod tests {
         let mut group_manager = GroupManager::new();
 
         // Create a group
-        let nodes: HashSet<NodeId> = ["node1", "node2", "node3"].iter().map(|&s| NodeId::new(s)).collect();
+        let nodes: HashSet<NodeId> = ["node1", "node2", "node3"]
+            .iter()
+            .map(|&s| NodeId::new(s))
+            .collect();
         let group_id = GroupId::new("test_group");
         group_manager.create_group(group_id.clone(), nodes).unwrap();
 
@@ -1033,20 +1076,26 @@ mod tests {
         assert!(manager.has_visual_feedback(&node_id));
 
         // Test visual feedback properties
-        let feedback = manager.get_visual_feedback(&node_id).expect("Visual feedback should exist");
+        let feedback = manager
+            .get_visual_feedback(&node_id)
+            .expect("Visual feedback should exist");
         assert!(feedback.is_selected());
         assert!(!feedback.is_hovered());
         assert!(!feedback.is_highlighted());
 
         // Test hover state
         manager.set_hover_state(&node_id, true);
-        let feedback = manager.get_visual_feedback(&node_id).expect("Visual feedback should exist");
+        let feedback = manager
+            .get_visual_feedback(&node_id)
+            .expect("Visual feedback should exist");
         assert!(feedback.is_selected());
         assert!(feedback.is_hovered());
 
         // Test highlight state
         manager.set_highlight_state(&node_id, true);
-        let feedback = manager.get_visual_feedback(&node_id).expect("Visual feedback should exist");
+        let feedback = manager
+            .get_visual_feedback(&node_id)
+            .expect("Visual feedback should exist");
         assert!(feedback.is_selected());
         assert!(feedback.is_hovered());
         assert!(feedback.is_highlighted());
@@ -1169,7 +1218,9 @@ mod tests {
     #[test]
     fn test_visual_feedback_batch_operations() {
         let mut manager = SelectionManager::new();
-        let nodes: Vec<NodeId> = (0..10).map(|i| NodeId::from(format!("node{}", i))).collect();
+        let nodes: Vec<NodeId> = (0..10)
+            .map(|i| NodeId::from(format!("node{}", i)))
+            .collect();
 
         // Set all nodes to different states
         for (i, node_id) in nodes.iter().enumerate() {

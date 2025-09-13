@@ -2,9 +2,9 @@
 //!
 //! Manages hierarchical organization of nodes through grouping operations.
 
-use std::collections::{HashMap, HashSet};
-use crate::types::{NodeId, GroupId, Position, Size, Rect};
 use crate::error::{FlowError, Result};
+use crate::types::{GroupId, NodeId, Position, Rect, Size};
+use std::collections::{HashMap, HashSet};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -105,15 +105,19 @@ impl GroupDragState {
     }
 
     /// Store original node positions before starting the drag
-    pub fn store_original_positions<N, E>(&mut self, group: &Group, graph: &crate::graph::Graph<N, E>)
-    where
+    pub fn store_original_positions<N, E>(
+        &mut self,
+        group: &Group,
+        graph: &crate::graph::Graph<N, E>,
+    ) where
         N: Clone,
         E: Clone,
     {
         self.original_node_positions.clear();
         for node_id in &group.members {
             if let Some(node) = graph.get_node(node_id) {
-                self.original_node_positions.insert(node_id.clone(), node.position);
+                self.original_node_positions
+                    .insert(node_id.clone(), node.position);
             }
         }
     }
@@ -139,15 +143,16 @@ impl GroupManager {
         // Check for existing group membership conflicts
         for node_id in &members {
             if self.node_to_group.contains_key(node_id) {
-                return Err(FlowError::invalid_operation(
-                    format!("Node {} is already in a group", node_id)
-                ));
+                return Err(FlowError::invalid_operation(format!(
+                    "Node {} is already in a group",
+                    node_id
+                )));
             }
         }
 
         if members.is_empty() {
             return Err(FlowError::invalid_operation(
-                "Cannot create group with no members"
+                "Cannot create group with no members",
             ));
         }
 
@@ -179,10 +184,10 @@ impl GroupManager {
 
     /// Dissolve a group, removing all memberships
     pub fn dissolve_group(&mut self, group_id: &GroupId) -> Result<HashSet<NodeId>> {
-        let group = self.groups.remove(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .remove(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         // Remove node mappings
         for node_id in &group.members {
@@ -206,16 +211,17 @@ impl GroupManager {
     pub fn add_node_to_group(&mut self, group_id: &GroupId, node_id: NodeId) -> Result<()> {
         // Check if node is already in a group
         if self.node_to_group.contains_key(&node_id) {
-            return Err(FlowError::invalid_operation(
-                format!("Node {} is already in a group", node_id)
-            ));
+            return Err(FlowError::invalid_operation(format!(
+                "Node {} is already in a group",
+                node_id
+            )));
         }
 
         // Check if group exists
-        let group = self.groups.get_mut(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .get_mut(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         // Add node to group and update mapping
         group.add_member(node_id.clone());
@@ -227,16 +233,17 @@ impl GroupManager {
     /// Remove a node from a group
     pub fn remove_node_from_group(&mut self, group_id: &GroupId, node_id: &NodeId) -> Result<()> {
         // Check if group exists
-        let group = self.groups.get_mut(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .get_mut(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         // Check if node is in this group
         if !group.contains_node(node_id) {
-            return Err(FlowError::invalid_operation(
-                format!("Node {} is not in group {}", node_id, group_id)
-            ));
+            return Err(FlowError::invalid_operation(format!(
+                "Node {} is not in group {}",
+                node_id, group_id
+            )));
         }
 
         // Remove node from group and clear mapping
@@ -253,25 +260,29 @@ impl GroupManager {
 
     /// Set the name of a group
     pub fn set_group_name(&mut self, group_id: &GroupId, name: Option<String>) -> Result<()> {
-        let group = self.groups.get_mut(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .get_mut(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         group.name = name;
         Ok(())
     }
 
     /// Calculate the bounding rectangle for a group based on its member positions
-    pub fn calculate_group_bounds<N, E>(&mut self, group_id: &GroupId, graph: &crate::graph::Graph<N, E>) -> Result<()>
+    pub fn calculate_group_bounds<N, E>(
+        &mut self,
+        group_id: &GroupId,
+        graph: &crate::graph::Graph<N, E>,
+    ) -> Result<()>
     where
         N: Clone,
         E: Clone,
     {
-        let group = self.groups.get_mut(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .get_mut(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         if group.members.is_empty() {
             return Ok(());
@@ -305,15 +316,20 @@ impl GroupManager {
     }
 
     /// Move all nodes in a group by a delta offset
-    pub fn move_group<N, E>(&self, group_id: &GroupId, delta: Position, graph: &mut crate::graph::Graph<N, E>) -> Result<()>
+    pub fn move_group<N, E>(
+        &self,
+        group_id: &GroupId,
+        delta: Position,
+        graph: &mut crate::graph::Graph<N, E>,
+    ) -> Result<()>
     where
         N: Clone,
         E: Clone,
     {
-        let group = self.groups.get(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .get(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         for node_id in &group.members {
             if let Some(node) = graph.get_node_mut(node_id) {
@@ -328,25 +344,30 @@ impl GroupManager {
     pub fn is_point_in_group(&self, group_id: &GroupId, point: Position) -> bool {
         if let Some(group) = self.groups.get(group_id) {
             let bounds = group.bounds();
-            point.x >= bounds.x &&
-            point.x <= bounds.x + bounds.width &&
-            point.y >= bounds.y &&
-            point.y <= bounds.y + bounds.height
+            point.x >= bounds.x
+                && point.x <= bounds.x + bounds.width
+                && point.y >= bounds.y
+                && point.y <= bounds.y + bounds.height
         } else {
             false
         }
     }
 
     /// Start dragging a group
-    pub fn start_group_drag<N, E>(&mut self, group_id: &GroupId, start_position: Position, graph: &crate::graph::Graph<N, E>) -> Result<()>
+    pub fn start_group_drag<N, E>(
+        &mut self,
+        group_id: &GroupId,
+        start_position: Position,
+        graph: &crate::graph::Graph<N, E>,
+    ) -> Result<()>
     where
         N: Clone,
         E: Clone,
     {
-        let group = self.groups.get(group_id)
-            .ok_or_else(|| FlowError::invalid_operation(
-                format!("Group {} not found", group_id)
-            ))?;
+        let group = self
+            .groups
+            .get(group_id)
+            .ok_or_else(|| FlowError::invalid_operation(format!("Group {} not found", group_id)))?;
 
         let mut drag_state = GroupDragState::new(group_id.clone(), start_position);
         drag_state.store_original_positions(group, graph);
@@ -356,12 +377,18 @@ impl GroupManager {
     }
 
     /// Update group drag position and move all nodes
-    pub fn update_group_drag<N, E>(&mut self, new_position: Position, graph: &mut crate::graph::Graph<N, E>) -> Result<Position>
+    pub fn update_group_drag<N, E>(
+        &mut self,
+        new_position: Position,
+        graph: &mut crate::graph::Graph<N, E>,
+    ) -> Result<Position>
     where
         N: Clone,
         E: Clone,
     {
-        let drag_state = self.drag_state.as_mut()
+        let drag_state = self
+            .drag_state
+            .as_mut()
             .ok_or_else(|| FlowError::invalid_operation("No group drag in progress"))?;
 
         let delta = drag_state.update_position(new_position);
@@ -375,19 +402,26 @@ impl GroupManager {
 
     /// Complete group drag operation
     pub fn complete_group_drag(&mut self) -> Result<GroupId> {
-        let drag_state = self.drag_state.take()
+        let drag_state = self
+            .drag_state
+            .take()
             .ok_or_else(|| FlowError::invalid_operation("No group drag in progress"))?;
 
         Ok(drag_state.dragging_group)
     }
 
     /// Cancel group drag operation and restore original positions
-    pub fn cancel_group_drag<N, E>(&mut self, graph: &mut crate::graph::Graph<N, E>) -> Result<GroupId>
+    pub fn cancel_group_drag<N, E>(
+        &mut self,
+        graph: &mut crate::graph::Graph<N, E>,
+    ) -> Result<GroupId>
     where
         N: Clone,
         E: Clone,
     {
-        let drag_state = self.drag_state.take()
+        let drag_state = self
+            .drag_state
+            .take()
             .ok_or_else(|| FlowError::invalid_operation("No group drag in progress"))?;
 
         // Restore original positions
@@ -412,7 +446,9 @@ impl GroupManager {
 
     /// Get the current drag delta (if any)
     pub fn get_drag_delta(&self) -> Option<Position> {
-        self.drag_state.as_ref().map(|state| state.delta_from_start())
+        self.drag_state
+            .as_ref()
+            .map(|state| state.delta_from_start())
     }
 }
 
@@ -466,7 +502,9 @@ mod tests {
 
         // Create first group with node1
         let group1_members: HashSet<NodeId> = [node1.clone()].into_iter().collect();
-        manager.create_group(GroupId::new("group1"), group1_members).unwrap();
+        manager
+            .create_group(GroupId::new("group1"), group1_members)
+            .unwrap();
 
         // Try to create second group with same node - should fail
         let group2_members: HashSet<NodeId> = [node1].into_iter().collect();
@@ -483,7 +521,9 @@ mod tests {
         let group_id = GroupId::new("test_group");
 
         // Create group
-        manager.create_group(group_id.clone(), members.clone()).unwrap();
+        manager
+            .create_group(group_id.clone(), members.clone())
+            .unwrap();
         assert!(manager.get_group(&group_id).is_some());
 
         // Dissolve group
@@ -506,8 +546,14 @@ mod tests {
 
         manager.create_group(group_id.clone(), members).unwrap();
 
-        assert_eq!(manager.get_node_group(&NodeId::new("node1")), Some(&group_id));
-        assert_eq!(manager.get_node_group(&NodeId::new("node2")), Some(&group_id));
+        assert_eq!(
+            manager.get_node_group(&NodeId::new("node1")),
+            Some(&group_id)
+        );
+        assert_eq!(
+            manager.get_node_group(&NodeId::new("node2")),
+            Some(&group_id)
+        );
         assert_eq!(manager.get_node_group(&NodeId::new("node3")), None);
     }
 
@@ -533,7 +579,9 @@ mod tests {
         let group_id = GroupId::new("test_group");
 
         // Create group with one node
-        manager.create_group(group_id.clone(), initial_members).unwrap();
+        manager
+            .create_group(group_id.clone(), initial_members)
+            .unwrap();
 
         // Add another node to the group
         let result = manager.add_node_to_group(&group_id, nodes[1].clone());
@@ -603,8 +651,12 @@ mod tests {
         let group1_id = GroupId::new("group1");
         let group2_id = GroupId::new("group2");
 
-        manager.create_group(group1_id.clone(), group1_members).unwrap();
-        manager.create_group(group2_id.clone(), group2_members).unwrap();
+        manager
+            .create_group(group1_id.clone(), group1_members)
+            .unwrap();
+        manager
+            .create_group(group2_id.clone(), group2_members)
+            .unwrap();
 
         // Try to add node from group1 to group2 - should fail
         let result = manager.add_node_to_group(&group2_id, nodes[0].clone());
@@ -653,7 +705,9 @@ mod tests {
         // Create group
         let members: HashSet<NodeId> = ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Calculate bounds
         let result = group_manager.calculate_group_bounds(&group_id, &graph);
@@ -685,7 +739,9 @@ mod tests {
         // Create group
         let members: HashSet<NodeId> = ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Move group by delta (50, 25)
         let delta = Position::new(50.0, 25.0);
@@ -708,7 +764,9 @@ mod tests {
         // Create a group with known bounds
         let members: HashSet<NodeId> = [NodeId::new("node1")].into_iter().collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Set group bounds manually
         let group = group_manager.get_group_mut(&group_id).unwrap();
@@ -722,7 +780,8 @@ mod tests {
 
         // Test boundary points
         assert!(group_manager.is_point_in_group(&group_id, Position::new(100.0, 100.0))); // Top-left corner
-        assert!(group_manager.is_point_in_group(&group_id, Position::new(150.0, 130.0))); // Bottom-right corner
+        assert!(group_manager.is_point_in_group(&group_id, Position::new(150.0, 130.0)));
+        // Bottom-right corner
     }
 
     #[test]
@@ -801,7 +860,9 @@ mod tests {
 
         let members: HashSet<NodeId> = ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Start drag
         let start_pos = Position::new(125.0, 110.0);
@@ -828,11 +889,15 @@ mod tests {
 
         let members: HashSet<NodeId> = ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Start and update drag
         let start_pos = Position::new(125.0, 110.0);
-        group_manager.start_group_drag(&group_id, start_pos, &graph).unwrap();
+        group_manager
+            .start_group_drag(&group_id, start_pos, &graph)
+            .unwrap();
 
         let new_pos = Position::new(175.0, 135.0);
         let result = group_manager.update_group_drag(new_pos, &mut graph);
@@ -840,7 +905,10 @@ mod tests {
         assert!(result.is_ok());
         let delta = result.unwrap();
         assert_eq!(delta, Position::new(50.0, 25.0));
-        assert_eq!(group_manager.get_drag_delta(), Some(Position::new(50.0, 25.0)));
+        assert_eq!(
+            group_manager.get_drag_delta(),
+            Some(Position::new(50.0, 25.0))
+        );
 
         // Check nodes moved
         let node1_after = graph.get_node(&NodeId::new("node1")).unwrap();
@@ -862,8 +930,12 @@ mod tests {
 
         let members: HashSet<NodeId> = [NodeId::new("node1")].into_iter().collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
-        group_manager.start_group_drag(&group_id, Position::zero(), &graph).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
+        group_manager
+            .start_group_drag(&group_id, Position::zero(), &graph)
+            .unwrap();
 
         // Complete drag
         let result = group_manager.complete_group_drag();
@@ -889,14 +961,23 @@ mod tests {
 
         let members: HashSet<NodeId> = ["node1", "node2"].iter().map(|&s| NodeId::new(s)).collect();
         let group_id = GroupId::new("test_group");
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Start drag and move
-        group_manager.start_group_drag(&group_id, Position::zero(), &graph).unwrap();
-        group_manager.update_group_drag(Position::new(50.0, 25.0), &mut graph).unwrap();
+        group_manager
+            .start_group_drag(&group_id, Position::zero(), &graph)
+            .unwrap();
+        group_manager
+            .update_group_drag(Position::new(50.0, 25.0), &mut graph)
+            .unwrap();
 
         // Verify nodes moved
-        assert_eq!(graph.get_node(&NodeId::new("node1")).unwrap().position, Position::new(150.0, 125.0));
+        assert_eq!(
+            graph.get_node(&NodeId::new("node1")).unwrap().position,
+            Position::new(150.0, 125.0)
+        );
 
         // Cancel drag
         let result = group_manager.cancel_group_drag(&mut graph);
@@ -906,8 +987,14 @@ mod tests {
         assert!(!group_manager.is_group_dragging());
 
         // Verify nodes restored to original positions
-        assert_eq!(graph.get_node(&NodeId::new("node1")).unwrap().position, Position::new(100.0, 100.0));
-        assert_eq!(graph.get_node(&NodeId::new("node2")).unwrap().position, Position::new(200.0, 150.0));
+        assert_eq!(
+            graph.get_node(&NodeId::new("node1")).unwrap().position,
+            Position::new(100.0, 100.0)
+        );
+        assert_eq!(
+            graph.get_node(&NodeId::new("node2")).unwrap().position,
+            Position::new(200.0, 150.0)
+        );
     }
 
     #[test]

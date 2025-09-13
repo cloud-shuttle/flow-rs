@@ -7,8 +7,8 @@ use std::marker::PhantomData;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{FlowError, Result};
-use crate::types::{Position, Size, Rect, NodeId, EdgeId};
 use crate::handle::{Handle, HandleId, HandleManager};
+use crate::types::{EdgeId, NodeId, Position, Rect, Size};
 
 /// Node in a flow graph
 #[derive(Debug, Clone, PartialEq)]
@@ -153,7 +153,8 @@ impl<T> Node<T> {
 
     /// Find handle at position relative to this node
     pub fn handle_at_position(&self, point: Position, handle_size: f64) -> Option<&Handle> {
-        self.handle_manager.handle_at_position(point, self.position, self.size, handle_size)
+        self.handle_manager
+            .handle_at_position(point, self.position, self.size, handle_size)
     }
 
     /// Get source handles
@@ -506,12 +507,12 @@ impl<T> EdgeBuilder<T> {
         T: Default,
     {
         let id = self.id.unwrap_or_else(EdgeId::generate);
-        let source = self.source.ok_or_else(|| {
-            FlowError::invalid_connection("Source node not specified")
-        })?;
-        let target = self.target.ok_or_else(|| {
-            FlowError::invalid_connection("Target node not specified")
-        })?;
+        let source = self
+            .source
+            .ok_or_else(|| FlowError::invalid_connection("Source node not specified"))?;
+        let target = self
+            .target
+            .ok_or_else(|| FlowError::invalid_connection("Target node not specified"))?;
         let data = self.data.unwrap_or_default();
 
         if source == target {
@@ -539,12 +540,12 @@ impl<T> EdgeBuilder<T> {
     /// Build the edge with specific data
     pub fn build_with_data(self, data: T) -> Result<Edge<T>> {
         let id = self.id.unwrap_or_else(EdgeId::generate);
-        let source = self.source.ok_or_else(|| {
-            FlowError::invalid_connection("Source node not specified")
-        })?;
-        let target = self.target.ok_or_else(|| {
-            FlowError::invalid_connection("Target node not specified")
-        })?;
+        let source = self
+            .source
+            .ok_or_else(|| FlowError::invalid_connection("Source node not specified"))?;
+        let target = self
+            .target
+            .ok_or_else(|| FlowError::invalid_connection("Target node not specified"))?;
 
         if source == target {
             return Err(FlowError::SelfConnection);
@@ -608,13 +609,13 @@ impl<N, E> Graph<N, E> {
 
     /// Remove a node and all connected edges
     pub fn remove_node(&mut self, node_id: &NodeId) -> Result<Node<N>> {
-        let node = self.nodes.remove(node_id)
+        let node = self
+            .nodes
+            .remove(node_id)
             .ok_or_else(|| FlowError::node_not_found(node_id.as_str()))?;
 
         // Remove all connected edges
-        self.edges.retain(|_, edge| {
-            !edge.is_connected_to(node_id)
-        });
+        self.edges.retain(|_, edge| !edge.is_connected_to(node_id));
 
         Ok(node)
     }
@@ -647,10 +648,10 @@ impl<N, E> Graph<N, E> {
         Ok(())
     }
 
-
     /// Remove an edge
     pub fn remove_edge(&mut self, edge_id: &EdgeId) -> Result<Edge<E>> {
-        self.edges.remove(edge_id)
+        self.edges
+            .remove(edge_id)
             .ok_or_else(|| FlowError::edge_not_found(edge_id.as_str()))
     }
 
@@ -707,29 +708,33 @@ impl<N, E> Graph<N, E> {
 
     /// Get edges connected to a node
     pub fn get_connected_edges(&self, node_id: &NodeId) -> Vec<&Edge<E>> {
-        self.edges.values()
+        self.edges
+            .values()
             .filter(|edge| edge.is_connected_to(node_id))
             .collect()
     }
 
     /// Get incoming edges for a node
     pub fn get_incoming_edges(&self, node_id: &NodeId) -> Vec<&Edge<E>> {
-        self.edges.values()
+        self.edges
+            .values()
             .filter(|edge| &edge.target == node_id)
             .collect()
     }
 
     /// Get outgoing edges for a node
     pub fn get_outgoing_edges(&self, node_id: &NodeId) -> Vec<&Edge<E>> {
-        self.edges.values()
+        self.edges
+            .values()
             .filter(|edge| &edge.source == node_id)
             .collect()
     }
 
-
     /// Check if two nodes are connected
     pub fn are_connected(&self, source: &NodeId, target: &NodeId) -> bool {
-        self.edges.values().any(|edge| edge.connects(source, target))
+        self.edges
+            .values()
+            .any(|edge| edge.connects(source, target))
     }
 
     /// Get all node IDs
@@ -770,37 +775,42 @@ impl<N, E> Graph<N, E> {
     /// Add an edge with handle validation
     pub fn add_handle_edge(&mut self, edge: Edge<E>) -> Result<()> {
         // Validate that source and target nodes exist
-        let source_node = self.get_node(&edge.source)
+        let source_node = self
+            .get_node(&edge.source)
             .ok_or_else(|| FlowError::node_not_found(edge.source.as_str()))?;
-        let target_node = self.get_node(&edge.target)
+        let target_node = self
+            .get_node(&edge.target)
             .ok_or_else(|| FlowError::node_not_found(edge.target.as_str()))?;
 
         // Validate handle references if specified
         if let Some(source_handle_id) = &edge.source_handle {
             let source_handle_id = HandleId::new(source_handle_id.clone());
-            let source_handle = source_node.get_handle(&source_handle_id)
+            let source_handle = source_node
+                .get_handle(&source_handle_id)
                 .ok_or_else(|| FlowError::handle_not_found(source_handle_id.as_str()))?;
 
             // Check connection limit
             if !self.can_handle_accept_connection(&edge.source, &source_handle_id) {
-                let current_count = self.get_handle_connection_count(&edge.source, &source_handle_id);
+                let current_count =
+                    self.get_handle_connection_count(&edge.source, &source_handle_id);
                 let limit = source_handle.connection_limit.unwrap_or(usize::MAX);
                 return Err(FlowError::connection_limit_exceeded(
                     source_handle_id.as_str(),
                     current_count,
-                    limit
+                    limit,
                 ));
             }
 
             if let Some(target_handle_id) = &edge.target_handle {
                 let target_handle_id = HandleId::new(target_handle_id.clone());
-                let target_handle = target_node.get_handle(&target_handle_id)
+                let target_handle = target_node
+                    .get_handle(&target_handle_id)
                     .ok_or_else(|| FlowError::handle_not_found(target_handle_id.as_str()))?;
 
                 // Check handle compatibility
                 if !source_handle.can_connect_to(target_handle) {
                     return Err(FlowError::invalid_connection(
-                        "Handle types or connection types are incompatible"
+                        "Handle types or connection types are incompatible",
                     ));
                 }
             }
@@ -810,14 +820,15 @@ impl<N, E> Graph<N, E> {
         self.add_edge(edge)
     }
 
-
     /// Get connection count for a specific handle
     fn get_handle_connection_count(&self, node_id: &NodeId, handle_id: &HandleId) -> usize {
         let handle_id_str = handle_id.as_str();
-        self.edges.values()
+        self.edges
+            .values()
             .filter(|edge| {
-                (&edge.source == node_id && edge.source_handle.as_deref() == Some(handle_id_str)) ||
-                (&edge.target == node_id && edge.target_handle.as_deref() == Some(handle_id_str))
+                (&edge.source == node_id && edge.source_handle.as_deref() == Some(handle_id_str))
+                    || (&edge.target == node_id
+                        && edge.target_handle.as_deref() == Some(handle_id_str))
             })
             .count()
     }
@@ -828,10 +839,12 @@ impl<N, E> Graph<N, E> {
     /// in the graph that reference the specified handle.
     pub fn get_handle_connections(&self, node_id: &NodeId, handle_id: &HandleId) -> Vec<&Edge<E>> {
         let handle_id_str = handle_id.as_str();
-        self.edges.values()
+        self.edges
+            .values()
             .filter(|edge| {
-                (&edge.source == node_id && edge.source_handle.as_deref() == Some(handle_id_str)) ||
-                (&edge.target == node_id && edge.target_handle.as_deref() == Some(handle_id_str))
+                (&edge.source == node_id && edge.source_handle.as_deref() == Some(handle_id_str))
+                    || (&edge.target == node_id
+                        && edge.target_handle.as_deref() == Some(handle_id_str))
             })
             .collect()
     }
@@ -853,7 +866,11 @@ impl<N, E> Graph<N, E> {
     }
 
     /// Find handle at position in the graph
-    pub fn handle_at_position(&self, point: Position, handle_size: f64) -> Option<(&NodeId, &Handle)> {
+    pub fn handle_at_position(
+        &self,
+        point: Position,
+        handle_size: f64,
+    ) -> Option<(&NodeId, &Handle)> {
         for node in self.nodes.values() {
             if let Some(handle) = node.handle_at_position(point, handle_size) {
                 return Some((&node.id, handle));
@@ -863,7 +880,10 @@ impl<N, E> Graph<N, E> {
     }
 
     /// Get all handles of a specific type in the graph
-    pub fn get_handles_by_type(&self, handle_type: crate::handle::HandleType) -> Vec<(&NodeId, &Handle)> {
+    pub fn get_handles_by_type(
+        &self,
+        handle_type: crate::handle::HandleType,
+    ) -> Vec<(&NodeId, &Handle)> {
         let mut handles = Vec::new();
         for node in self.nodes.values() {
             for handle in node.handles() {
@@ -877,7 +897,11 @@ impl<N, E> Graph<N, E> {
 
     /// Drag & Drop Operations
     /// Apply drag operation to selected nodes
-    pub fn apply_node_drag(&mut self, selected_nodes: &std::collections::HashSet<NodeId>, delta: Position) -> Result<()> {
+    pub fn apply_node_drag(
+        &mut self,
+        selected_nodes: &std::collections::HashSet<NodeId>,
+        delta: Position,
+    ) -> Result<()> {
         self.apply_node_drag_with_transform(selected_nodes, delta, |pos, _| pos)
     }
 
@@ -886,13 +910,19 @@ impl<N, E> Graph<N, E> {
         &mut self,
         selected_nodes: &std::collections::HashSet<NodeId>,
         delta: Position,
-        bounds: Option<crate::types::Rect>
+        bounds: Option<crate::types::Rect>,
     ) -> Result<()> {
         self.apply_node_drag_with_transform(selected_nodes, delta, |new_pos, node| {
             if let Some(bounds) = bounds {
                 Position::new(
-                    new_pos.x.max(bounds.x).min(bounds.x + bounds.width - node.size.width),
-                    new_pos.y.max(bounds.y).min(bounds.y + bounds.height - node.size.height),
+                    new_pos
+                        .x
+                        .max(bounds.x)
+                        .min(bounds.x + bounds.width - node.size.width),
+                    new_pos
+                        .y
+                        .max(bounds.y)
+                        .min(bounds.y + bounds.height - node.size.height),
                 )
             } else {
                 new_pos
@@ -905,7 +935,7 @@ impl<N, E> Graph<N, E> {
         &mut self,
         selected_nodes: &std::collections::HashSet<NodeId>,
         delta: Position,
-        grid_size: f64
+        grid_size: f64,
     ) -> Result<()> {
         self.apply_node_drag_with_transform(selected_nodes, delta, |new_pos, _| {
             Position::new(
@@ -920,7 +950,7 @@ impl<N, E> Graph<N, E> {
         &mut self,
         selected_nodes: &std::collections::HashSet<NodeId>,
         delta: Position,
-        constraint: F
+        constraint: F,
     ) -> Result<()>
     where
         F: Fn(Position) -> Position,
@@ -933,7 +963,7 @@ impl<N, E> Graph<N, E> {
         &mut self,
         selected_nodes: &std::collections::HashSet<NodeId>,
         delta: Position,
-        transform: F
+        transform: F,
     ) -> Result<()>
     where
         F: Fn(Position, &Node<N>) -> Position,
@@ -960,7 +990,7 @@ impl<N, E> Graph<N, E> {
     pub fn create_drag_operation(
         &self,
         selected_nodes: &std::collections::HashSet<NodeId>,
-        delta: Position
+        delta: Position,
     ) -> Result<crate::drag_operations::DragOperation> {
         // Validate all nodes exist before creating operation
         for node_id in selected_nodes {
@@ -971,7 +1001,7 @@ impl<N, E> Graph<N, E> {
 
         Ok(crate::drag_operations::DragOperation::new(
             selected_nodes.clone(),
-            delta
+            delta,
         ))
     }
 
@@ -1038,9 +1068,7 @@ mod tests {
 
     #[test]
     fn test_edge_builder_self_connection() {
-        let result = Edge::<()>::builder()
-            .connect("node1", "node1")
-            .build();
+        let result = Edge::<()>::builder().connect("node1", "node1").build();
 
         assert!(matches!(result, Err(FlowError::SelfConnection)));
     }
@@ -1069,9 +1097,15 @@ mod tests {
     fn test_graph_cascade_delete() {
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(Node::simple("node1", Position::zero())).unwrap();
-        graph.add_node(Node::simple("node2", Position::zero())).unwrap();
-        graph.add_edge(Edge::simple("edge1", "node1", "node2")).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::zero()))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::zero()))
+            .unwrap();
+        graph
+            .add_edge(Edge::simple("edge1", "node1", "node2"))
+            .unwrap();
 
         assert_eq!(graph.edge_count(), 1);
 
@@ -1085,19 +1119,23 @@ mod tests {
     fn test_graph_bounds() {
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(
-            Node::builder("node1")
-                .position(0.0, 0.0)
-                .size(100.0, 50.0)
-                .build()
-        ).unwrap();
+        graph
+            .add_node(
+                Node::builder("node1")
+                    .position(0.0, 0.0)
+                    .size(100.0, 50.0)
+                    .build(),
+            )
+            .unwrap();
 
-        graph.add_node(
-            Node::builder("node2")
-                .position(200.0, 300.0)
-                .size(100.0, 50.0)
-                .build()
-        ).unwrap();
+        graph
+            .add_node(
+                Node::builder("node2")
+                    .position(200.0, 300.0)
+                    .size(100.0, 50.0)
+                    .build(),
+            )
+            .unwrap();
 
         let bounds = graph.bounds().unwrap();
         assert_eq!(bounds, Rect::new(0.0, 0.0, 300.0, 350.0));
@@ -1127,7 +1165,10 @@ mod tests {
         let duplicate = Node::new("node1", Position::new(50.0, 50.0), 100);
         let result = graph.add_node(duplicate);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::DuplicateNodeId { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::DuplicateNodeId { .. }
+        ));
 
         // Test node removal
         let removed = graph.remove_node(&NodeId::from("node1"));
@@ -1138,7 +1179,10 @@ mod tests {
         // Test removing non-existent node
         let not_found = graph.remove_node(&NodeId::from("nonexistent"));
         assert!(not_found.is_err());
-        assert!(matches!(not_found.unwrap_err(), FlowError::NodeNotFound { .. }));
+        assert!(matches!(
+            not_found.unwrap_err(),
+            FlowError::NodeNotFound { .. }
+        ));
     }
 
     #[test]
@@ -1146,9 +1190,15 @@ mod tests {
         let mut graph: Graph<(), String> = Graph::new();
 
         // Add nodes first
-        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+        graph
+            .add_node(Node::new("A", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("B", Position::new(100.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("C", Position::new(200.0, 0.0), ()))
+            .unwrap();
 
         // Test adding edges
         let edge1 = Edge::new("edge1", "A", "B", "connects_to".to_string());
@@ -1167,13 +1217,19 @@ mod tests {
         let invalid_edge = Edge::new("invalid", "A", "nonexistent", "error".to_string());
         let result = graph.add_edge(invalid_edge);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::NodeNotFound { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::NodeNotFound { .. }
+        ));
 
         // Test duplicate edge
         let duplicate_edge = Edge::new("edge1", "A", "B", "duplicate".to_string());
         let result = graph.add_edge(duplicate_edge);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::DuplicateEdgeId { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::DuplicateEdgeId { .. }
+        ));
 
         // Test edge removal
         let removed = graph.remove_edge(&EdgeId::from("edge1"));
@@ -1187,9 +1243,15 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create nodes
-        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+        graph
+            .add_node(Node::new("A", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("B", Position::new(100.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("C", Position::new(200.0, 0.0), ()))
+            .unwrap();
 
         // Create edges: A -> B, A -> C, B -> C
         graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
@@ -1231,9 +1293,15 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create a small graph: A -> B -> C
-        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+        graph
+            .add_node(Node::new("A", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("B", Position::new(100.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("C", Position::new(200.0, 0.0), ()))
+            .unwrap();
 
         graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
         graph.add_edge(Edge::new("BC", "B", "C", ())).unwrap();
@@ -1256,10 +1324,18 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create DAG: A -> B -> D, A -> C -> D
-        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("C", Position::new(100.0, 100.0), ())).unwrap();
-        graph.add_node(Node::new("D", Position::new(200.0, 0.0), ())).unwrap();
+        graph
+            .add_node(Node::new("A", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("B", Position::new(100.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("C", Position::new(100.0, 100.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("D", Position::new(200.0, 0.0), ()))
+            .unwrap();
 
         graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
         graph.add_edge(Edge::new("AC", "A", "C", ())).unwrap();
@@ -1289,9 +1365,15 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
 
         // Create cycle: A -> B -> C -> A
-        graph.add_node(Node::new("A", Position::new(0.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("B", Position::new(100.0, 0.0), ())).unwrap();
-        graph.add_node(Node::new("C", Position::new(200.0, 0.0), ())).unwrap();
+        graph
+            .add_node(Node::new("A", Position::new(0.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("B", Position::new(100.0, 0.0), ()))
+            .unwrap();
+        graph
+            .add_node(Node::new("C", Position::new(200.0, 0.0), ()))
+            .unwrap();
 
         graph.add_edge(Edge::new("AB", "A", "B", ())).unwrap();
         graph.add_edge(Edge::new("BC", "B", "C", ())).unwrap();
@@ -1300,7 +1382,10 @@ mod tests {
         // Should fail due to cycle
         let result = graph.topological_sort();
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::InvalidOperation { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::InvalidOperation { .. }
+        ));
     }
 
     #[test]
@@ -1308,12 +1393,22 @@ mod tests {
         let mut graph: Graph<i32, String> = Graph::new();
 
         // Add test data
-        graph.add_node(Node::new("A", Position::new(0.0, 0.0), 1)).unwrap();
-        graph.add_node(Node::new("B", Position::new(100.0, 0.0), 2)).unwrap();
-        graph.add_node(Node::new("C", Position::new(200.0, 0.0), 3)).unwrap();
+        graph
+            .add_node(Node::new("A", Position::new(0.0, 0.0), 1))
+            .unwrap();
+        graph
+            .add_node(Node::new("B", Position::new(100.0, 0.0), 2))
+            .unwrap();
+        graph
+            .add_node(Node::new("C", Position::new(200.0, 0.0), 3))
+            .unwrap();
 
-        graph.add_edge(Edge::new("AB", "A", "B", "edge1".to_string())).unwrap();
-        graph.add_edge(Edge::new("BC", "B", "C", "edge2".to_string())).unwrap();
+        graph
+            .add_edge(Edge::new("AB", "A", "B", "edge1".to_string()))
+            .unwrap();
+        graph
+            .add_edge(Edge::new("BC", "B", "C", "edge2".to_string()))
+            .unwrap();
 
         // Test node iteration
         let node_ids: Vec<_> = graph.node_ids().cloned().collect();
@@ -1464,12 +1559,9 @@ where
         // Check each node as potential starting point
         for node_id in self.node_ids() {
             if !visited.contains(node_id) {
-                if let Some(cycle) = self.find_cycle_dfs(
-                    node_id,
-                    &mut visited,
-                    &mut rec_stack,
-                    &mut parent,
-                ) {
+                if let Some(cycle) =
+                    self.find_cycle_dfs(node_id, &mut visited, &mut rec_stack, &mut parent)
+                {
                     return Some(cycle);
                 }
             }
@@ -1573,7 +1665,9 @@ where
 
         // If we didn't process all nodes, there must be a cycle
         if result.len() != self.node_count() {
-            return Err(FlowError::invalid_operation("Graph contains cycles - topological sort not possible"));
+            return Err(FlowError::invalid_operation(
+                "Graph contains cycles - topological sort not possible",
+            ));
         }
 
         Ok(result)

@@ -5,8 +5,8 @@
 use leptos::*;
 use web_sys::MouseEvent;
 
-use flow_core::{Graph, Position, NodeId, Rect, GroupId, GroupManager};
 use crate::signals::{FlowState, ViewportState};
+use flow_core::{Graph, GroupId, GroupManager, NodeId, Position, Rect};
 
 /// Drag configuration and constraints
 #[derive(Debug, Clone)]
@@ -207,7 +207,11 @@ impl DragHandler {
     }
 
     /// Convert screen coordinates to world coordinates
-    fn screen_to_world_position(&self, event: &MouseEvent, viewport_state: &ViewportState) -> Position {
+    fn screen_to_world_position(
+        &self,
+        event: &MouseEvent,
+        viewport_state: &ViewportState,
+    ) -> Position {
         let viewport = &viewport_state.viewport;
 
         // Get canvas-relative coordinates
@@ -222,7 +226,11 @@ impl DragHandler {
     }
 
     /// Find node at the given position
-    fn find_node_at_position<N, E>(&self, position: &Position, graph: &Graph<N, E>) -> Option<NodeId>
+    fn find_node_at_position<N, E>(
+        &self,
+        position: &Position,
+        graph: &Graph<N, E>,
+    ) -> Option<NodeId>
     where
         N: Clone,
         E: Clone,
@@ -243,9 +251,12 @@ impl DragHandler {
         (dx * dx + dy * dy).sqrt()
     }
 
-
     /// Apply bounds constraints to position
-    fn apply_bounds_constraints(&self, position: Position, node_size: &flow_core::Size) -> Position {
+    fn apply_bounds_constraints(
+        &self,
+        position: Position,
+        node_size: &flow_core::Size,
+    ) -> Position {
         if let Some(bounds) = &self.config.canvas_bounds {
             let min_x = bounds.x;
             let min_y = bounds.y;
@@ -270,7 +281,9 @@ impl DragHandler {
         let grid_size = self.config.grid_size;
 
         // Calculate target position once for efficiency
-        let target_pos = if let (Some(drag_start), Some(last_pos)) = (flow_state.drag_start, flow_state.last_mouse_pos) {
+        let target_pos = if let (Some(drag_start), Some(last_pos)) =
+            (flow_state.drag_start, flow_state.last_mouse_pos)
+        {
             Position::new(
                 drag_start.x + (last_pos.x - drag_start.x),
                 drag_start.y + (last_pos.y - drag_start.y),
@@ -296,9 +309,8 @@ impl DragHandler {
         graph: &mut Graph<N, E>,
         flow_state: &FlowState,
         group_manager: Option<&mut GroupManager>,
-        delta: Position
-    )
-    where
+        delta: Position,
+    ) where
         N: Clone,
         E: Clone,
     {
@@ -321,17 +333,18 @@ impl DragHandler {
     }
 
     /// Apply drag to selected nodes (public method for tests)
-    pub fn apply_drag_to_nodes<N, E>(&self, graph: &mut Graph<N, E>, flow_state: &FlowState, delta: Position)
-    where
+    pub fn apply_drag_to_nodes<N, E>(
+        &self,
+        graph: &mut Graph<N, E>,
+        flow_state: &FlowState,
+        delta: Position,
+    ) where
         N: Clone,
         E: Clone,
     {
         for node_id in &flow_state.selected_nodes {
             if let Some(node) = graph.get_node_mut(node_id) {
-                let new_pos = Position::new(
-                    node.position.x + delta.x,
-                    node.position.y + delta.y,
-                );
+                let new_pos = Position::new(node.position.x + delta.x, node.position.y + delta.y);
 
                 // Apply bounds checking if enabled
                 let final_pos = if self.config.enforce_bounds {
@@ -346,7 +359,11 @@ impl DragHandler {
     }
 
     /// Detect collisions between dragged nodes and other nodes
-    pub fn detect_collisions<N, E>(&self, graph: &Graph<N, E>, flow_state: &FlowState) -> Vec<(NodeId, NodeId)>
+    pub fn detect_collisions<N, E>(
+        &self,
+        graph: &Graph<N, E>,
+        flow_state: &FlowState,
+    ) -> Vec<(NodeId, NodeId)>
     where
         N: Clone,
         E: Clone,
@@ -375,7 +392,12 @@ impl DragHandler {
             // Check against all other nodes
             for other_node in graph.nodes() {
                 if other_node.id != *dragged_node_id && !selected_set.contains(&other_node.id) {
-                    if self.nodes_overlap(new_pos, &dragged_node.size, other_node.position, &other_node.size) {
+                    if self.nodes_overlap(
+                        new_pos,
+                        &dragged_node.size,
+                        other_node.position,
+                        &other_node.size,
+                    ) {
                         collisions.push((dragged_node_id.clone(), other_node.id.clone()));
                     }
                 }
@@ -386,8 +408,12 @@ impl DragHandler {
     }
 
     /// Resolve collisions by adjusting positions
-    pub fn resolve_collisions<N, E>(&self, graph: &mut Graph<N, E>, _flow_state: &FlowState, collisions: &[(NodeId, NodeId)])
-    where
+    pub fn resolve_collisions<N, E>(
+        &self,
+        graph: &mut Graph<N, E>,
+        _flow_state: &FlowState,
+        collisions: &[(NodeId, NodeId)],
+    ) where
         N: Clone,
         E: Clone,
     {
@@ -446,11 +472,10 @@ impl DragHandler {
         for node_id in &flow_state.selected_nodes {
             if let Some(node) = graph.get_node_mut(node_id) {
                 // Calculate the drag delta
-                let delta = if let (Some(drag_start), Some(last_pos)) = (flow_state.drag_start, flow_state.last_mouse_pos) {
-                    Position::new(
-                        last_pos.x - drag_start.x,
-                        last_pos.y - drag_start.y,
-                    )
+                let delta = if let (Some(drag_start), Some(last_pos)) =
+                    (flow_state.drag_start, flow_state.last_mouse_pos)
+                {
+                    Position::new(last_pos.x - drag_start.x, last_pos.y - drag_start.y)
                 } else {
                     return;
                 };
@@ -467,16 +492,28 @@ impl DragHandler {
     }
 
     /// Check if two nodes overlap using axis-aligned bounding box collision detection
-    fn nodes_overlap(&self, pos1: Position, size1: &flow_core::Size, pos2: Position, size2: &flow_core::Size) -> bool {
-        pos1.x < pos2.x + size2.width &&
-        pos1.x + size1.width > pos2.x &&
-        pos1.y < pos2.y + size2.height &&
-        pos1.y + size1.height > pos2.y
+    fn nodes_overlap(
+        &self,
+        pos1: Position,
+        size1: &flow_core::Size,
+        pos2: Position,
+        size2: &flow_core::Size,
+    ) -> bool {
+        pos1.x < pos2.x + size2.width
+            && pos1.x + size1.width > pos2.x
+            && pos1.y < pos2.y + size2.height
+            && pos1.y + size1.height > pos2.y
     }
 
     /// Calculate the target position for a node based on drag state
-    fn calculate_target_position(&self, flow_state: &FlowState, node: &flow_core::Node<impl Clone>) -> Position {
-        if let (Some(drag_start), Some(last_pos)) = (flow_state.drag_start, flow_state.last_mouse_pos) {
+    fn calculate_target_position(
+        &self,
+        flow_state: &FlowState,
+        node: &flow_core::Node<impl Clone>,
+    ) -> Position {
+        if let (Some(drag_start), Some(last_pos)) =
+            (flow_state.drag_start, flow_state.last_mouse_pos)
+        {
             Position::new(
                 node.position.x + (last_pos.x - drag_start.x),
                 node.position.y + (last_pos.y - drag_start.y),
@@ -500,9 +537,9 @@ pub fn create_drag_handlers<N, E>(
     viewport_state: RwSignal<ViewportState>,
     drag_config: Option<DragConfig>,
 ) -> (
-    impl Fn(MouseEvent) + Clone,  // mouse_down
-    impl Fn(MouseEvent) + Clone,  // mouse_move
-    impl Fn(MouseEvent) + Clone,  // mouse_up
+    impl Fn(MouseEvent) + Clone, // mouse_down
+    impl Fn(MouseEvent) + Clone, // mouse_move
+    impl Fn(MouseEvent) + Clone, // mouse_up
 )
 where
     N: Clone + 'static,
@@ -517,7 +554,9 @@ where
                 let graph_val = graph.get_untracked();
                 let viewport_val = viewport_state.get_untracked();
 
-                if let Some(_result) = drag_handler.handle_mouse_down(&event, &graph_val, state, &viewport_val, None) {
+                if let Some(_result) =
+                    drag_handler.handle_mouse_down(&event, &graph_val, state, &viewport_val, None)
+                {
                     // Drag started
                 }
             });
@@ -531,7 +570,13 @@ where
                 flow_state.update(|state| {
                     let viewport_val = viewport_state.get_untracked();
 
-                    if let Some(_result) = drag_handler.handle_mouse_move(&event, graph_mut, state, &viewport_val, None) {
+                    if let Some(_result) = drag_handler.handle_mouse_move(
+                        &event,
+                        graph_mut,
+                        state,
+                        &viewport_val,
+                        None,
+                    ) {
                         // Drag updated
                     }
                 });
@@ -545,7 +590,9 @@ where
                 flow_state.update(|state| {
                     let viewport_val = viewport_state.get_untracked();
 
-                    if let Some(_result) = drag_handler.handle_mouse_up(&event, graph_mut, state, &viewport_val, None) {
+                    if let Some(_result) =
+                        drag_handler.handle_mouse_up(&event, graph_mut, state, &viewport_val, None)
+                    {
                         // Drag completed
                     }
                 });
@@ -564,9 +611,9 @@ pub fn create_group_aware_drag_handlers<N, E>(
     group_manager: RwSignal<GroupManager>,
     drag_config: Option<DragConfig>,
 ) -> (
-    impl Fn(MouseEvent) + Clone,  // mouse_down
-    impl Fn(MouseEvent) + Clone,  // mouse_move
-    impl Fn(MouseEvent) + Clone,  // mouse_up
+    impl Fn(MouseEvent) + Clone, // mouse_down
+    impl Fn(MouseEvent) + Clone, // mouse_move
+    impl Fn(MouseEvent) + Clone, // mouse_up
 )
 where
     N: Clone + 'static,
@@ -582,7 +629,13 @@ where
                 let viewport_val = viewport_state.get_untracked();
                 let group_manager_val = group_manager.get_untracked();
 
-                if let Some(_result) = drag_handler.handle_mouse_down(&event, &graph_val, state, &viewport_val, Some(&group_manager_val)) {
+                if let Some(_result) = drag_handler.handle_mouse_down(
+                    &event,
+                    &graph_val,
+                    state,
+                    &viewport_val,
+                    Some(&group_manager_val),
+                ) {
                     // Drag started
                 }
             });
@@ -597,7 +650,13 @@ where
                     group_manager.update(|gm| {
                         let viewport_val = viewport_state.get_untracked();
 
-                        if let Some(_result) = drag_handler.handle_mouse_move(&event, graph_mut, state, &viewport_val, Some(gm)) {
+                        if let Some(_result) = drag_handler.handle_mouse_move(
+                            &event,
+                            graph_mut,
+                            state,
+                            &viewport_val,
+                            Some(gm),
+                        ) {
                             // Drag updated
                         }
                     });
@@ -613,7 +672,13 @@ where
                     group_manager.update(|gm| {
                         let viewport_val = viewport_state.get_untracked();
 
-                        if let Some(_result) = drag_handler.handle_mouse_up(&event, graph_mut, state, &viewport_val, Some(gm)) {
+                        if let Some(_result) = drag_handler.handle_mouse_up(
+                            &event,
+                            graph_mut,
+                            state,
+                            &viewport_val,
+                            Some(gm),
+                        ) {
                             // Drag completed
                         }
                     });
@@ -628,7 +693,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::{Node, Size, GroupManager, Group};
+    use flow_core::{Group, GroupManager, Node, Size};
 
     #[test]
     fn test_drag_handler_creation() {
@@ -724,7 +789,9 @@ mod tests {
         members.insert(node1_id.clone());
         members.insert(node2_id.clone());
 
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Select the group (should select both nodes)
         flow_state.select_group(&group_manager, &group_id);
@@ -734,7 +801,12 @@ mod tests {
 
         // Apply drag to nodes and groups
         let delta = Position::new(50.0, 30.0);
-        handler.apply_drag_to_nodes_and_groups(&mut graph, &flow_state, Some(&mut group_manager), delta);
+        handler.apply_drag_to_nodes_and_groups(
+            &mut graph,
+            &flow_state,
+            Some(&mut group_manager),
+            delta,
+        );
 
         // Verify that all selected nodes moved by the same delta
         let node1_after = graph.get_node(&node1_id).unwrap();
@@ -765,7 +837,9 @@ mod tests {
         let mut members = std::collections::HashSet::new();
         members.insert(node1_id.clone());
         members.insert(node2_id.clone());
-        group_manager.create_group(group_id.clone(), members).unwrap();
+        group_manager
+            .create_group(group_id.clone(), members)
+            .unwrap();
 
         // Test selecting node with group
         flow_state.select_node_with_group(&group_manager, node1_id.clone(), true);

@@ -1,13 +1,13 @@
 // Performance validation tests for leptos-flow-core
 // Tests performance with 1000+ node graphs
 
-use std::time::Instant;
 use crate::{
-    Graph, Node, Edge, Position, Size,
+    layout::{CircularLayout, ForceDirectedLayout, GridLayout, LayoutAlgorithm},
     prelude::SpatialIndex,
-    layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, CircularLayout},
-    types::{NodeId, EdgeId, Rect}
+    types::{EdgeId, NodeId, Rect},
+    Edge, Graph, Node, Position, Size,
 };
+use std::time::Instant;
 
 fn create_large_graph(node_count: usize, edge_density: f64) -> Graph<(), ()> {
     let mut graph = Graph::new();
@@ -65,10 +65,18 @@ mod performance_tests {
         let creation_time = start.elapsed();
 
         println!("1000 node graph creation: {:?}", creation_time);
-        println!("Nodes: {}, Edges: {}", graph.node_count(), graph.edge_count());
+        println!(
+            "Nodes: {}, Edges: {}",
+            graph.node_count(),
+            graph.edge_count()
+        );
 
         // Should complete in reasonable time (less than 1 second)
-        assert!(creation_time.as_millis() < 1000, "Graph creation took too long: {:?}", creation_time);
+        assert!(
+            creation_time.as_millis() < 1000,
+            "Graph creation took too long: {:?}",
+            creation_time
+        );
         assert_eq!(graph.node_count(), 1000);
     }
 
@@ -95,11 +103,23 @@ mod performance_tests {
             let _results = index.query_rect(&query_rect);
         }
         let query_time = start.elapsed();
-        println!("100 rect queries: {:?} ({:.2} μs/query)", query_time, query_time.as_micros() as f64 / 100.0);
+        println!(
+            "100 rect queries: {:?} ({:.2} μs/query)",
+            query_time,
+            query_time.as_micros() as f64 / 100.0
+        );
 
         // Should complete in reasonable time
-        assert!(insertion_time.as_millis() < 100, "Spatial index creation took too long: {:?}", insertion_time);
-        assert!(query_time.as_millis() < 100, "Queries took too long: {:?}", query_time);
+        assert!(
+            insertion_time.as_millis() < 100,
+            "Spatial index creation took too long: {:?}",
+            insertion_time
+        );
+        assert!(
+            query_time.as_millis() < 100,
+            "Queries took too long: {:?}",
+            query_time
+        );
     }
 
     #[test]
@@ -111,14 +131,22 @@ mod performance_tests {
         let mut layout = GridLayout::new();
         let result = layout.apply(&mut graph);
         let grid_time = start.elapsed();
-        println!("1000 node grid layout: {:?} - {}", grid_time, if result.is_ok() { "SUCCESS" } else { "FAILED" });
+        println!(
+            "1000 node grid layout: {:?} - {}",
+            grid_time,
+            if result.is_ok() { "SUCCESS" } else { "FAILED" }
+        );
 
         // Circular layout
         let start = Instant::now();
         let mut layout = CircularLayout::new();
         let result = layout.apply(&mut graph);
         let circular_time = start.elapsed();
-        println!("1000 node circular layout: {:?} - {}", circular_time, if result.is_ok() { "SUCCESS" } else { "FAILED" });
+        println!(
+            "1000 node circular layout: {:?} - {}",
+            circular_time,
+            if result.is_ok() { "SUCCESS" } else { "FAILED" }
+        );
 
         // Force-directed layout (with fewer iterations for performance)
         let start = Instant::now();
@@ -127,12 +155,28 @@ mod performance_tests {
             .build();
         let result = layout.apply(&mut graph);
         let force_time = start.elapsed();
-        println!("1000 node force-directed (10 iter): {:?} - {}", force_time, if result.is_ok() { "SUCCESS" } else { "FAILED" });
+        println!(
+            "1000 node force-directed (10 iter): {:?} - {}",
+            force_time,
+            if result.is_ok() { "SUCCESS" } else { "FAILED" }
+        );
 
         // Should complete in reasonable time
-        assert!(grid_time.as_millis() < 100, "Grid layout took too long: {:?}", grid_time);
-        assert!(circular_time.as_millis() < 100, "Circular layout took too long: {:?}", circular_time);
-        assert!(force_time.as_millis() < 5000, "Force-directed layout took too long: {:?}", force_time);
+        assert!(
+            grid_time.as_millis() < 100,
+            "Grid layout took too long: {:?}",
+            grid_time
+        );
+        assert!(
+            circular_time.as_millis() < 100,
+            "Circular layout took too long: {:?}",
+            circular_time
+        );
+        assert!(
+            force_time.as_millis() < 5000,
+            "Force-directed layout took too long: {:?}",
+            force_time
+        );
     }
 
     #[test]
@@ -142,10 +186,18 @@ mod performance_tests {
         let creation_time = start.elapsed();
 
         println!("2000 node graph creation: {:?}", creation_time);
-        println!("Nodes: {}, Edges: {}", graph.node_count(), graph.edge_count());
+        println!(
+            "Nodes: {}, Edges: {}",
+            graph.node_count(),
+            graph.edge_count()
+        );
 
         // Should complete in reasonable time
-        assert!(creation_time.as_millis() < 2000, "2000 node graph creation took too long: {:?}", creation_time);
+        assert!(
+            creation_time.as_millis() < 2000,
+            "2000 node graph creation took too long: {:?}",
+            creation_time
+        );
         assert_eq!(graph.node_count(), 2000);
     }
 
@@ -156,10 +208,18 @@ mod performance_tests {
         let creation_time = start.elapsed();
 
         println!("5000 node graph creation: {:?}", creation_time);
-        println!("Nodes: {}, Edges: {}", graph.node_count(), graph.edge_count());
+        println!(
+            "Nodes: {}, Edges: {}",
+            graph.node_count(),
+            graph.edge_count()
+        );
 
         // Should complete in reasonable time
-        assert!(creation_time.as_millis() < 5000, "5000 node graph creation took too long: {:?}", creation_time);
+        assert!(
+            creation_time.as_millis() < 5000,
+            "5000 node graph creation took too long: {:?}",
+            creation_time
+        );
         assert_eq!(graph.node_count(), 5000);
     }
 
@@ -174,7 +234,11 @@ mod performance_tests {
             let _node = graph.get_node(&node_id);
         }
         let retrieval_time = start.elapsed();
-        println!("1000 node retrievals: {:?} ({:.2} μs/retrieval)", retrieval_time, retrieval_time.as_micros() as f64 / 1000.0);
+        println!(
+            "1000 node retrievals: {:?} ({:.2} μs/retrieval)",
+            retrieval_time,
+            retrieval_time.as_micros() as f64 / 1000.0
+        );
 
         // Edge iteration performance
         let start = Instant::now();
@@ -183,7 +247,10 @@ mod performance_tests {
             edge_count += 1;
         }
         let iteration_time = start.elapsed();
-        println!("Edge iteration ({} edges): {:?}", edge_count, iteration_time);
+        println!(
+            "Edge iteration ({} edges): {:?}",
+            edge_count, iteration_time
+        );
 
         // Bounds calculation performance
         let start = Instant::now();
@@ -192,8 +259,20 @@ mod performance_tests {
         println!("Bounds calculation: {:?}", bounds_time);
 
         // Should complete in reasonable time
-        assert!(retrieval_time.as_micros() < 10000, "Node retrievals took too long: {:?}", retrieval_time);
-        assert!(iteration_time.as_millis() < 10, "Edge iteration took too long: {:?}", iteration_time);
-        assert!(bounds_time.as_micros() < 1000, "Bounds calculation took too long: {:?}", bounds_time);
+        assert!(
+            retrieval_time.as_micros() < 10000,
+            "Node retrievals took too long: {:?}",
+            retrieval_time
+        );
+        assert!(
+            iteration_time.as_millis() < 10,
+            "Edge iteration took too long: {:?}",
+            iteration_time
+        );
+        assert!(
+            bounds_time.as_micros() < 1000,
+            "Bounds calculation took too long: {:?}",
+            bounds_time
+        );
     }
 }

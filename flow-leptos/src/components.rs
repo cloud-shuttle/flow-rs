@@ -1,19 +1,19 @@
 //! Leptos components for flow editors
 
-pub mod minimap;
 pub mod controls;
+pub mod minimap;
 
 #[cfg(test)]
 pub mod tests;
 
 use leptos::*;
+use std::ops::Deref;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
-use std::ops::Deref;
 
 use flow_core::Graph;
-use flow_renderer::{Renderer, RendererType, Canvas2DRenderer};
 use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
+use flow_renderer::{Canvas2DRenderer, Renderer, RendererType};
 
 use crate::signals::{FlowState, ViewportState};
 // use crate::events::{FlowEvent, NodeEvent};
@@ -48,7 +48,10 @@ where
     // Initialize renderer when canvas is mounted
     create_effect(move |_| {
         if let Some(canvas_el) = canvas_ref.get_untracked() {
-            let canvas_element = canvas_el.deref().clone().unchecked_into::<HtmlCanvasElement>();
+            let canvas_element = canvas_el
+                .deref()
+                .clone()
+                .unchecked_into::<HtmlCanvasElement>();
 
             match Canvas2DRenderer::new(&canvas_element) {
                 Ok(mut renderer) => {
@@ -76,7 +79,10 @@ where
 
         if renderer_initialized.get() {
             if let Some(canvas_el) = canvas_ref.get_untracked() {
-                let canvas_element = canvas_el.deref().clone().unchecked_into::<HtmlCanvasElement>();
+                let canvas_element = canvas_el
+                    .deref()
+                    .clone()
+                    .unchecked_into::<HtmlCanvasElement>();
 
                 // Create a new renderer for each render (not ideal, but works for demo)
                 if let Ok(mut renderer) = Canvas2DRenderer::new(&canvas_element) {
@@ -113,11 +119,15 @@ where
                     match renderer.render_graph_with_selection_dyn(
                         &graph_val,
                         &viewport_val.viewport,
-                        &flow_state_val.selected_nodes
+                        &flow_state_val.selected_nodes,
                     ) {
                         Ok(stats) => {
-                            tracing::debug!("Rendered graph: {} nodes, {} edges, {:.2}ms",
-                                stats.nodes_rendered, stats.edges_rendered, stats.frame_time_ms);
+                            tracing::debug!(
+                                "Rendered graph: {} nodes, {} edges, {:.2}ms",
+                                stats.nodes_rendered,
+                                stats.edges_rendered,
+                                stats.frame_time_ms
+                            );
 
                             // Update flow state with render stats
                             flow_state.update(|state| {
@@ -138,15 +148,11 @@ where
         }
     });
 
-        // Set up mouse interactions
-        use_canvas_mouse(
-            canvas_ref,
-            graph,
-            viewport,
-            flow_state,
-            None, // on_flow_event
-            None, // on_node_event
-        );
+    // Set up mouse interactions
+    use_canvas_mouse(
+        canvas_ref, graph, viewport, flow_state, None, // on_flow_event
+        None, // on_node_event
+    );
 
     view! {
         <div class="flow-editor" style="position: relative; border: 1px solid #ddd; background: #f8f9fa;">

@@ -1,7 +1,7 @@
 //! Renderer trait definitions and shared types
 
-use flow_core::{Graph, Node, Edge, Position, Viewport, Rect, NodeId, EdgeId, Size};
 use crate::error::Result;
+use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Rect, Size, Viewport};
 use js_sys;
 use serde_json;
 
@@ -423,36 +423,28 @@ pub trait Renderer {
     fn set_viewport(&mut self, viewport: &Viewport);
 
     /// Render a complete graph (dyn-compatible version)
-    fn render_graph_dyn(&mut self, graph: &dyn GraphRenderer, viewport: &Viewport) -> Result<RenderStats>;
+    fn render_graph_dyn(
+        &mut self,
+        graph: &dyn GraphRenderer,
+        viewport: &Viewport,
+    ) -> Result<RenderStats>;
 
     /// Render a complete graph with selection state (dyn-compatible version)
     fn render_graph_with_selection_dyn(
         &mut self,
         graph: &dyn GraphRenderer,
         viewport: &Viewport,
-        selected_nodes: &[NodeId]
+        selected_nodes: &[NodeId],
     ) -> Result<RenderStats>;
 
     /// Render nodes only (dyn-compatible version)
-    fn render_nodes_dyn(
-        &mut self,
-        nodes: &dyn NodeRenderer,
-        viewport: &Viewport,
-    ) -> Result<()>;
+    fn render_nodes_dyn(&mut self, nodes: &dyn NodeRenderer, viewport: &Viewport) -> Result<()>;
 
     /// Render edges only (dyn-compatible version)
-    fn render_edges_dyn(
-        &mut self,
-        edges: &dyn EdgeRenderer,
-        viewport: &Viewport,
-    ) -> Result<()>;
+    fn render_edges_dyn(&mut self, edges: &dyn EdgeRenderer, viewport: &Viewport) -> Result<()>;
 
     /// Render selection indicators
-    fn render_selection(
-        &mut self,
-        selected_bounds: &[Rect],
-        style: &SelectionStyle,
-    ) -> Result<()>;
+    fn render_selection(&mut self, selected_bounds: &[Rect], style: &SelectionStyle) -> Result<()>;
 
     /// Render animated selection indicators
     fn render_animated_selection(
@@ -540,7 +532,12 @@ pub trait BatchRenderer: Renderer {
         N: Clone + 'static;
 
     /// Add an edge to the current batch
-    fn batch_edge<E>(&mut self, edge: &Edge<E>, source_pos: Position, target_pos: Position) -> Result<()>
+    fn batch_edge<E>(
+        &mut self,
+        edge: &Edge<E>,
+        source_pos: Position,
+        target_pos: Position,
+    ) -> Result<()>
     where
         E: Clone + 'static;
 
@@ -609,12 +606,7 @@ pub mod utils {
                 let g = parts[1].parse::<u8>().ok()?;
                 let b = parts[2].parse::<u8>().ok()?;
 
-                return Some([
-                    r as f32 / 255.0,
-                    g as f32 / 255.0,
-                    b as f32 / 255.0,
-                    1.0,
-                ]);
+                return Some([r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0, 1.0]);
             }
         }
         None
@@ -686,19 +678,27 @@ where
     E: Clone + serde::Serialize + 'static,
 {
     fn get_nodes(&self) -> Vec<Box<dyn NodeRenderer>> {
-        self.nodes().map(|node| Box::new(ErasedNode::new(node.clone())) as Box<dyn NodeRenderer>).collect()
+        self.nodes()
+            .map(|node| Box::new(ErasedNode::new(node.clone())) as Box<dyn NodeRenderer>)
+            .collect()
     }
 
     fn get_edges(&self) -> Vec<Box<dyn EdgeRenderer>> {
-        self.edges().map(|edge| Box::new(ErasedEdge::new(edge.clone())) as Box<dyn EdgeRenderer>).collect()
+        self.edges()
+            .map(|edge| Box::new(ErasedEdge::new(edge.clone())) as Box<dyn EdgeRenderer>)
+            .collect()
     }
 
     fn get_node(&self, id: &NodeId) -> Option<Box<dyn NodeRenderer>> {
-        self.nodes().find(|node| &node.id == id).map(|node| Box::new(ErasedNode::new(node.clone())) as Box<dyn NodeRenderer>)
+        self.nodes()
+            .find(|node| &node.id == id)
+            .map(|node| Box::new(ErasedNode::new(node.clone())) as Box<dyn NodeRenderer>)
     }
 
     fn get_edge(&self, id: &EdgeId) -> Option<Box<dyn EdgeRenderer>> {
-        self.edges().find(|edge| &edge.id == id).map(|edge| Box::new(ErasedEdge::new(edge.clone())) as Box<dyn EdgeRenderer>)
+        self.edges()
+            .find(|edge| &edge.id == id)
+            .map(|edge| Box::new(ErasedEdge::new(edge.clone())) as Box<dyn EdgeRenderer>)
     }
 }
 
@@ -776,8 +776,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::utils::*;
+    use super::*;
 
     #[test]
     fn test_color_parsing() {

@@ -463,7 +463,10 @@ fn test_position_operations_commutativity() {
 
     // Distance should be symmetric
     assert_eq!(pos1.distance_to(pos2), pos2.distance_to(pos1));
-    assert_eq!(pos1.distance_squared_to(pos2), pos2.distance_squared_to(pos1));
+    assert_eq!(
+        pos1.distance_squared_to(pos2),
+        pos2.distance_squared_to(pos1)
+    );
 }
 
 #[test]

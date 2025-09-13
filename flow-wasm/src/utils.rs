@@ -1,7 +1,7 @@
 //! Utility functions for WASM integration
 
 use wasm_bindgen::prelude::*;
-use web_sys::{console};
+use web_sys::console;
 
 /// Log levels for WASM console output
 #[wasm_bindgen]
@@ -122,7 +122,8 @@ impl FrameRateCalculator {
             return 0.0;
         }
 
-        let average_frame_time: f64 = self.frame_times.iter().sum::<f64>() / self.frame_times.len() as f64;
+        let average_frame_time: f64 =
+            self.frame_times.iter().sum::<f64>() / self.frame_times.len() as f64;
         if average_frame_time > 0.0 {
             1000.0 / average_frame_time
         } else {
@@ -203,7 +204,11 @@ impl CanvasUtils {
     }
 
     /// Set up high DPI canvas
-    pub fn setup_high_dpi_canvas(canvas: &web_sys::HtmlCanvasElement, width: u32, height: u32) -> Result<(), JsValue> {
+    pub fn setup_high_dpi_canvas(
+        canvas: &web_sys::HtmlCanvasElement,
+        width: u32,
+        height: u32,
+    ) -> Result<(), JsValue> {
         let dpr = Self::get_device_pixel_ratio();
         let scaled_width = (width as f64 * dpr) as u32;
         let scaled_height = (height as f64 * dpr) as u32;
@@ -214,7 +219,10 @@ impl CanvasUtils {
         // Set canvas style using JavaScript
         let style_width = format!("{}px", width);
         let style_height = format!("{}px", height);
-        canvas.set_attribute("style", &format!("width: {}; height: {};", style_width, style_height))?;
+        canvas.set_attribute(
+            "style",
+            &format!("width: {}; height: {};", style_width, style_height),
+        )?;
 
         // Scale context for high DPI
         if let Some(context) = canvas.get_context("2d").ok().flatten() {
@@ -284,7 +292,10 @@ pub struct EventUtils;
 #[wasm_bindgen]
 impl EventUtils {
     /// Get mouse position relative to canvas
-    pub fn get_mouse_position(_canvas: &web_sys::HtmlCanvasElement, event: &web_sys::MouseEvent) -> js_sys::Array {
+    pub fn get_mouse_position(
+        _canvas: &web_sys::HtmlCanvasElement,
+        event: &web_sys::MouseEvent,
+    ) -> js_sys::Array {
         // For now, use a simple approach without get_bounding_client_rect
         // TODO: Implement proper mouse position calculation
         let x = event.client_x() as f64;
@@ -318,10 +329,30 @@ pub fn get_version() -> String {
 pub fn get_build_info() -> JsValue {
     let info = js_sys::Object::new();
 
-    js_sys::Reflect::set(&info, &"version".into(), &JsValue::from_str(env!("CARGO_PKG_VERSION"))).unwrap();
-    js_sys::Reflect::set(&info, &"name".into(), &JsValue::from_str(env!("CARGO_PKG_NAME"))).unwrap();
-    js_sys::Reflect::set(&info, &"authors".into(), &JsValue::from_str(env!("CARGO_PKG_AUTHORS"))).unwrap();
-    js_sys::Reflect::set(&info, &"rustc_version".into(), &JsValue::from_str(option_env!("RUSTC_VERSION").unwrap_or("unknown"))).unwrap_or_default();
+    js_sys::Reflect::set(
+        &info,
+        &"version".into(),
+        &JsValue::from_str(env!("CARGO_PKG_VERSION")),
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &info,
+        &"name".into(),
+        &JsValue::from_str(env!("CARGO_PKG_NAME")),
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &info,
+        &"authors".into(),
+        &JsValue::from_str(env!("CARGO_PKG_AUTHORS")),
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &info,
+        &"rustc_version".into(),
+        &JsValue::from_str(option_env!("RUSTC_VERSION").unwrap_or("unknown")),
+    )
+    .unwrap_or_default();
 
     info.into()
 }

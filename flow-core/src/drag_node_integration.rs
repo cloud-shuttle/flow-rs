@@ -5,9 +5,9 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
-    use crate::types::{Position, Size};
     use crate::selection::{SelectionManager, SelectionMode};
+    use crate::types::{Position, Size};
+    use crate::*;
 
     #[test]
     fn test_single_node_drag_updates_position() {
@@ -43,9 +43,15 @@ mod tests {
         selection.set_mode(SelectionMode::Multi);
 
         // Create multiple nodes
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("node2", Position::new(200.0, 150.0))).unwrap();
-        graph.add_node(Node::simple("node3", Position::new(300.0, 200.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::new(200.0, 150.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node3", Position::new(300.0, 200.0)))
+            .unwrap();
 
         // Select multiple nodes
         selection.select_node("node1".into());
@@ -75,7 +81,9 @@ mod tests {
         let mut selection = SelectionManager::new();
 
         // Create node near the edge of bounds
-        graph.add_node(Node::simple("node1", Position::new(10.0, 10.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(10.0, 10.0)))
+            .unwrap();
         selection.select_node("node1".into());
 
         // Set canvas bounds
@@ -86,7 +94,7 @@ mod tests {
         let result = graph.apply_node_drag_with_bounds(
             &selection.selected_nodes(),
             large_negative_delta,
-            Some(bounds)
+            Some(bounds),
         );
 
         assert!(result.is_ok());
@@ -103,18 +111,17 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
         let mut selection = SelectionManager::new();
 
-        graph.add_node(Node::simple("node1", Position::new(115.0, 87.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(115.0, 87.0)))
+            .unwrap();
         selection.select_node("node1".into());
 
         // Drag with small offset that should snap to grid
         let small_delta = Position::new(7.0, 18.0);
         let grid_size = 20.0;
 
-        let result = graph.apply_node_drag_with_snap(
-            &selection.selected_nodes(),
-            small_delta,
-            grid_size
-        );
+        let result =
+            graph.apply_node_drag_with_snap(&selection.selected_nodes(), small_delta, grid_size);
 
         assert!(result.is_ok());
 
@@ -138,7 +145,10 @@ mod tests {
 
         // Should return error for nonexistent node
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), FlowError::NodeNotFound { .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            FlowError::NodeNotFound { .. }
+        ));
     }
 
     #[test]
@@ -148,8 +158,12 @@ mod tests {
         let mut selection = SelectionManager::new();
 
         // Create nodes and connect them
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-        graph.add_node(Node::simple("node2", Position::new(200.0, 200.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
+        graph
+            .add_node(Node::simple("node2", Position::new(200.0, 200.0)))
+            .unwrap();
 
         let edge = Edge::simple("edge1", "node1", "node2");
         graph.add_edge(edge).unwrap();
@@ -177,7 +191,9 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
         let mut selection = SelectionManager::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
         selection.select_node("node1".into());
 
         // Define constraint: only horizontal movement allowed
@@ -187,7 +203,7 @@ mod tests {
         let result = graph.apply_node_drag_with_constraint(
             &selection.selected_nodes(),
             delta,
-            horizontal_only
+            horizontal_only,
         );
 
         assert!(result.is_ok());
@@ -203,7 +219,9 @@ mod tests {
         let mut graph: Graph<(), ()> = Graph::new();
         let mut selection = SelectionManager::new();
 
-        graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
+        graph
+            .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+            .unwrap();
         selection.select_node("node1".into());
 
         // Record initial state
@@ -271,6 +289,10 @@ mod tests {
 
         // Should complete successfully and quickly (< 10ms for 20 nodes)
         assert!(result.is_ok());
-        assert!(elapsed.as_millis() < 10, "Drag operation took too long: {:?}", elapsed);
+        assert!(
+            elapsed.as_millis() < 10,
+            "Drag operation took too long: {:?}",
+            elapsed
+        );
     }
 }

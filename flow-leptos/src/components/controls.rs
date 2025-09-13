@@ -3,10 +3,12 @@
 //! Provides a control panel with common flow editor operations like zoom controls,
 //! layout algorithm selection, and graph manipulation tools.
 
-use leptos::*;
-use flow_core::{Graph, Position};
-use flow_core::layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, HierarchicalLayout, CircularLayout};
 use crate::signals::ViewportState;
+use flow_core::layout::{
+    CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
+};
+use flow_core::{Graph, Position};
+use leptos::*;
 
 /// Configuration for the Controls component
 #[derive(Debug, Clone)]
@@ -145,9 +147,7 @@ where
                 layout.apply(&mut graph_value)
             }
             LayoutType::Grid => {
-                let mut layout = GridLayout::new()
-                    .columns(Some(3))
-                    .cell_size(100.0, 100.0);
+                let mut layout = GridLayout::new().columns(Some(3)).cell_size(100.0, 100.0);
                 layout.apply(&mut graph_value)
             }
             LayoutType::Hierarchical => {
@@ -158,8 +158,7 @@ where
                 layout.apply(&mut graph_value)
             }
             LayoutType::Circular => {
-                let mut layout = CircularLayout::new()
-                    .radius(200.0);
+                let mut layout = CircularLayout::new().radius(200.0);
                 layout.apply(&mut graph_value)
             }
         };
@@ -348,25 +347,37 @@ fn calculate_graph_bounds<N, E>(graph: &Graph<N, E>) -> Option<GraphBounds> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{NodeBuilder, EdgeBuilder};
+    use flow_core::prelude::{EdgeBuilder, NodeBuilder};
 
     fn create_test_graph() -> Graph<(), ()> {
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(NodeBuilder::<()>::new("node1")
-            .position(0.0, 0.0)
-            .size(100.0, 50.0)
-            .build()).unwrap();
+        graph
+            .add_node(
+                NodeBuilder::<()>::new("node1")
+                    .position(0.0, 0.0)
+                    .size(100.0, 50.0)
+                    .build(),
+            )
+            .unwrap();
 
-        graph.add_node(NodeBuilder::<()>::new("node2")
-            .position(200.0, 100.0)
-            .size(100.0, 50.0)
-            .build()).unwrap();
+        graph
+            .add_node(
+                NodeBuilder::<()>::new("node2")
+                    .position(200.0, 100.0)
+                    .size(100.0, 50.0)
+                    .build(),
+            )
+            .unwrap();
 
-        graph.add_edge(EdgeBuilder::new()
-            .connect("node1", "node2")
-            .build()
-            .unwrap()).unwrap();
+        graph
+            .add_edge(
+                EdgeBuilder::new()
+                    .connect("node1", "node2")
+                    .build()
+                    .unwrap(),
+            )
+            .unwrap();
 
         graph
     }
@@ -452,10 +463,14 @@ mod tests {
     #[test]
     fn test_bounds_calculation_single_node() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(NodeBuilder::<()>::new("single")
-            .position(100.0, 50.0)
-            .size(80.0, 40.0)
-            .build()).unwrap();
+        graph
+            .add_node(
+                NodeBuilder::<()>::new("single")
+                    .position(100.0, 50.0)
+                    .size(80.0, 40.0)
+                    .build(),
+            )
+            .unwrap();
 
         let bounds = calculate_graph_bounds(&graph).unwrap();
 
@@ -469,7 +484,10 @@ mod tests {
 
     #[test]
     fn test_custom_position_coordinates() {
-        let pos = ControlsPosition::Custom { x: 123.45, y: 678.90 };
+        let pos = ControlsPosition::Custom {
+            x: 123.45,
+            y: 678.90,
+        };
         if let ControlsPosition::Custom { x, y } = pos {
             assert_eq!(x, 123.45);
             assert_eq!(y, 678.90);

@@ -2,10 +2,10 @@
 //!
 //! Provides utilities for accessing DOM element bounding rectangles and coordinate conversion.
 
+use flow_core::{Position, Rect, Size};
 use std::collections::HashMap;
-use web_sys::Element;
 use wasm_bindgen::{JsCast, JsValue};
-use flow_core::{Position, Size, Rect};
+use web_sys::Element;
 
 /// Error types for DOM rect operations
 #[derive(Debug, Clone)]
@@ -39,7 +39,12 @@ pub struct ElementRect {
 impl ElementRect {
     /// Create a new ElementRect
     pub fn new(x: f64, y: f64, width: f64, height: f64) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     /// Create from a DOM rect (JsValue)
@@ -100,10 +105,7 @@ impl ElementRect {
 
     /// Get the center point of this rect
     pub fn center(&self) -> Position {
-        Position::new(
-            self.x + self.width / 2.0,
-            self.y + self.height / 2.0,
-        )
+        Position::new(self.x + self.width / 2.0, self.y + self.height / 2.0)
     }
 
     /// Get the area of this rect
@@ -226,7 +228,10 @@ impl DomRectUtils {
     }
 
     /// Get bounding client rect for an element
-    pub fn get_bounding_client_rect(&mut self, element: &Element) -> Result<ElementRect, DomRectError> {
+    pub fn get_bounding_client_rect(
+        &mut self,
+        element: &Element,
+    ) -> Result<ElementRect, DomRectError> {
         let element_id = self.get_element_id(element)?;
 
         // Check cache first
@@ -240,19 +245,26 @@ impl DomRectUtils {
         let method = js_sys::Reflect::get(element, &"getBoundingClientRect".into())
             .ok()
             .and_then(|m| m.dyn_into::<js_sys::Function>().ok())
-            .ok_or(DomRectError::DomAccessFailed("Failed to get getBoundingClientRect method".to_string()))?;
+            .ok_or(DomRectError::DomAccessFailed(
+                "Failed to get getBoundingClientRect method".to_string(),
+            ))?;
 
-        let dom_rect = js_sys::Reflect::apply(&method, element, &js_sys::Array::new())
-            .map_err(|_| DomRectError::DomAccessFailed("Failed to call getBoundingClientRect".to_string()))?;
+        let dom_rect =
+            js_sys::Reflect::apply(&method, element, &js_sys::Array::new()).map_err(|_| {
+                DomRectError::DomAccessFailed("Failed to call getBoundingClientRect".to_string())
+            })?;
 
         let element_rect = ElementRect::from_dom_rect(&dom_rect);
 
         // Cache the result
         let timestamp = self.get_current_timestamp();
-        self.cache.insert(element_id, CacheEntry {
-            rect: element_rect.clone(),
-            timestamp,
-        });
+        self.cache.insert(
+            element_id,
+            CacheEntry {
+                rect: element_rect.clone(),
+                timestamp,
+            },
+        );
 
         Ok(element_rect)
     }
@@ -307,10 +319,14 @@ pub mod utils {
         let method = js_sys::Reflect::get(element, &"getBoundingClientRect".into())
             .ok()
             .and_then(|m| m.dyn_into::<js_sys::Function>().ok())
-            .ok_or(DomRectError::DomAccessFailed("Failed to get getBoundingClientRect method".to_string()))?;
+            .ok_or(DomRectError::DomAccessFailed(
+                "Failed to get getBoundingClientRect method".to_string(),
+            ))?;
 
-        let dom_rect = js_sys::Reflect::apply(&method, element, &js_sys::Array::new())
-            .map_err(|_| DomRectError::DomAccessFailed("Failed to call getBoundingClientRect".to_string()))?;
+        let dom_rect =
+            js_sys::Reflect::apply(&method, element, &js_sys::Array::new()).map_err(|_| {
+                DomRectError::DomAccessFailed("Failed to call getBoundingClientRect".to_string())
+            })?;
 
         Ok(ElementRect::from_dom_rect(&dom_rect))
     }
@@ -331,7 +347,10 @@ pub mod utils {
     }
 
     /// Check if two elements intersect
-    pub fn elements_intersect(element1: &Element, element2: &Element) -> Result<bool, DomRectError> {
+    pub fn elements_intersect(
+        element1: &Element,
+        element2: &Element,
+    ) -> Result<bool, DomRectError> {
         let rect1 = get_bounding_client_rect(element1)?;
         let rect2 = get_bounding_client_rect(element2)?;
         Ok(rect1.intersects(&rect2))

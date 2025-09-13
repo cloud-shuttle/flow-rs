@@ -3,9 +3,9 @@
 //! These tests are designed to detect infinite loops and resource exhaustion
 //! in the spatial indexing algorithms.
 
+use flow_core::graph::NodeBuilder;
 use flow_core::spatial::SpatialIndex;
 use flow_core::types::Rect;
-use flow_core::graph::NodeBuilder;
 use std::time::{Duration, Instant};
 
 #[test]
@@ -14,10 +14,10 @@ fn test_spatial_index_handles_extreme_bounds() {
 
     // Test with extreme bounds that could cause infinite loops
     let extreme_bounds = Rect::new(
-        -1000000.0,  // Very negative x
-        -1000000.0,  // Very negative y
-        2000000.0,   // Very large width
-        2000000.0,   // Very large height
+        -1000000.0, // Very negative x
+        -1000000.0, // Very negative y
+        2000000.0,  // Very large width
+        2000000.0,  // Very large height
     );
 
     let start_time = Instant::now();
@@ -59,12 +59,7 @@ fn test_spatial_index_handles_nan_values() {
     let index = SpatialIndex::new();
 
     // Test with NaN values
-    let nan_bounds = Rect::new(
-        f64::NAN,
-        f64::NAN,
-        f64::NAN,
-        f64::NAN,
-    );
+    let nan_bounds = Rect::new(f64::NAN, f64::NAN, f64::NAN, f64::NAN);
 
     let start_time = Instant::now();
     let timeout = Duration::from_secs(5);
@@ -173,6 +168,10 @@ fn test_spatial_index_proptest_reproduction() {
     let results = index.query_rect(&viewport_bounds);
 
     let elapsed = start_time.elapsed();
-    assert!(elapsed < timeout, "Spatial consistency test took too long: {:?}", elapsed);
+    assert!(
+        elapsed < timeout,
+        "Spatial consistency test took too long: {:?}",
+        elapsed
+    );
     assert_eq!(results.len(), 3); // Should find all 3 nodes
 }

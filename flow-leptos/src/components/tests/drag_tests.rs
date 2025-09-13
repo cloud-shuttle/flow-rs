@@ -2,9 +2,9 @@
 //!
 //! Tests that verify drag and drop functionality works correctly for nodes
 
-use leptos::*;
-use flow_core::{Graph, Node, Position, NodeId};
 use crate::signals::FlowState;
+use flow_core::{Graph, Node, NodeId, Position};
+use leptos::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
@@ -12,9 +12,15 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
 
-    graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-    graph.add_node(Node::simple("node2", Position::new(200.0, 150.0))).unwrap();
-    graph.add_node(Node::simple("node3", Position::new(300.0, 200.0))).unwrap();
+    graph
+        .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node2", Position::new(200.0, 150.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node3", Position::new(300.0, 200.0)))
+        .unwrap();
 
     graph
 }
@@ -99,10 +105,7 @@ fn test_single_node_drag() {
     // Apply drag to graph
     if let Some(delta) = state.drag_delta() {
         if let Some(node) = graph.get_node_mut(&node_id) {
-            let new_pos = Position::new(
-                node.position.x + delta.x,
-                node.position.y + delta.y,
-            );
+            let new_pos = Position::new(node.position.x + delta.x, node.position.y + delta.y);
             node.set_position(new_pos);
         }
     }
@@ -135,10 +138,7 @@ fn test_multi_node_drag() {
     if let Some(delta) = state.drag_delta() {
         for node_id in &state.selected_nodes {
             if let Some(node) = graph.get_node_mut(node_id) {
-                let new_pos = Position::new(
-                    node.position.x + delta.x,
-                    node.position.y + delta.y,
-                );
+                let new_pos = Position::new(node.position.x + delta.x, node.position.y + delta.y);
                 node.set_position(new_pos);
             }
         }
@@ -180,7 +180,7 @@ fn test_drag_bounds_validation() {
 #[wasm_bindgen_test]
 fn test_snap_to_grid_functionality() {
     // Test: Nodes should snap to grid when snap_to_grid is enabled
-    use crate::drag::{DragHandler, DragConfig};
+    use crate::drag::{DragConfig, DragHandler};
 
     let config = DragConfig {
         snap_to_grid: true,
@@ -211,7 +211,7 @@ fn test_snap_to_grid_functionality() {
 #[wasm_bindgen_test]
 fn test_drag_handles_precision() {
     // Test: Drag handles should allow precise manipulation of node edges
-    use crate::drag::{DragHandler, DragConfig};
+    use crate::drag::{DragConfig, DragHandler};
 
     let handler = DragHandler::new();
     let mut graph = create_test_graph();
@@ -237,7 +237,7 @@ fn test_drag_handles_precision() {
 #[wasm_bindgen_test]
 fn test_collision_detection_during_drag() {
     // Test: System should detect and handle node collisions during drag
-    use crate::drag::{DragHandler, DragConfig};
+    use crate::drag::{DragConfig, DragHandler};
 
     let config = DragConfig {
         enforce_bounds: true,
@@ -272,7 +272,7 @@ fn test_collision_detection_during_drag() {
 #[wasm_bindgen_test]
 fn test_drag_constraints_axis_locking() {
     // Test: Drag constraints should allow axis locking (horizontal/vertical only)
-    use crate::drag::{DragHandler, DragConfig, DragConstraint};
+    use crate::drag::{DragConfig, DragConstraint, DragHandler};
 
     let config = DragConfig {
         constraint: Some(crate::drag::DragConstraint::HorizontalOnly),
@@ -302,7 +302,7 @@ fn test_drag_constraints_axis_locking() {
 #[wasm_bindgen_test]
 fn test_drag_bounds_enforcement() {
     // Test: Drag should respect canvas boundaries
-    use crate::drag::{DragHandler, DragConfig};
+    use crate::drag::{DragConfig, DragHandler};
 
     let config = DragConfig {
         enforce_bounds: true,
@@ -333,7 +333,7 @@ fn test_drag_bounds_enforcement() {
 #[wasm_bindgen_test]
 fn test_drag_threshold_behavior() {
     // Test: Drag should only start after moving beyond threshold
-    use crate::drag::{DragHandler, DragConfig};
+    use crate::drag::{DragConfig, DragHandler};
 
     let config = DragConfig {
         drag_threshold: 10.0,
@@ -379,7 +379,7 @@ fn test_drag_threshold_behavior() {
 #[wasm_bindgen_test]
 fn test_multi_node_drag_with_constraints() {
     // Test: Multiple node drag should respect individual constraints
-    use crate::drag::{DragHandler, DragConfig};
+    use crate::drag::{DragConfig, DragHandler};
 
     let handler = DragHandler::new();
     let mut graph = create_test_graph();

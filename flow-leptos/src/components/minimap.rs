@@ -3,13 +3,13 @@
 //! Provides a miniature overview of the entire flow graph with viewport indicator.
 
 use leptos::*;
-use wasm_bindgen::JsCast;
 use std::ops::Deref;
+use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, Element, HtmlCanvasElement, HtmlElement, MouseEvent};
 
-use flow_core::{Graph, Position, Viewport, Node, Edge};
-use flow_renderer::Canvas2DRenderer;
 use crate::signals::{FlowState, ViewportState};
+use flow_core::{Edge, Graph, Node, Position, Viewport};
+use flow_renderer::Canvas2DRenderer;
 
 /// Configuration for the MiniMap component
 #[derive(Debug, Clone)]
@@ -76,7 +76,12 @@ where
         let viewport_value = viewport.get();
 
         if let Some(canvas_element) = canvas_ref.get_untracked() {
-            render_minimap(&canvas_element, &graph_value, &viewport_value, &config_clone);
+            render_minimap(
+                &canvas_element,
+                &graph_value,
+                &viewport_value,
+                &config_clone,
+            );
         }
     });
 
@@ -86,19 +91,18 @@ where
         move |event: MouseEvent| {
             if let Some(handler) = on_viewport_change {
                 if let Some(canvas) = canvas_ref.get_untracked() {
-                    let canvas_element = canvas.deref().clone().unchecked_into::<HtmlCanvasElement>();
+                    let canvas_element =
+                        canvas.deref().clone().unchecked_into::<HtmlCanvasElement>();
                     // Use proper DOM rect access with mouse integration
                     let mut rect_utils = crate::dom_rect::DomRectUtils::new();
                     let canvas_pos = crate::mouse_integration::utils::mouse_event_to_canvas_coords(
                         &event,
                         &canvas_element,
                         &mut rect_utils,
-                    ).unwrap_or_else(|_| {
+                    )
+                    .unwrap_or_else(|_| {
                         // Fallback to simple calculation if DOM rect access fails
-                        Position::new(
-                            event.client_x() as f64,
-                            event.client_y() as f64,
-                        )
+                        Position::new(event.client_x() as f64, event.client_y() as f64)
                     });
                     let x = canvas_pos.x;
                     let y = canvas_pos.y;
@@ -173,7 +177,9 @@ fn render_minimap<N: Clone, E: Clone>(
     context.begin_path();
 
     for edge in graph.edges() {
-        if let (Some(source), Some(target)) = (graph.get_node(&edge.source), graph.get_node(&edge.target)) {
+        if let (Some(source), Some(target)) =
+            (graph.get_node(&edge.source), graph.get_node(&edge.target))
+        {
             let start_x = source.position.x * scale + offset_x;
             let start_y = source.position.y * scale + offset_y;
             let end_x = target.position.x * scale + offset_x;
@@ -193,7 +199,7 @@ fn render_minimap<N: Clone, E: Clone>(
         let width = node.size.width * scale;
         let height = node.size.height * scale;
 
-        context.fill_rect(x - width/2.0, y - height/2.0, width, height);
+        context.fill_rect(x - width / 2.0, y - height / 2.0, width, height);
     }
 
     // Render viewport indicator
@@ -277,25 +283,37 @@ struct Bounds {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{NodeBuilder, EdgeBuilder};
+    use flow_core::prelude::{EdgeBuilder, NodeBuilder};
 
     fn create_test_graph() -> Graph<(), ()> {
         let mut graph: Graph<(), ()> = Graph::new();
 
-        graph.add_node(NodeBuilder::<()>::new("node1")
-            .position(0.0, 0.0)
-            .size(100.0, 50.0)
-            .build()).unwrap();
+        graph
+            .add_node(
+                NodeBuilder::<()>::new("node1")
+                    .position(0.0, 0.0)
+                    .size(100.0, 50.0)
+                    .build(),
+            )
+            .unwrap();
 
-        graph.add_node(NodeBuilder::<()>::new("node2")
-            .position(200.0, 100.0)
-            .size(100.0, 50.0)
-            .build()).unwrap();
+        graph
+            .add_node(
+                NodeBuilder::<()>::new("node2")
+                    .position(200.0, 100.0)
+                    .size(100.0, 50.0)
+                    .build(),
+            )
+            .unwrap();
 
-        graph.add_edge(EdgeBuilder::new()
-            .connect("node1", "node2")
-            .build()
-            .unwrap()).unwrap();
+        graph
+            .add_edge(
+                EdgeBuilder::new()
+                    .connect("node1", "node2")
+                    .build()
+                    .unwrap(),
+            )
+            .unwrap();
 
         graph
     }
@@ -374,10 +392,14 @@ mod tests {
     #[test]
     fn test_bounds_calculation_single_node() {
         let mut graph: Graph<(), ()> = Graph::new();
-        graph.add_node(NodeBuilder::<()>::new("single")
-            .position(100.0, 50.0)
-            .size(80.0, 40.0)
-            .build()).unwrap();
+        graph
+            .add_node(
+                NodeBuilder::<()>::new("single")
+                    .position(100.0, 50.0)
+                    .size(80.0, 40.0)
+                    .build(),
+            )
+            .unwrap();
 
         let bounds = calculate_graph_bounds(&graph).unwrap();
 

@@ -7,39 +7,37 @@ use proptest::prelude::*;
 use std::collections::HashSet;
 
 use crate::{
-    Graph, Node, Edge, Position, Size, Rect, Viewport,
-    types::{NodeId, EdgeId, GroupId},
     error::FlowError,
+    layout::{
+        CircularLayout, EdgeRouting, ForceDirectedLayout, GridLayout, HierarchicalLayout,
+        LayoutAlgorithm, LayoutDirection,
+    },
     spatial::SpatialIndex,
-    layout::{LayoutAlgorithm, ForceDirectedLayout, GridLayout, CircularLayout, HierarchicalLayout, LayoutDirection, EdgeRouting},
+    types::{EdgeId, GroupId, NodeId},
+    Edge, Graph, Node, Position, Rect, Size, Viewport,
 };
 
 /// Custom generators for property-based testing
 
 /// Generate valid positions within reasonable bounds
 pub fn arb_position() -> impl Strategy<Value = Position> {
-    (-1000.0..1000.0, -1000.0..1000.0)
-        .prop_map(|(x, y)| Position::new(x, y))
+    (-1000.0..1000.0, -1000.0..1000.0).prop_map(|(x, y)| Position::new(x, y))
 }
 
 /// Generate valid sizes (positive dimensions)
 pub fn arb_size() -> impl Strategy<Value = Size> {
-    (1.0..1000.0, 1.0..1000.0)
-        .prop_map(|(width, height)| Size::new(width, height))
+    (1.0..1000.0, 1.0..1000.0).prop_map(|(width, height)| Size::new(width, height))
 }
 
 /// Generate valid rectangles
 pub fn arb_rect() -> impl Strategy<Value = Rect> {
-    (arb_position(), arb_size())
-        .prop_map(|(pos, size)| Rect::from_pos_size(pos, size))
+    (arb_position(), arb_size()).prop_map(|(pos, size)| Rect::from_pos_size(pos, size))
 }
 
 /// Generate valid viewports
 pub fn arb_viewport() -> impl Strategy<Value = Viewport> {
     (arb_position(), arb_size(), 0.1..10.0)
-        .prop_map(|(pos, size, zoom)| {
-            Viewport::new(pos.x, pos.y, size.width, size.height, zoom)
-        })
+        .prop_map(|(pos, size, zoom)| Viewport::new(pos.x, pos.y, size.width, size.height, zoom))
 }
 
 /// Generate valid node IDs
@@ -58,12 +56,11 @@ pub fn arb_edge_id() -> impl Strategy<Value = EdgeId> {
 
 /// Generate nodes with valid properties
 pub fn arb_node() -> impl Strategy<Value = Node<()>> {
-    (arb_node_id(), arb_position(), arb_size())
-        .prop_map(|(id, position, size)| {
-            let mut node = Node::new(id, position, ());
-            node.size = size;
-            node
-        })
+    (arb_node_id(), arb_position(), arb_size()).prop_map(|(id, position, size)| {
+        let mut node = Node::new(id, position, ());
+        node.size = size;
+        node
+    })
 }
 
 /// Generate edges with valid properties
@@ -72,9 +69,7 @@ pub fn arb_edge() -> impl Strategy<Value = Edge<()>> {
         .prop_filter("edges cannot be self-connections", |(_, source, target)| {
             source != target
         })
-        .prop_map(|(id, source, target)| {
-            Edge::new(id, source, target, ())
-        })
+        .prop_map(|(id, source, target)| Edge::new(id, source, target, ()))
 }
 
 /// Generate graphs with nodes and edges
@@ -91,19 +86,21 @@ pub fn arb_graph() -> impl Strategy<Value = Graph<(), ()>> {
                 prop::collection::vec(
                     // Generate edges that are guaranteed to connect existing nodes
                     (0..node_count, 0..node_count)
-                        .prop_filter("edges cannot be self-connections", |(source_idx, target_idx)| {
-                            source_idx != target_idx
-                        })
+                        .prop_filter(
+                            "edges cannot be self-connections",
+                            |(source_idx, target_idx)| source_idx != target_idx,
+                        )
                         .prop_map(move |(source_idx, target_idx)| {
                             Edge::new(
                                 EdgeId::generate(),
                                 node_ids[source_idx].clone(),
                                 node_ids[target_idx].clone(),
-                                ()
+                                (),
                             )
                         }),
-                    0..(node_count.min(10)) // Limit edges to avoid too many rejections
-                ).boxed()
+                    0..(node_count.min(10)), // Limit edges to avoid too many rejections
+                )
+                .boxed()
             };
             (Just(nodes), edges_strategy)
         })
@@ -144,7 +141,7 @@ pub fn arb_connected_graph() -> impl Strategy<Value = Graph<(), ()>> {
                     EdgeId::generate(),
                     node_ids[i].clone(),
                     node_ids[i + 1].clone(),
-                    ()
+                    (),
                 );
                 let _ = graph.add_edge(edge);
             }

@@ -1,15 +1,14 @@
 //! Canvas2D renderer implementation
 
-use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
-use flow_core::{Position, Viewport, Rect, NodeId};
-use crate::traits::{
-    Renderer, RendererCapabilities, RenderStats, SelectionStyle,
-    AnimatedSelectionStyle, MultiSelectionStyle, SelectionHoverStyle,
-    BackgroundConfig, BackgroundVariant
-};
 use crate::error::{RendererError, Result};
 use crate::performance::{PerformanceManager, PerformanceSettings};
+use crate::traits::{
+    AnimatedSelectionStyle, BackgroundConfig, BackgroundVariant, MultiSelectionStyle, RenderStats,
+    Renderer, RendererCapabilities, SelectionHoverStyle, SelectionStyle,
+};
+use flow_core::{NodeId, Position, Rect, Viewport};
+use wasm_bindgen::JsCast;
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
 /// Canvas2D renderer implementation
 pub struct Canvas2DRenderer {
@@ -34,7 +33,9 @@ impl Canvas2DRenderer {
             .map_err(|_| RendererError::context_creation_failed("Failed to get 2D context"))?
             .ok_or_else(|| RendererError::context_creation_failed("No 2D context available"))?
             .dyn_into::<CanvasRenderingContext2d>()
-            .map_err(|_| RendererError::context_creation_failed("Failed to cast to CanvasRenderingContext2d"))
+            .map_err(|_| {
+                RendererError::context_creation_failed("Failed to cast to CanvasRenderingContext2d")
+            })
     }
 
     fn create_capabilities(canvas: &HtmlCanvasElement) -> RendererCapabilities {
@@ -91,7 +92,8 @@ impl Renderer for Canvas2DRenderer {
         let color = color.unwrap_or("#ffffff");
         #[allow(deprecated)]
         self.context.set_fill_style(&color.into());
-        self.context.fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
+        self.context
+            .fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
 
         // Reset stats
         self.stats = RenderStats::default();
@@ -102,15 +104,24 @@ impl Renderer for Canvas2DRenderer {
     fn set_viewport(&mut self, viewport: &Viewport) {
         // Apply viewport transformation
         self.context.save();
-        self.context.set_transform(
-            viewport.zoom, 0.0, 0.0, viewport.zoom,
-            -viewport.offset.x * viewport.zoom,
-            -viewport.offset.y * viewport.zoom
-        ).unwrap_or_default();
+        self.context
+            .set_transform(
+                viewport.zoom,
+                0.0,
+                0.0,
+                viewport.zoom,
+                -viewport.offset.x * viewport.zoom,
+                -viewport.offset.y * viewport.zoom,
+            )
+            .unwrap_or_default();
     }
 
     // Dyn-compatible rendering methods
-    fn render_graph_dyn(&mut self, _graph: &dyn crate::traits::GraphRenderer, _viewport: &Viewport) -> Result<RenderStats> {
+    fn render_graph_dyn(
+        &mut self,
+        _graph: &dyn crate::traits::GraphRenderer,
+        _viewport: &Viewport,
+    ) -> Result<RenderStats> {
         // Minimal implementation - just return stats
         Ok(self.stats.clone())
     }
@@ -119,18 +130,26 @@ impl Renderer for Canvas2DRenderer {
         &mut self,
         _graph: &dyn crate::traits::GraphRenderer,
         _viewport: &Viewport,
-        _selected_nodes: &[NodeId]
+        _selected_nodes: &[NodeId],
     ) -> Result<RenderStats> {
         // Minimal implementation - just return stats
         Ok(self.stats.clone())
     }
 
-    fn render_nodes_dyn(&mut self, _nodes: &dyn crate::traits::NodeRenderer, _viewport: &Viewport) -> Result<()> {
+    fn render_nodes_dyn(
+        &mut self,
+        _nodes: &dyn crate::traits::NodeRenderer,
+        _viewport: &Viewport,
+    ) -> Result<()> {
         // Minimal implementation
         Ok(())
     }
 
-    fn render_edges_dyn(&mut self, _edges: &dyn crate::traits::EdgeRenderer, _viewport: &Viewport) -> Result<()> {
+    fn render_edges_dyn(
+        &mut self,
+        _edges: &dyn crate::traits::EdgeRenderer,
+        _viewport: &Viewport,
+    ) -> Result<()> {
         // Minimal implementation
         Ok(())
     }
@@ -158,14 +177,16 @@ impl Renderer for Canvas2DRenderer {
         }
 
         for bounds in selected_bounds {
-            self.context.stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
+            self.context
+                .stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
 
             // Add glow effect if specified
             if let (Some(glow_color), Some(glow_blur)) = (&style.glow_color, style.glow_blur) {
                 self.context.save();
                 self.context.set_shadow_color(glow_color);
                 self.context.set_shadow_blur(glow_blur);
-                self.context.stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
+                self.context
+                    .stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
                 self.context.restore();
             }
         }
@@ -174,7 +195,11 @@ impl Renderer for Canvas2DRenderer {
         Ok(())
     }
 
-    fn render_animated_selection(&mut self, selected_bounds: &[Rect], style: &AnimatedSelectionStyle) -> Result<()> {
+    fn render_animated_selection(
+        &mut self,
+        selected_bounds: &[Rect],
+        style: &AnimatedSelectionStyle,
+    ) -> Result<()> {
         // Simple implementation - just render as regular selection for now
         let selection_style = SelectionStyle {
             color: style.base_style.color.clone(),
@@ -186,31 +211,40 @@ impl Renderer for Canvas2DRenderer {
         self.render_selection(selected_bounds, &selection_style)
     }
 
-    fn render_multi_selection(&mut self, selected_bounds: &[Rect], style: &MultiSelectionStyle) -> Result<()> {
+    fn render_multi_selection(
+        &mut self,
+        selected_bounds: &[Rect],
+        style: &MultiSelectionStyle,
+    ) -> Result<()> {
         // Simple implementation - render each selection with the style
         for bounds in selected_bounds {
-        self.context.save();
+            self.context.save();
             #[allow(deprecated)]
-            self.context.set_stroke_style(&style.connection_color.clone().into());
+            self.context
+                .set_stroke_style(&style.connection_color.clone().into());
             self.context.set_line_width(style.connection_width);
 
-            self.context.stroke_rect(
-                bounds.x, bounds.y, bounds.width, bounds.height
-            );
+            self.context
+                .stroke_rect(bounds.x, bounds.y, bounds.width, bounds.height);
             self.context.restore();
         }
         Ok(())
     }
 
-    fn render_selection_hover(&mut self, bounds: &Rect, _hover_position: &Position, style: &SelectionHoverStyle) -> Result<()> {
+    fn render_selection_hover(
+        &mut self,
+        bounds: &Rect,
+        _hover_position: &Position,
+        style: &SelectionHoverStyle,
+    ) -> Result<()> {
         self.context.save();
         #[allow(deprecated)]
-        self.context.set_fill_style(&style.hover_highlight_color.clone().into());
+        self.context
+            .set_fill_style(&style.hover_highlight_color.clone().into());
         self.context.set_global_alpha(0.5); // Use a fixed opacity
 
-        self.context.fill_rect(
-            bounds.x, bounds.y, bounds.width, bounds.height
-        );
+        self.context
+            .fill_rect(bounds.x, bounds.y, bounds.width, bounds.height);
         self.context.restore();
         Ok(())
     }
@@ -235,7 +269,8 @@ impl Renderer for Canvas2DRenderer {
                 self.context.save();
                 #[allow(deprecated)]
                 self.context.set_fill_style(&config.color.clone().into());
-                self.context.fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
+                self.context
+                    .fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
                 self.context.restore();
                 Ok(())
             }
@@ -274,8 +309,11 @@ mod tests {
     fn test_canvas2d_renderer_creation() {
         // Create a canvas element for testing
         let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas").unwrap()
-            .dyn_into::<HtmlCanvasElement>().unwrap();
+        let canvas = document
+            .create_element("canvas")
+            .unwrap()
+            .dyn_into::<HtmlCanvasElement>()
+            .unwrap();
         canvas.set_width(800);
         canvas.set_height(600);
 
@@ -287,8 +325,11 @@ mod tests {
     fn test_canvas2d_renderer_capabilities() {
         // Create a canvas element for testing
         let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas").unwrap()
-            .dyn_into::<HtmlCanvasElement>().unwrap();
+        let canvas = document
+            .create_element("canvas")
+            .unwrap()
+            .dyn_into::<HtmlCanvasElement>()
+            .unwrap();
         canvas.set_width(800);
         canvas.set_height(600);
 
@@ -305,8 +346,11 @@ mod tests {
     fn test_canvas2d_renderer_resize() {
         // Create a canvas element for testing
         let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas").unwrap()
-            .dyn_into::<HtmlCanvasElement>().unwrap();
+        let canvas = document
+            .create_element("canvas")
+            .unwrap()
+            .dyn_into::<HtmlCanvasElement>()
+            .unwrap();
         canvas.set_width(800);
         canvas.set_height(600);
 
@@ -319,8 +363,11 @@ mod tests {
     fn test_canvas2d_renderer_clear() {
         // Create a canvas element for testing
         let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas").unwrap()
-            .dyn_into::<HtmlCanvasElement>().unwrap();
+        let canvas = document
+            .create_element("canvas")
+            .unwrap()
+            .dyn_into::<HtmlCanvasElement>()
+            .unwrap();
         canvas.set_width(800);
         canvas.set_height(600);
 
@@ -333,8 +380,11 @@ mod tests {
     fn test_canvas2d_renderer_stats() {
         // Create a canvas element for testing
         let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas").unwrap()
-            .dyn_into::<HtmlCanvasElement>().unwrap();
+        let canvas = document
+            .create_element("canvas")
+            .unwrap()
+            .dyn_into::<HtmlCanvasElement>()
+            .unwrap();
         canvas.set_width(800);
         canvas.set_height(600);
 

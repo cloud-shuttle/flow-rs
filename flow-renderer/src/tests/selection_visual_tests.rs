@@ -2,13 +2,15 @@
 //!
 //! Tests that verify selection rendering works correctly
 
-use wasm_bindgen_test::*;
-use flow_core::{Graph, Node, Position, Rect};
 use crate::canvas2d::Canvas2DRenderer;
-use crate::traits::{Renderer, SelectionStyle, AnimatedSelectionStyle, MultiSelectionStyle, SelectionHoverStyle};
-use web_sys::HtmlCanvasElement;
-use wasm_bindgen::JsCast;
+use crate::traits::{
+    AnimatedSelectionStyle, MultiSelectionStyle, Renderer, SelectionHoverStyle, SelectionStyle,
+};
+use flow_core::{Graph, Node, Position, Rect};
 use js_sys;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_test::*;
+use web_sys::HtmlCanvasElement;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
@@ -25,9 +27,15 @@ fn create_test_canvas() -> HtmlCanvasElement {
 fn create_test_graph() -> Graph<(), ()> {
     let mut graph = Graph::new();
 
-    graph.add_node(Node::simple("node1", Position::new(100.0, 100.0))).unwrap();
-    graph.add_node(Node::simple("node2", Position::new(200.0, 150.0))).unwrap();
-    graph.add_node(Node::simple("node3", Position::new(300.0, 200.0))).unwrap();
+    graph
+        .add_node(Node::simple("node1", Position::new(100.0, 100.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node2", Position::new(200.0, 150.0)))
+        .unwrap();
+    graph
+        .add_node(Node::simple("node3", Position::new(300.0, 200.0)))
+        .unwrap();
 
     graph
 }
@@ -102,7 +110,10 @@ fn test_render_selection_with_custom_style() {
     };
 
     let result = renderer.render_selection(&selected_bounds, &custom_style);
-    assert!(result.is_ok(), "Custom style selection rendering should succeed");
+    assert!(
+        result.is_ok(),
+        "Custom style selection rendering should succeed"
+    );
 }
 
 #[wasm_bindgen_test]
@@ -126,12 +137,7 @@ fn test_render_large_selection() {
 
     let mut large_selection = Vec::new();
     for i in 0..50 {
-        large_selection.push(Rect::new(
-            (i * 20) as f64,
-            (i * 15) as f64,
-            40.0,
-            30.0,
-        ));
+        large_selection.push(Rect::new((i * 20) as f64, (i * 15) as f64, 40.0, 30.0));
     }
 
     let style = SelectionStyle::default();
@@ -145,7 +151,7 @@ fn test_render_large_selection() {
 fn test_animated_selection_style_creation() {
     // Test creating animated selection styles with timing
     let animated_style = AnimatedSelectionStyle::new()
-        .with_animation_duration(300.0)  // 300ms
+        .with_animation_duration(300.0) // 300ms
         .with_pulse_enabled(true)
         .with_fade_in_enabled(true);
 
@@ -264,7 +270,7 @@ fn test_animation_performance_optimization() {
             (i % 10) as f64 * 100.0,
             (i / 10) as f64 * 60.0,
             80.0,
-            40.0
+            40.0,
         ));
     }
 

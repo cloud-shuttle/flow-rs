@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use flow_core::{Node, Edge, NodeId, EdgeId, Position};
+use flow_core::{Edge, EdgeId, Node, NodeId, Position};
 
 /// Flow-level events
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13,10 +13,7 @@ pub enum FlowEvent {
         modifiers: KeyboardModifiers,
     },
     /// Canvas pan/zoom changed
-    ViewportChanged {
-        offset: Position,
-        zoom: f64,
-    },
+    ViewportChanged { offset: Position, zoom: f64 },
     /// Selection changed
     SelectionChanged {
         nodes: Vec<NodeId>,
@@ -28,10 +25,7 @@ pub enum FlowEvent {
         target: DragTarget,
     },
     /// Drag operation updated
-    DragUpdate {
-        position: Position,
-        delta: Position,
-    },
+    DragUpdate { position: Position, delta: Position },
     /// Drag operation ended
     DragEnd {
         position: Position,
@@ -43,9 +37,7 @@ pub enum FlowEvent {
         position: Position,
     },
     /// Connection operation updated
-    ConnectionUpdate {
-        position: Position,
-    },
+    ConnectionUpdate { position: Position },
     /// Connection operation completed
     ConnectionComplete {
         source_node: NodeId,
@@ -68,23 +60,13 @@ where
         modifiers: KeyboardModifiers,
     },
     /// Node was double-clicked
-    DoubleClick {
-        node: Node<N>,
-        position: Position,
-    },
+    DoubleClick { node: Node<N>, position: Position },
     /// Node was selected
-    Select {
-        node: Node<N>,
-    },
+    Select { node: Node<N> },
     /// Node was deselected
-    Deselect {
-        node: Node<N>,
-    },
+    Deselect { node: Node<N> },
     /// Node drag started
-    DragStart {
-        node: Node<N>,
-        position: Position,
-    },
+    DragStart { node: Node<N>, position: Position },
     /// Node being dragged
     Drag {
         node: Node<N>,
@@ -98,14 +80,9 @@ where
         final_position: Position,
     },
     /// Node hover started
-    HoverStart {
-        node: Node<N>,
-        position: Position,
-    },
+    HoverStart { node: Node<N>, position: Position },
     /// Node hover ended
-    HoverEnd {
-        node: Node<N>,
-    },
+    HoverEnd { node: Node<N> },
 }
 
 /// Edge-specific events
@@ -121,22 +98,13 @@ where
         modifiers: KeyboardModifiers,
     },
     /// Edge was selected
-    Select {
-        edge: Edge<E>,
-    },
+    Select { edge: Edge<E> },
     /// Edge was deselected
-    Deselect {
-        edge: Edge<E>,
-    },
+    Deselect { edge: Edge<E> },
     /// Edge hover started
-    HoverStart {
-        edge: Edge<E>,
-        position: Position,
-    },
+    HoverStart { edge: Edge<E>, position: Position },
     /// Edge hover ended
-    HoverEnd {
-        edge: Edge<E>,
-    },
+    HoverEnd { edge: Edge<E> },
 }
 
 /// Keyboard modifier keys
@@ -333,11 +301,7 @@ pub mod utils {
     }
 
     /// Convert canvas coordinates to world coordinates
-    pub fn canvas_to_world(
-        canvas_pos: Position,
-        viewport_offset: Position,
-        zoom: f64,
-    ) -> Position {
+    pub fn canvas_to_world(canvas_pos: Position, viewport_offset: Position, zoom: f64) -> Position {
         Position::new(
             (canvas_pos.x / zoom) + viewport_offset.x,
             (canvas_pos.y / zoom) + viewport_offset.y,
@@ -345,11 +309,7 @@ pub mod utils {
     }
 
     /// Convert world coordinates to canvas coordinates
-    pub fn world_to_canvas(
-        world_pos: Position,
-        viewport_offset: Position,
-        zoom: f64,
-    ) -> Position {
+    pub fn world_to_canvas(world_pos: Position, viewport_offset: Position, zoom: f64) -> Position {
         Position::new(
             (world_pos.x - viewport_offset.x) * zoom,
             (world_pos.y - viewport_offset.y) * zoom,
@@ -360,7 +320,7 @@ pub mod utils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{NodeBuilder, EdgeBuilder, Size};
+    use flow_core::prelude::{EdgeBuilder, NodeBuilder, Size};
 
     #[test]
     fn test_keyboard_modifiers() {

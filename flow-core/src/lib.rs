@@ -3,17 +3,17 @@
 //! Core data structures and algorithms for reactive flow-based node editing.
 //! This crate provides framework-agnostic foundations for building flow editors.
 
-pub mod error;
-pub mod graph;
-pub mod spatial;
-pub mod layout;
 pub mod auto_layout;
-pub mod types;
-pub mod selection;
-pub mod groups;
-pub mod handle;
 pub mod drag_operations;
 pub mod edge_creator;
+pub mod error;
+pub mod graph;
+pub mod groups;
+pub mod handle;
+pub mod layout;
+pub mod selection;
+pub mod spatial;
+pub mod types;
 
 #[cfg(test)]
 mod proptest;
@@ -49,22 +49,28 @@ mod handle_connection_counting;
 mod graph_cycle_detection;
 
 // Re-export commonly used types
-pub use error::{FlowError, Result};
-pub use graph::{Graph, Node, Edge};
-pub use types::{Position, Size, Rect, Viewport, NodeId, EdgeId, GroupId};
-pub use selection::{SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut, VisualFeedback};
-pub use groups::{Group, GroupManager};
-pub use handle::{Handle, HandleId, HandleType, HandlePosition, HandleManager};
+pub use auto_layout::{
+    AutoLayoutConfig, AutoLayoutConfigBuilder, AutoLayoutManager, AutoLayoutStrategy,
+};
 pub use drag_operations::DragOperation;
-pub use edge_creator::{EdgeCreator, PreviewEdge, ConnectionFeedback};
-pub use auto_layout::{AutoLayoutManager, AutoLayoutStrategy, AutoLayoutConfig, AutoLayoutConfigBuilder};
+pub use edge_creator::{ConnectionFeedback, EdgeCreator, PreviewEdge};
+pub use error::{FlowError, Result};
+pub use graph::{Edge, Graph, Node};
+pub use groups::{Group, GroupManager};
+pub use handle::{Handle, HandleId, HandleManager, HandlePosition, HandleType};
+pub use selection::{
+    KeyboardShortcut, NavigationDirection, SelectionManager, SelectionMode, VisualFeedback,
+};
+pub use types::{EdgeId, GroupId, NodeId, Position, Rect, Size, Viewport};
 
 /// Core prelude for convenient imports
 pub mod prelude {
     pub use crate::error::{FlowError, Result};
-    pub use crate::graph::{Graph, Node, Edge, NodeBuilder, EdgeBuilder};
-    pub use crate::types::{Position, Size, Rect, Viewport, NodeId, EdgeId, GroupId};
+    pub use crate::graph::{Edge, EdgeBuilder, Graph, Node, NodeBuilder};
+    pub use crate::handle::{Handle, HandleId, HandleManager, HandlePosition, HandleType};
+    pub use crate::selection::{
+        KeyboardShortcut, NavigationDirection, SelectionManager, SelectionMode, VisualFeedback,
+    };
     pub use crate::spatial::SpatialIndex;
-    pub use crate::handle::{Handle, HandleId, HandleType, HandlePosition, HandleManager};
-    pub use crate::selection::{SelectionManager, SelectionMode, NavigationDirection, KeyboardShortcut, VisualFeedback};
+    pub use crate::types::{EdgeId, GroupId, NodeId, Position, Rect, Size, Viewport};
 }
