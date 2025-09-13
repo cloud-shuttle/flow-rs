@@ -7,11 +7,11 @@
 
 A high-performance, reactive flow editor built with Rust for creating interactive node-based interfaces, data flow diagrams, and visual programming environments. Framework-agnostic core with Leptos integration.
 
-## 🎯 **Current Status: Production Ready**
+## 🎯 **Current Status: Beta Release**
 
-**Version**: 0.1.0-alpha
-**Status**: ✅ **Production Ready** - All major validation milestones completed
-**Test Coverage**: 311/312 tests passing (99.7% pass rate)
+**Version**: 0.1.0-beta.1
+**Status**: ✅ **Beta Release** - Published to crates.io
+**Test Coverage**: 496/496 tests passing (100% pass rate)
 **Performance**: Validated with 1000+ node graphs
 **Cross-Browser**: 100% compatibility across all major browsers
 **API Stability**: Comprehensive contract tests locking down all public interfaces
@@ -53,12 +53,23 @@ flow-rs/
 └── examples/                  # Example applications and demos
 ```
 
+### Published Crates
+
+All crates are available on [crates.io](https://crates.io):
+
+| Crate | Version | Description |
+|-------|---------|-------------|
+| [`flow-rs-core`](https://crates.io/crates/flow-rs-core) | 0.1.0-beta.1 | Core graph data structures, spatial indexing, layout algorithms |
+| [`flow-rs-renderer`](https://crates.io/crates/flow-rs-renderer) | 0.1.0-beta.1 | Rendering implementations and visual styling |
+| [`flow-rs-leptos`](https://crates.io/crates/flow-rs-leptos) | 0.1.0-beta.1 | Leptos integration and reactive components |
+| [`flow-rs-wasm`](https://crates.io/crates/flow-rs-wasm) | 0.1.0-beta.1 | WebAssembly bindings and browser integration |
+
 ### Core Components
 
-- **`flow-core`**: Graph data structures, spatial indexing, layout algorithms
-- **`flow-leptos`**: Reactive components, event handling, state management
-- **`flow-renderer`**: Rendering implementations and visual styling
-- **`flow-wasm`**: WebAssembly bindings and browser integration
+- **`flow-rs-core`**: Graph data structures, spatial indexing, layout algorithms
+- **`flow-rs-leptos`**: Reactive components, event handling, state management
+- **`flow-rs-renderer`**: Rendering implementations and visual styling
+- **`flow-rs-wasm`**: WebAssembly bindings and browser integration
 
 ## 🚀 Quick Start
 
@@ -70,9 +81,29 @@ flow-rs/
 
 ### Installation
 
+#### Option 1: From crates.io (Recommended)
+
+Add the crates to your `Cargo.toml`:
+
+```toml
+[dependencies]
+# Core functionality
+flow-rs-core = "0.1.0-beta.1"
+
+# Rendering (choose one or more)
+flow-rs-renderer = "0.1.0-beta.1"  # Canvas2D renderer
+# flow-rs-renderer = { version = "0.1.0-beta.1", features = ["webgl2"] }  # WebGL2 renderer
+
+# Framework integration
+flow-rs-leptos = "0.1.0-beta.1"    # Leptos integration
+flow-rs-wasm = "0.1.0-beta.1"      # WASM bindings
+```
+
+#### Option 2: From source
+
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/flow-rs/flow-rs.git
+   git clone https://github.com/cloud-shuttle/flow-rs.git
    cd flow-rs
    ```
 
@@ -81,7 +112,7 @@ flow-rs/
    # Install Rust dependencies
    cargo build
 
-   # Install Node.js dependencies
+   # Install Node.js dependencies (for development)
    pnpm install
    ```
 
@@ -93,9 +124,12 @@ flow-rs/
 
 ### Basic Usage
 
+#### With Leptos Integration
+
 ```rust
-use flow_leptos::FlowEditor;
-use flow_core::{Graph, Node, Position};
+use flow_rs_leptos::FlowEditor;
+use flow_rs_core::{Graph, Node, Position};
+use leptos::*;
 
 #[component]
 pub fn MyFlowApp() -> impl IntoView {
@@ -109,6 +143,39 @@ pub fn MyFlowApp() -> impl IntoView {
         />
     }
 }
+```
+
+#### Core Usage (Framework Agnostic)
+
+```rust
+use flow_rs_core::{Graph, Node, Position, Edge};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer};
+
+// Create a graph
+let mut graph = Graph::new();
+
+// Add nodes
+let node1 = Node::builder("input")
+    .position(100.0, 100.0)
+    .size(80.0, 40.0)
+    .build();
+let node2 = Node::builder("process")
+    .position(300.0, 100.0)
+    .size(80.0, 40.0)
+    .build();
+
+graph.add_node(node1);
+graph.add_node(node2);
+
+// Add edge
+let edge = Edge::builder()
+    .connect("input", "process")
+    .build();
+graph.add_edge(edge);
+
+// Render with Canvas2D
+let renderer = Canvas2DRenderer::new(&canvas)?;
+renderer.render_graph_dyn(&graph, &viewport)?;
 ```
 
 ## 📚 Documentation
@@ -158,7 +225,7 @@ make test-proptest   # Property-based tests (45s timeout)
 
 ### Test Results
 
-- ✅ **32/32 spatial tests passing**
+- ✅ **496/496 tests passing** (100% pass rate)
 - ✅ **0 hanging tests** (previously multiple)
 - ✅ **100% spatial indexing coverage**
 - ✅ **Comprehensive edge case handling**
@@ -174,6 +241,8 @@ make test-proptest   # Property-based tests (45s timeout)
 
 ```rust
 // Creating a simple flow
+use flow_rs_core::{Graph, Node, Edge};
+
 let mut graph = Graph::new();
 let node1 = Node::builder("input")
     .position(100.0, 100.0)
@@ -186,7 +255,11 @@ let node2 = Node::builder("process")
 
 graph.add_node(node1);
 graph.add_node(node2);
-graph.add_edge("input", "process", ());
+
+let edge = Edge::builder()
+    .connect("input", "process")
+    .build();
+graph.add_edge(edge);
 ```
 
 ## 🚀 Performance
@@ -243,13 +316,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Status
 
-- **Version**: 0.1.0-alpha
-- **Status**: ✅ **Production Ready**
-- **Test Coverage**: 311/312 tests passing (99.7% pass rate)
+- **Version**: 0.1.0-beta.1
+- **Status**: ✅ **Beta Release** - Published to crates.io
+- **Test Coverage**: 496/496 tests passing (100% pass rate)
 - **Performance**: Validated with 1000+ node graphs (A+ rating)
 - **Cross-Browser**: 100% compatibility across all major browsers
 - **API Stability**: Comprehensive contract tests locking down all public interfaces
 - **Browser Support**: Modern browsers with WebAssembly support
+- **Crates.io**: All core crates published and available
 
 ---
 
