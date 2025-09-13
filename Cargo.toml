@@ -77,25 +77,25 @@ readme.workspace = true
 default = ["canvas2d", "leptos"]
 
 # Rendering backends
-canvas2d = ["flow-renderer/canvas2d"]
-webgl2 = ["flow-renderer/webgl2"]
-webgpu = ["flow-renderer/webgpu"]
+canvas2d = ["flow-rs-renderer/canvas2d"]
+webgl2 = ["flow-rs-renderer/webgl2"]
+webgpu = ["flow-rs-renderer/webgpu"]
 
 # Framework integrations
-leptos = ["flow-leptos"]
+leptos = ["flow-rs-leptos"]
 
 # Development features
-debug = ["flow-core/debug", "flow-renderer/debug"]
-profiling = ["flow-core/profiling"]
+debug = ["flow-rs-core/debug", "flow-rs-renderer/debug"]
+profiling = ["flow-rs-core/profiling"]
 
 # Full feature set
 full = ["canvas2d", "webgl2", "webgpu", "leptos", "debug"]
 
 [dependencies]
 # Re-export core functionality
-flow-core = { version = "0.1.0-beta.1", path = "flow-core" }
-flow-renderer = { version = "0.1.0-beta.1", path = "flow-renderer", default-features = false }
-flow-leptos = { version = "0.1.0-beta.1", path = "flow-leptos", optional = true }
+flow-rs-core = { version = "0.1.0-beta.1", path = "flow-core" }
+flow-rs-renderer = { version = "0.1.0-beta.1", path = "flow-renderer", default-features = false }
+flow-rs-leptos = { version = "0.1.0-beta.1", path = "flow-leptos", optional = true }
 
 # Core dependencies
 serde.workspace = true

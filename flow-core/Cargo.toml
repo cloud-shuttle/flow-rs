@@ -1,5 +1,5 @@
 [package]
-name = "flow-core"
+name = "flow-rs-core"
 description = "Core data structures and algorithms for Flow-RS"
 version.workspace = true
 authors.workspace = true

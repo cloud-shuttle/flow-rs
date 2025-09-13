@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size, Viewport};
-use flow_renderer::traits::RenderStats;
-use flow_renderer::Renderer;
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size, Viewport};
+use flow_rs_renderer::traits::RenderStats;
+use flow_rs_renderer::Renderer;
 
 /// WASM-compatible position structure
 #[wasm_bindgen]
@@ -426,7 +426,7 @@ impl WasmFlowEditor {
 
         #[cfg(feature = "canvas2d")]
         {
-            use flow_renderer::Canvas2DRenderer;
+            use flow_rs_renderer::Canvas2DRenderer;
             let renderer = Canvas2DRenderer::new(&canvas)
                 .map(|r| Box::new(r) as Box<dyn Renderer>)
                 .map_err(|e| JsValue::from_str(&e.to_string()))?;

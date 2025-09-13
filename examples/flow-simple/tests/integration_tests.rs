@@ -2,9 +2,9 @@
 //!
 //! These tests verify the complete application works end-to-end
 
-use flow_core::{Edge, Graph, Node, Position, Viewport};
-use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_rs_core::{Edge, Graph, Node, Position, Viewport};
+use flow_rs_renderer::traits::{BackgroundConfig, BackgroundVariant};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::HtmlCanvasElement;

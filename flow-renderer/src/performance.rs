@@ -1,7 +1,7 @@
 //! Performance optimization utilities for the Canvas2D renderer
 
 use crate::traits::{BackgroundConfig, EdgeStyle, NodeStyle};
-use flow_core::{Position, Rect, Viewport};
+use flow_rs_core::{Position, Rect, Viewport};
 use std::collections::HashMap;
 
 /// Performance monitoring and optimization utilities

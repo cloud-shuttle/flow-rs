@@ -2,8 +2,8 @@
 //!
 //! These tests verify that the application performs well under various conditions
 
-use flow_core::{Edge, Graph, Node, Position};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_rs_core::{Edge, Graph, Node, Position};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer};
 use wasm_bindgen_test::*;
 
 mod common;

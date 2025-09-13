@@ -6,9 +6,9 @@
 //! - Canvas panning
 //! - Visual feedback for selected nodes
 
-use flow_core::types::NodeId;
-use flow_core::{Graph, Position, Viewport};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_rs_core::types::NodeId;
+use flow_rs_core::{Graph, Position, Viewport};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer};
 use std::collections::HashSet;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
@@ -177,10 +177,10 @@ impl InteractionHandler {
             .map_err(|e| JsValue::from_str(&format!("Clear error: {:?}", e)))?;
 
         // Render background
-        let bg_config = flow_renderer::traits::BackgroundConfig {
+        let bg_config = flow_rs_renderer::traits::BackgroundConfig {
             color: "#ffffff".to_string(),
             pattern_color: "#e2e8f0".to_string(),
-            variant: flow_renderer::traits::BackgroundVariant::Dots,
+            variant: flow_rs_renderer::traits::BackgroundVariant::Dots,
             size: 20.0,
             opacity: 0.5,
         };

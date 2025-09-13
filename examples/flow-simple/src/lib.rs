@@ -3,9 +3,9 @@
 //! A basic demonstration of the Leptos Flow Canvas2D renderer
 //! showing nodes and edges in a simple flow diagram.
 
-use flow_core::{Edge, Graph, Node, Position, Viewport};
-use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_rs_core::{Edge, Graph, Node, Position, Viewport};
+use flow_rs_renderer::traits::{BackgroundConfig, BackgroundVariant};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer};
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 

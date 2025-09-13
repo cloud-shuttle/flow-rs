@@ -6,7 +6,7 @@ use crate::traits::{
     AnimatedSelectionStyle, BackgroundConfig, BackgroundVariant, MultiSelectionStyle, RenderStats,
     Renderer, RendererCapabilities, SelectionHoverStyle, SelectionStyle,
 };
-use flow_core::{NodeId, Position, Rect, Viewport};
+use flow_rs_core::{NodeId, Position, Rect, Viewport};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 

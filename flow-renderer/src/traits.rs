@@ -1,7 +1,7 @@
 //! Renderer trait definitions and shared types
 
 use crate::error::Result;
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Rect, Size, Viewport};
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Rect, Size, Viewport};
 use js_sys;
 use serde_json;
 
@@ -548,7 +548,7 @@ pub trait BatchRenderer: Renderer {
 /// Utility functions for rendering
 pub mod utils {
     use super::*;
-    use flow_core::Position;
+    use flow_rs_core::Position;
 
     /// Parse CSS color string to RGBA values
     pub fn parse_color(color: &str) -> Option<[f32; 4]> {
@@ -661,12 +661,12 @@ pub mod utils {
     }
 
     /// Check if a rectangle is visible in the viewport
-    pub fn is_visible(bounds: &flow_core::Rect, viewport: &Viewport) -> bool {
+    pub fn is_visible(bounds: &flow_rs_core::Rect, viewport: &Viewport) -> bool {
         viewport.intersects_rect(*bounds)
     }
 
     /// Calculate node bounds with padding
-    pub fn node_bounds_with_padding(node: &Node<impl Clone>, padding: f64) -> flow_core::Rect {
+    pub fn node_bounds_with_padding(node: &Node<impl Clone>, padding: f64) -> flow_rs_core::Rect {
         node.bounds().expand(padding)
     }
 }

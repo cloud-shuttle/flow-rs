@@ -8,8 +8,8 @@ authors = ["Leptos Flow Contributors"]
 crate-type = ["cdylib"]
 
 [dependencies]
-flow-core = { path = "../../flow-core" }
-flow-renderer = { path = "../../flow-renderer", features = ["canvas2d"] }
+flow-rs-core = { path = "../../flow-core" }
+flow-rs-renderer = { path = "../../flow-renderer", features = ["canvas2d"] }
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = ["console", "Window", "Document", "HtmlElement", "HtmlCanvasElement", "MouseEvent", "Element", "DomRect"] }

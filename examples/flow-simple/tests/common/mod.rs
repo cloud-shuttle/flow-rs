@@ -3,9 +3,9 @@
 //! This module provides shared test utilities that can be used across
 //! different test files.
 
-use flow_core::{Edge, Graph, Node, Position, Viewport};
-use flow_renderer::traits::{BackgroundConfig, BackgroundVariant};
-use flow_renderer::Renderer;
+use flow_rs_core::{Edge, Graph, Node, Position, Viewport};
+use flow_rs_renderer::traits::{BackgroundConfig, BackgroundVariant};
+use flow_rs_renderer::Renderer;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 

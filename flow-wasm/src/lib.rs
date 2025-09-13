@@ -6,8 +6,8 @@
 use wasm_bindgen::prelude::*;
 
 // Re-export core functionality
-pub use flow_core as core;
-pub use flow_renderer as renderer;
+pub use flow_rs_core as core;
+pub use flow_rs_renderer as renderer;
 
 pub mod bindings;
 pub mod utils;

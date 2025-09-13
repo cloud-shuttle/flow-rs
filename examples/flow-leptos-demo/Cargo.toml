@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 leptos = { version = "0.6", features = ["csr"] }
-flow-core = { path = "../../flow-core" }
-flow-leptos = { path = "../../flow-leptos" }
-flow-renderer = { path = "../../flow-renderer" }
+flow-rs-core = { path = "../../flow-core" }
+flow-rs-leptos = { path = "../../flow-leptos" }
+flow-rs-renderer = { path = "../../flow-renderer" }
 console_error_panic_hook = "0.1"

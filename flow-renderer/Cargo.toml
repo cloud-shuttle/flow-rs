@@ -1,5 +1,5 @@
 [package]
-name = "flow-renderer"
+name = "flow-rs-renderer"
 description = "Rendering abstractions and implementations for Flow-RS"
 version.workspace = true
 authors.workspace = true
@@ -19,7 +19,7 @@ debug = ["tracing"]
 
 [dependencies]
 # Core dependency
-flow-core = { version = "0.1.0-beta.1", path = "../flow-core" }
+flow-rs-core = { version = "0.1.0-beta.1", path = "../flow-core" }
 
 # Web APIs
 wasm-bindgen = { workspace = true }
