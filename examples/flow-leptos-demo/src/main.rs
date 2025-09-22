@@ -1,6 +1,7 @@
 use flow_rs_core::{Edge, Graph, Node, Position};
 use flow_rs_leptos::components::FlowEditor;
-use leptos::*;
+use leptos::prelude::*;
+use leptos::mount::mount_to_body;
 
 fn main() {
     console_error_panic_hook::set_once();
