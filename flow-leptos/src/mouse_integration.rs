@@ -1,6 +1,6 @@
 //! Integration between DOM rect access and mouse event handling
 
-use wasm_bindgen::JsCast;
+// use wasm_bindgen::JsCast; // Unused import
 use web_sys::{Element, MouseEvent};
 
 use crate::dom_rect::{CoordinateConverter, DomRectUtils, ElementRect};

@@ -202,8 +202,10 @@ impl EdgeCreator {
         self.validate_basic_connection(&preview.source_node, &target_node_id)?;
 
         // Get source and target nodes for validation
-        let source_node_ref = graph.get_node(&preview.source_node).unwrap();
-        let target_node_ref = graph.get_node(&target_node_id).unwrap();
+        let source_node_ref = graph.get_node(&preview.source_node)
+            .ok_or_else(|| FlowError::node_not_found(preview.source_node.as_str()))?;
+        let target_node_ref = graph.get_node(&target_node_id)
+            .ok_or_else(|| FlowError::node_not_found(target_node_id.as_str()))?;
 
         // Validate handle compatibility if both handles specified
         if let (Some(source_handle), Some(target_handle)) = (&preview.source_handle, target_handle)

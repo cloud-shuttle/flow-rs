@@ -2,12 +2,13 @@
 //!
 //! Provides keyboard shortcuts and navigation for flow editors
 
-use leptos::*;
-use wasm_bindgen::{closure::Closure, JsCast};
+use leptos::prelude::*;
+// use wasm_bindgen::{closure::Closure, JsCast}; // Unused imports
 use web_sys::{EventTarget, KeyboardEvent};
 
 use crate::signals::{FlowState, ViewportState};
-use flow_rs_core::{Graph, KeyboardShortcut, NavigationDirection};
+use flow_rs_core::{Graph, KeyboardShortcut};
+// use flow_rs_core::NavigationDirection; // Unused import
 
 /// Keyboard modifiers state
 #[derive(Debug, Clone, Copy, Default)]
@@ -34,8 +35,8 @@ pub fn create_keyboard_shortcuts<N, E>(
     _viewport_state: RwSignal<ViewportState>,
 ) -> impl Fn(KeyboardEvent) -> ()
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
     move |event: KeyboardEvent| {
         let modifiers = KeyboardModifiers::from_event(&event);

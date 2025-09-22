@@ -12,7 +12,7 @@ categories.workspace = true
 
 [features]
 default = ["web-sys"]
-debug = ["tracing"]
+debug = []
 canvas2d = []
 web-sys = []
 
@@ -24,8 +24,6 @@ flow-rs-wasm = { version = "0.1.0-beta.1", path = "../flow-wasm" }
 
 # Leptos ecosystem
 leptos = { workspace = true }
-leptos_dom = { workspace = true }
-leptos_reactive = { workspace = true }
 
 # Web APIs
 wasm-bindgen = { workspace = true }
@@ -37,8 +35,8 @@ serde = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
 
-# Optional debugging
-tracing = { version = "0.1", optional = true }
+# Required for logging
+tracing = { version = "0.1" }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

@@ -310,10 +310,11 @@ impl EventUtils {
     /// Check if event has modifier keys
     pub fn has_modifiers(event: &web_sys::MouseEvent) -> JsValue {
         let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"ctrl".into(), &JsValue::from(event.ctrl_key())).unwrap();
-        js_sys::Reflect::set(&obj, &"shift".into(), &JsValue::from(event.shift_key())).unwrap();
-        js_sys::Reflect::set(&obj, &"alt".into(), &JsValue::from(event.alt_key())).unwrap();
-        js_sys::Reflect::set(&obj, &"meta".into(), &JsValue::from(event.meta_key())).unwrap();
+        // These calls should never fail in practice, but we handle errors gracefully
+        let _ = js_sys::Reflect::set(&obj, &"ctrl".into(), &JsValue::from(event.ctrl_key()));
+        let _ = js_sys::Reflect::set(&obj, &"shift".into(), &JsValue::from(event.shift_key()));
+        let _ = js_sys::Reflect::set(&obj, &"alt".into(), &JsValue::from(event.alt_key()));
+        let _ = js_sys::Reflect::set(&obj, &"meta".into(), &JsValue::from(event.meta_key()));
         obj.into()
     }
 }
@@ -329,24 +330,22 @@ pub fn get_version() -> String {
 pub fn get_build_info() -> JsValue {
     let info = js_sys::Object::new();
 
-    js_sys::Reflect::set(
+    // These calls should never fail in practice, but we handle errors gracefully
+    let _ = js_sys::Reflect::set(
         &info,
         &"version".into(),
         &JsValue::from_str(env!("CARGO_PKG_VERSION")),
-    )
-    .unwrap();
-    js_sys::Reflect::set(
+    );
+    let _ = js_sys::Reflect::set(
         &info,
         &"name".into(),
         &JsValue::from_str(env!("CARGO_PKG_NAME")),
-    )
-    .unwrap();
-    js_sys::Reflect::set(
+    );
+    let _ = js_sys::Reflect::set(
         &info,
         &"authors".into(),
         &JsValue::from_str(env!("CARGO_PKG_AUTHORS")),
-    )
-    .unwrap();
+    );
     js_sys::Reflect::set(
         &info,
         &"rustc_version".into(),

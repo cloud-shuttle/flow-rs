@@ -83,8 +83,8 @@ mod tests {
         let cargo_toml = fs::read_to_string("Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("name = \"flow-core\""),
-            "Core package should be named flow-core"
+            cargo_toml.contains("name = \"flow-rs-core\""),
+            "Core package should be named flow-rs-core"
         );
         assert!(
             !cargo_toml.contains("name = \"leptos-flow-core\""),
@@ -98,8 +98,8 @@ mod tests {
         let cargo_toml = fs::read_to_string("../flow-renderer/Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("name = \"flow-renderer\""),
-            "Renderer package should be named flow-renderer"
+            cargo_toml.contains("name = \"flow-rs-renderer\""),
+            "Renderer package should be named flow-rs-renderer"
         );
         assert!(
             !cargo_toml.contains("name = \"leptos-flow-renderer\""),
@@ -113,8 +113,8 @@ mod tests {
         let cargo_toml = fs::read_to_string("../flow-wasm/Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("name = \"flow-wasm\""),
-            "WASM package should be named flow-wasm"
+            cargo_toml.contains("name = \"flow-rs-wasm\""),
+            "WASM package should be named flow-rs-wasm"
         );
         assert!(
             !cargo_toml.contains("name = \"leptos-flow-wasm\""),
@@ -128,8 +128,8 @@ mod tests {
         let cargo_toml = fs::read_to_string("../flow-leptos/Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("name = \"flow-leptos\""),
-            "Leptos package should be named flow-leptos"
+            cargo_toml.contains("name = \"flow-rs-leptos\""),
+            "Leptos package should be named flow-rs-leptos"
         );
         assert!(
             !cargo_toml.contains("name = \"leptos-flow-leptos\""),
@@ -163,8 +163,8 @@ mod tests {
         let cargo_toml = fs::read_to_string("../flow-renderer/Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("flow-core"),
-            "Renderer should depend on flow-core"
+            cargo_toml.contains("flow-rs-core"),
+            "Renderer should depend on flow-rs-core"
         );
         assert!(
             !cargo_toml.contains("leptos-flow-core"),
@@ -178,12 +178,12 @@ mod tests {
         let cargo_toml = fs::read_to_string("../flow-wasm/Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("flow-core"),
-            "WASM should depend on flow-core"
+            cargo_toml.contains("flow-rs-core"),
+            "WASM should depend on flow-rs-core"
         );
         assert!(
-            cargo_toml.contains("flow-renderer"),
-            "WASM should depend on flow-renderer"
+            cargo_toml.contains("flow-rs-renderer"),
+            "WASM should depend on flow-rs-renderer"
         );
         assert!(
             !cargo_toml.contains("leptos-flow"),
@@ -197,16 +197,16 @@ mod tests {
         let cargo_toml = fs::read_to_string("../flow-leptos/Cargo.toml").unwrap();
 
         assert!(
-            cargo_toml.contains("flow-core"),
-            "Leptos should depend on flow-core"
+            cargo_toml.contains("flow-rs-core"),
+            "Leptos should depend on flow-rs-core"
         );
         assert!(
-            cargo_toml.contains("flow-renderer"),
-            "Leptos should depend on flow-renderer"
+            cargo_toml.contains("flow-rs-renderer"),
+            "Leptos should depend on flow-rs-renderer"
         );
         assert!(
-            cargo_toml.contains("flow-wasm"),
-            "Leptos should depend on flow-wasm"
+            cargo_toml.contains("flow-rs-wasm"),
+            "Leptos should depend on flow-rs-wasm"
         );
         assert!(
             !cargo_toml.contains("leptos-flow"),
@@ -240,8 +240,8 @@ mod tests {
         let simple_flow_main = fs::read_to_string("../examples/flow-simple/src/lib.rs").unwrap();
 
         assert!(
-            simple_flow_main.contains("flow_core"),
-            "Examples should use flow_core imports"
+            simple_flow_main.contains("flow_rs_core"),
+            "Examples should use flow_rs_core imports"
         );
         assert!(
             !simple_flow_main.contains("leptos_flow_core"),
@@ -256,8 +256,8 @@ mod tests {
             fs::read_to_string("../examples/flow-leptos-demo/src/main.rs").unwrap();
 
         assert!(
-            leptos_demo_main.contains("flow_leptos"),
-            "Leptos demo should use flow_leptos imports"
+            leptos_demo_main.contains("flow_rs_leptos"),
+            "Leptos demo should use flow_rs_leptos imports"
         );
         assert!(
             !leptos_demo_main.contains("leptos_flow_leptos"),
@@ -388,8 +388,8 @@ mod tests {
         // Check that examples reference new package names in their Cargo.toml
         let simple_flow_cargo = fs::read_to_string("../examples/flow-simple/Cargo.toml").unwrap();
         assert!(
-            simple_flow_cargo.contains("flow-core"),
-            "Simple flow example should depend on flow-core"
+            simple_flow_cargo.contains("flow-rs-core"),
+            "Simple flow example should depend on flow-rs-core"
         );
         assert!(
             !simple_flow_cargo.contains("leptos-flow-core"),

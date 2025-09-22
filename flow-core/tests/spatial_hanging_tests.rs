@@ -3,9 +3,9 @@
 //! These tests are designed to detect infinite loops and resource exhaustion
 //! in the spatial indexing algorithms.
 
-use flow_core::graph::NodeBuilder;
-use flow_core::spatial::SpatialIndex;
-use flow_core::types::Rect;
+use flow_rs_core::graph::NodeBuilder;
+use flow_rs_core::spatial::SpatialIndex;
+use flow_rs_core::types::Rect;
 use std::time::{Duration, Instant};
 
 #[test]

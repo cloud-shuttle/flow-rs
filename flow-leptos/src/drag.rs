@@ -2,11 +2,12 @@
 //!
 //! Provides comprehensive drag and drop functionality for flow editors
 
-use leptos::*;
+use leptos::prelude::*;
 use web_sys::MouseEvent;
 
 use crate::signals::{FlowState, ViewportState};
-use flow_rs_core::{Graph, GroupId, GroupManager, NodeId, Position, Rect};
+use flow_rs_core::{Graph, GroupManager, NodeId, Position, Rect};
+// use flow_rs_core::GroupId; // Unused import
 
 /// Drag configuration and constraints
 #[derive(Debug, Clone)]
@@ -542,8 +543,8 @@ pub fn create_drag_handlers<N, E>(
     impl Fn(MouseEvent) + Clone, // mouse_up
 )
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
     let drag_handler = DragHandler::with_config(drag_config.unwrap_or_default());
 
@@ -616,8 +617,8 @@ pub fn create_group_aware_drag_handlers<N, E>(
     impl Fn(MouseEvent) + Clone, // mouse_up
 )
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
     let drag_handler = DragHandler::with_config(drag_config.unwrap_or_default());
 

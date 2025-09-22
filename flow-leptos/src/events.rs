@@ -10,6 +10,14 @@ pub enum FlowEvent {
     /// Canvas was clicked
     CanvasClick {
         position: Position,
+        button: MouseButton,
+        modifiers: KeyboardModifiers,
+    },
+    /// Node was clicked
+    NodeClick {
+        node_id: NodeId,
+        position: Position,
+        button: MouseButton,
         modifiers: KeyboardModifiers,
     },
     /// Canvas pan/zoom changed

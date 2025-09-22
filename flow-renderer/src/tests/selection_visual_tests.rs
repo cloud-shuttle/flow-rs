@@ -6,7 +6,7 @@ use crate::canvas2d::Canvas2DRenderer;
 use crate::traits::{
     AnimatedSelectionStyle, MultiSelectionStyle, Renderer, SelectionHoverStyle, SelectionStyle,
 };
-use flow_core::{Graph, Node, Position, Rect};
+use flow_rs_core::{Graph, Node, Position, Rect};
 use js_sys;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;

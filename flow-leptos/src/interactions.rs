@@ -4,12 +4,15 @@
 //! to flow graph events and state changes.
 
 use leptos::*;
-use wasm_bindgen::JsCast;
-use web_sys::{KeyboardEvent, MouseEvent, WheelEvent};
+// use wasm_bindgen::JsCast; // Unused import
+use web_sys::{MouseEvent, WheelEvent};
+// use web_sys::KeyboardEvent; // Unused import
 
-use crate::events::{DragTarget, EdgeEvent, FlowEvent, KeyboardModifiers, MouseButton, NodeEvent};
+use crate::events::{DragTarget, FlowEvent, KeyboardModifiers, MouseButton};
+// use crate::events::{EdgeEvent, NodeEvent}; // Unused imports
 use crate::signals::{FlowState, ViewportState};
-use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position};
+use flow_rs_core::{EdgeId, Graph, NodeId, Position};
+// use flow_rs_core::{Edge, Node}; // Unused imports
 
 /// Interaction manager for handling flow editor events
 pub struct InteractionManager {
@@ -110,6 +113,7 @@ impl InteractionManager {
             // Edge clicked - for now just register the click
             events.push(FlowEvent::CanvasClick {
                 position: world_pos,
+                button: MouseButton::Left,
                 modifiers,
             });
         } else {
@@ -134,6 +138,7 @@ impl InteractionManager {
 
             events.push(FlowEvent::CanvasClick {
                 position: world_pos,
+                button: MouseButton::Left,
                 modifiers,
             });
         }

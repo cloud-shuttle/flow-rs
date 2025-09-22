@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 8f0f0a753d8f2aa68db592284e60a4ce2c0476eaabbfe4b2f30f0066aa811101 # shrinks to nodes = [Node { id: NodeId("Z"), position: Position { x: 0.0, y: 0.0 }, size: Size { width: 1.0, height: 1.0 }, data: (), node_type: None, selected: false, dragging: false, selectable: true, connectable: true, deletable: true, drag_handle: None, parent_node: None, z_index: None, hidden: false, measured: None, handle_manager: HandleManager { handles: [], node_id: NodeId("Z") } }, Node { id: NodeId("Z"), position: Position { x: 0.0, y: 0.0 }, size: Size { width: 1.0, height: 1.0 }, data: (), node_type: None, selected: false, dragging: false, selectable: true, connectable: true, deletable: true, drag_handle: None, parent_node: None, z_index: None, hidden: false, measured: None, handle_manager: HandleManager { handles: [], node_id: NodeId("Z") } }]

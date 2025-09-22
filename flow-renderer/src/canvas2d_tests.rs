@@ -4,8 +4,8 @@ use crate::canvas2d::Canvas2DRenderer;
 use crate::traits::{
     BackgroundConfig, BackgroundVariant, EdgeStyle, NodeStyle, Renderer, SelectionStyle,
 };
-use flow_core::types::{EdgeId, NodeId};
-use flow_core::{Edge, Graph, Node, Position, Rect, Viewport};
+use flow_rs_core::types::{EdgeId, NodeId};
+use flow_rs_core::{Edge, Graph, Node, Position, Rect, Viewport};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::HtmlCanvasElement;

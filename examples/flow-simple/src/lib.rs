@@ -30,7 +30,7 @@ pub fn run() {
         .unwrap();
 
     // Create the renderer
-    let mut renderer = match Canvas2DRenderer::new(&canvas) {
+    let renderer = match Canvas2DRenderer::new(&canvas) {
         Ok(r) => r,
         Err(e) => {
             web_sys::console::error_1(&format!("Failed to create renderer: {:?}", e).into());
@@ -40,7 +40,7 @@ pub fn run() {
 
     // Create a sample graph
     let graph = create_sample_graph();
-    let viewport = Viewport::default();
+    let viewport = Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0);
 
     // Create interaction handler
     let mut interaction_handler =

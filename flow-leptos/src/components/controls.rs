@@ -7,8 +7,9 @@ use crate::signals::ViewportState;
 use flow_rs_core::layout::{
     CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
 };
-use flow_rs_core::{Graph, Position};
-use leptos::*;
+use flow_rs_core::Graph;
+// use flow_rs_core::Position; // Unused import
+use leptos::prelude::*;
 
 /// Configuration for the Controls component
 #[derive(Debug, Clone)]
@@ -91,11 +92,11 @@ pub fn Controls<N, E>(
     on_clear_graph: Option<WriteSignal<bool>>,
 ) -> impl IntoView
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
-    let current_zoom = create_memo(move |_| viewport.get().viewport.zoom);
-    let current_layout = create_rw_signal(LayoutType::ForceDirected);
+    let current_zoom = Memo::new(move |_| viewport.get().viewport.zoom);
+    let current_layout = RwSignal::new(LayoutType::ForceDirected);
 
     // Handle zoom in
     let handle_zoom_in = {
@@ -188,9 +189,9 @@ where
             });
         }
 
-        if let Some(handler) = on_fit_to_screen {
-            handler.set(true);
-        }
+            if let Some(handler) = on_fit_to_screen {
+                handler.set(true);
+            }
     };
 
     // Handle clear graph
@@ -199,9 +200,9 @@ where
             *g = Graph::new();
         });
 
-        if let Some(handler) = on_clear_graph {
-            handler.set(true);
-        }
+            if let Some(handler) = on_clear_graph {
+                handler.set(true);
+            }
     };
 
     let position_style = match config.position {
@@ -223,83 +224,55 @@ where
             "position: absolute; {}; background: rgba(255, 255, 255, 0.9); border: 1px solid #ddd; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 1000;",
             position_style
         )>
-            {move || {
-                if config.show_zoom_controls {
-                    view! {
-                        <div class="zoom-controls" style="display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">"Zoom"</label>
-                            <div style="display: flex; gap: 4px; align-items: center;">
-                                <button on:click=handle_zoom_out style="width: 24px; height: 24px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px;">"-"</button>
-                                <span style="min-width: 40px; text-align: center; font-size: 11px;">{move || format!("{:.0}%", current_zoom.get() * 100.0)}</span>
-                                <button on:click=handle_zoom_in style="width: 24px; height: 24px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px;">"+"</button>
-                            </div>
-                            <button on:click=handle_zoom_reset style="width: 100%; height: 20px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; font-size: 10px;">"Reset"</button>
-                        </div>
-                    }.into_view()
-                } else {
-                    view! { <div></div> }.into_view()
-                }
-            }}
+            <div class="zoom-controls" style=move || if config.show_zoom_controls { "display: flex; flex-direction: column; gap: 4px;" } else { "display: none;" }>
+                <label style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">"Zoom"</label>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <button on:click=handle_zoom_out style="width: 24px; height: 24px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px;">"-"</button>
+                    <span style="min-width: 40px; text-align: center; font-size: 11px;">{move || format!("{:.0}%", current_zoom.get() * 100.0)}</span>
+                    <button on:click=handle_zoom_in style="width: 24px; height: 24px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px;">"+"</button>
+                </div>
+                <button on:click=handle_zoom_reset style="width: 100%; height: 20px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; font-size: 10px;">"Reset"</button>
+            </div>
 
-            {move || {
-                if config.show_layout_selector {
-                    view! {
-                        <div class="layout-controls" style="display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">"Layout"</label>
-                            <select
-                                on:change=move |ev| {
-                                    let value = event_target_value(&ev);
-                                    let layout_type = match value.as_str() {
-                                        "grid" => LayoutType::Grid,
-                                        "hierarchical" => LayoutType::Hierarchical,
-                                        "circular" => LayoutType::Circular,
-                                        _ => LayoutType::ForceDirected,
-                                    };
-                                    handle_layout_change(layout_type);
-                                }
-                                style="width: 100%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;"
-                            >
-                                <option value="force">"Force Directed"</option>
-                                <option value="grid">"Grid"</option>
-                                <option value="hierarchical">"Hierarchical"</option>
-                                <option value="circular">"Circular"</option>
-                            </select>
-                        </div>
-                    }.into_view()
-                } else {
-                    view! { <div></div> }.into_view()
-                }
-            }}
+            <div class="layout-controls" style=move || if config.show_layout_selector { "display: flex; flex-direction: column; gap: 4px;" } else { "display: none;" }>
+                <label style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">"Layout"</label>
+                <select
+                    on:change=move |ev| {
+                        let value = event_target_value(&ev);
+                        let layout_type = match value.as_str() {
+                            "grid" => LayoutType::Grid,
+                            "hierarchical" => LayoutType::Hierarchical,
+                            "circular" => LayoutType::Circular,
+                            _ => LayoutType::ForceDirected,
+                        };
+                        handle_layout_change(layout_type);
+                    }
+                    style="width: 100%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;"
+                >
+                    <option value="force">"Force Directed"</option>
+                    <option value="grid">"Grid"</option>
+                    <option value="hierarchical">"Hierarchical"</option>
+                    <option value="circular">"Circular"</option>
+                </select>
+            </div>
 
-            {move || {
-                if config.show_fit_to_screen {
-                    view! {
-                        <button
-                            on:click=handle_fit_to_screen
-                            style="width: 100%; height: 24px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; font-size: 11px;"
-                        >
-                            "Fit to Screen"
-                        </button>
-                    }.into_view()
-                } else {
-                    view! { <div></div> }.into_view()
-                }
-            }}
+            <div style=move || if config.show_fit_to_screen { "display: block;" } else { "display: none;" }>
+                <button
+                    on:click=handle_fit_to_screen
+                    style="width: 100%; height: 24px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; font-size: 11px;"
+                >
+                    "Fit to Screen"
+                </button>
+            </div>
 
-            {move || {
-                if config.show_clear_button {
-                    view! {
-                        <button
-                            on:click=handle_clear_graph
-                            style="width: 100%; height: 24px; border: 1px solid #ff6b6b; background: #fff5f5; color: #c92a2a; cursor: pointer; border-radius: 4px; font-size: 11px;"
-                        >
-                            "Clear Graph"
-                        </button>
-                    }.into_view()
-                } else {
-                    view! { <div></div> }.into_view()
-                }
-            }}
+            <div style=move || if config.show_clear_button { "display: block;" } else { "display: none;" }>
+                <button
+                    on:click=handle_clear_graph
+                    style="width: 100%; height: 24px; border: 1px solid #ff6b6b; background: #fff5f5; color: #c92a2a; cursor: pointer; border-radius: 4px; font-size: 11px;"
+                >
+                    "Clear Graph"
+                </button>
+            </div>
         </div>
     }
 }

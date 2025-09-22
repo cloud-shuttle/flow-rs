@@ -1,7 +1,8 @@
 //! Reactive signals and state management for Leptos Flow
 
-use leptos::*;
+use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use flow_rs_core::{
     Edge, EdgeId, Graph, GroupId, GroupManager, KeyboardShortcut, NavigationDirection, Node,
@@ -477,38 +478,116 @@ impl ViewportState {
     }
 }
 
-/// Create a reactive graph signal with helper methods
-pub fn create_graph_signal<N, E>() -> (ReadSignal<Graph<N, E>>, WriteSignal<Graph<N, E>>)
-where
-    N: Clone + 'static,
-    E: Clone + 'static,
-{
-    create_signal(Graph::new())
+/// NEW ARCHITECTURE: Simplified signal types that work with Leptos 0.8.9
+/// Instead of storing complex Graph<N,E> in signals, we store simpler types
+
+/// Node collection signal - stores nodes as a simple HashMap
+pub fn create_nodes_signal() -> (ReadSignal<HashMap<NodeId, Node<()>>>, WriteSignal<HashMap<NodeId, Node<()>>>) {
+    signal(HashMap::new())
+}
+
+/// Edge collection signal - stores edges as a simple HashMap  
+pub fn create_edges_signal() -> (ReadSignal<HashMap<EdgeId, Edge<()>>>, WriteSignal<HashMap<EdgeId, Edge<()>>>) {
+    signal(HashMap::new())
+}
+
+/// Selection signal - stores selected node IDs
+pub fn create_selection_signal() -> (ReadSignal<Vec<NodeId>>, WriteSignal<Vec<NodeId>>) {
+    signal(Vec::new())
+}
+
+/// Viewport signal - stores viewport state
+pub fn create_viewport_signal() -> (ReadSignal<Viewport>, WriteSignal<Viewport>) {
+    signal(Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0))
+}
+
+/// Graph operations signal - stores the current graph for operations
+/// This is a concrete type that we know works with signals
+pub fn create_graph_signal() -> (ReadSignal<Graph<(), ()>>, WriteSignal<Graph<(), ()>>) {
+    signal(Graph::new())
+}
+
+/// NEW: Simplified signal manager that coordinates all the simple signals
+#[derive(Debug, Clone)]
+pub struct FlowSignalManager {
+    pub nodes: RwSignal<HashMap<NodeId, Node<()>>>,
+    pub edges: RwSignal<HashMap<EdgeId, Edge<()>>>,
+    pub selection: RwSignal<Vec<NodeId>>,
+    pub viewport: RwSignal<Viewport>,
+    pub flow_state: RwSignal<FlowState>,
+    pub viewport_state: RwSignal<ViewportState>,
+}
+
+impl FlowSignalManager {
+    pub fn new() -> Self {
+        Self {
+            nodes: RwSignal::new(HashMap::new()),
+            edges: RwSignal::new(HashMap::new()),
+            selection: RwSignal::new(Vec::new()),
+            viewport: RwSignal::new(Viewport::new(0.0, 0.0, 800.0, 600.0, 1.0)),
+            flow_state: RwSignal::new(FlowState::new()),
+            viewport_state: RwSignal::new(ViewportState::new()),
+        }
+    }
+
+    /// Get the current graph by combining nodes and edges
+    pub fn get_graph(&self) -> Graph<(), ()> {
+        let mut graph = Graph::new();
+        
+        // Add all nodes
+        for (_, node) in self.nodes.get().iter() {
+            let _ = graph.add_node(node.clone());
+        }
+        
+        // Add all edges
+        for (_, edge) in self.edges.get().iter() {
+            let _ = graph.add_edge(edge.clone());
+        }
+        
+        graph
+    }
+
+    /// Update the graph by setting nodes and edges
+    pub fn set_graph(&self, graph: Graph<(), ()>) {
+        // Extract nodes
+        let mut nodes = HashMap::new();
+        for node in graph.nodes() {
+            nodes.insert(node.id.clone(), node.clone());
+        }
+        self.nodes.set(nodes);
+
+        // Extract edges
+        let mut edges = HashMap::new();
+        for edge in graph.edges() {
+            edges.insert(edge.id.clone(), edge.clone());
+        }
+        self.edges.set(edges);
+    }
 }
 
 /// Create a reactive flow state signal
 pub fn create_flow_state() -> (ReadSignal<FlowState>, WriteSignal<FlowState>) {
-    create_signal(FlowState::new())
+    signal(FlowState::new())
 }
 
 /// Create a reactive viewport state signal
 pub fn create_viewport_state() -> (ReadSignal<ViewportState>, WriteSignal<ViewportState>) {
-    create_signal(ViewportState::new())
+    signal(ViewportState::new())
 }
 
 /// Graph operations helper
 pub struct GraphOperations<N, E>
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
     graph_signal: RwSignal<Graph<N, E>>,
 }
 
 impl<N, E> GraphOperations<N, E>
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
     pub fn new(graph_signal: RwSignal<Graph<N, E>>) -> Self {
         Self { graph_signal }

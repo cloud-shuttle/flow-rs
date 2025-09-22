@@ -2,14 +2,17 @@
 //!
 //! Provides a miniature overview of the entire flow graph with viewport indicator.
 
-use leptos::*;
+use leptos::prelude::*;
 use std::ops::Deref;
 use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, Element, HtmlCanvasElement, HtmlElement, MouseEvent};
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent};
+// use web_sys::{Element, HtmlElement}; // Unused imports
 
-use crate::signals::{FlowState, ViewportState};
-use flow_rs_core::{Edge, Graph, Node, Position, Viewport};
-use flow_rs_renderer::Canvas2DRenderer;
+use crate::signals::ViewportState;
+// use crate::signals::FlowState; // Unused import
+use flow_rs_core::{Graph, Position};
+// use flow_rs_core::{Edge, Node, Viewport}; // Unused imports
+// use flow_rs_renderer::Canvas2DRenderer; // Unused import
 
 /// Configuration for the MiniMap component
 #[derive(Debug, Clone)]
@@ -64,14 +67,14 @@ pub fn MiniMap<N, E>(
     on_viewport_change: Option<WriteSignal<Position>>,
 ) -> impl IntoView
 where
-    N: Clone + 'static,
-    E: Clone + 'static,
+    N: Clone + Send + Sync + 'static + PartialEq,
+    E: Clone + Send + Sync + 'static + PartialEq,
 {
-    let canvas_ref = create_node_ref::<leptos::html::Canvas>();
+    let canvas_ref = NodeRef::new();
     let config_clone = config.clone();
 
     // Render effect that updates the minimap when graph or viewport changes
-    create_effect(move |_| {
+    Effect::new(move |_| {
         let graph_value = graph.get();
         let viewport_value = viewport.get();
 
@@ -138,7 +141,7 @@ where
 
 /// Render the minimap content
 fn render_minimap<N: Clone, E: Clone>(
-    canvas: &leptos::HtmlElement<leptos::html::Canvas>,
+    canvas: &web_sys::HtmlCanvasElement,
     graph: &Graph<N, E>,
     viewport_state: &ViewportState,
     config: &MiniMapConfig,

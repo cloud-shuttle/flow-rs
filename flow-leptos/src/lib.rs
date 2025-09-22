@@ -38,10 +38,7 @@ pub mod prelude {
     pub use crate::signals::*;
 
     // Re-export commonly used Leptos types
-    pub use leptos::{
-        component, create_effect, create_memo, create_resource, create_signal, Children,
-        ChildrenFn, IntoView, Memo, ReadSignal, RwSignal, Signal, WriteSignal,
-    };
+    pub use leptos::prelude::*;
 
     // Re-export core types
     pub use crate::core::prelude::*;
