@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS Touch Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .touch-demo {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .demo-container {
+            margin: 20px 0;
+        }
+
+        .info-panel {
+            border-top: 1px solid #eee;
+        }
+
+        .info-panel h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+
+        ul {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        /* Touch-friendly styles */
+        @media (pointer: coarse) {
+            body {
+                padding: 10px;
+            }
+
+            .touch-demo {
+                font-size: 18px;
+            }
+
+            button, input, select {
+                min-height: 44px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="leptos"></div>
+    <script type="module">
+        import init, { TouchDemo } from './pkg/touch_demo.js';
+        init().then(() => {
+            leptos.mount(document.getElementById('leptos'), TouchDemo);
+        });
+    </script>
+</body>
+</html>

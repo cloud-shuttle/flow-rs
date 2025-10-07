@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS Plugin System Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .plugin-system-demo {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3em;
+            font-weight: 300;
+            text-align: center;
+            margin: 0;
+            padding: 30px 0;
+        }
+
+        .plugin-info {
+            margin: 0 30px;
+        }
+
+        .plugin-info h2 {
+            margin-bottom: 20px;
+        }
+
+        .controls-panel {
+            margin: 0 30px;
+        }
+
+        .demo-container {
+            position: relative;
+            margin: 30px;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+        }
+
+        .features-showcase {
+            margin: 0 30px;
+        }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .feature-card ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .feature-card li {
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .plugin-stats {
+            margin: 0 30px 30px 30px;
+        }
+
+        .tips-section {
+            margin: 0 30px 30px 30px;
+        }
+
+        .tips-section h3 {
+            margin-bottom: 15px;
+        }
+
+        .tips-section h4 {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .tips-section p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Plugin indicator */
+        .plugin-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .plugin-indicator::before {
+            content: '🔌';
+            margin-right: 5px;
+        }
+
+        /* Custom node styles */
+        .custom-node-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .custom-node-slider {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .custom-node-progress {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .custom-node-toggle {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Layout transition effects */
+        .layout-transition {
+            transition: all 0.5s ease;
+        }
+
+        /* Interactive elements */
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        select:hover {
+            border-color: #007bff;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .plugin-system-demo {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 2em;
+                padding: 20px 0;
+            }
+
+            .demo-container {
+                margin: 20px;
+            }
+
+            .features-showcase {
+                grid-template-columns: 1fr;
+                margin: 0 20px;
+            }
+
+            .plugin-info > div {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .tips-section > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            .controls-panel .controls-panel > div {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .plugin-info > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .features-showcase {
+                margin: 0 10px;
+            }
+
+            .demo-container {
+                margin: 10px;
+            }
+        }
+
+        /* Animation for feature cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+
+        /* Plugin system branding */
+        .plugin-system-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+
+        .plugin-system-badge::before {
+            content: '🚀 Flow-RS Plugin System';
+            display: block;
+        }
+
+        /* Stats animation */
+        .stat-number {
+            transition: all 0.3s ease;
+        }
+
+        .stat-number:hover {
+            transform: scale(1.1);
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="plugin-system-badge">v1.0.0</div>
+    <div id="leptos"></div>
+    <script type="module">
+        import init, { PluginSystemDemo } from './pkg/plugin_system_demo.js';
+        init().then(() => {
+            leptos.mount(document.getElementById('leptos'), PluginSystemDemo);
+        });
+    </script>
+</body>
+</html>

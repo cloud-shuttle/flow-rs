@@ -1,0 +1,23 @@
+[package]
+name = "touch-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+leptos = { version = "0.6.15", features = ["csr"] }
+flow-rs-core = { path = "../../flow-core" }
+flow-rs-renderer = { path = "../../flow-renderer" }
+flow-rs-leptos = { path = "../../flow-leptos" }
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = [
+  "console",
+  "Window",
+  "Document",
+  "Element",
+  "HtmlElement",
+  "HtmlCanvasElement",
+  "CanvasRenderingContext2d",
+  "TouchEvent",
+] }
+console_error_panic_hook = "0.1"
+console_log = "1"

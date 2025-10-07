@@ -418,7 +418,7 @@ impl WasmFlowEditor {
     pub fn new(canvas_id: &str) -> Result<WasmFlowEditor, JsValue> {
         let window = web_sys::window().ok_or("No window object")?;
         let document = window.document().ok_or("No document object")?;
-        let _canvas = document
+        let canvas = document
             .get_element_by_id(canvas_id)
             .ok_or("Canvas element not found")?
             .dyn_into::<web_sys::HtmlCanvasElement>()

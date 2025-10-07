@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Real-time Data Flow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin: 0;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .data-flow-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .data-flow-content {
+            padding: 2rem;
+        }
+
+        .controls-section {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #f8fafc;
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            padding: 0.75rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            transition: border-color 0.2s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .control-input[type="range"] {
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(56, 189, 248, 0.2);
+            border-radius: 3px;
+        }
+
+        .control-input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #06b6d4;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-color: #059669;
+            color: white;
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border-color: #dc2626;
+            color: white;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .canvas-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+            border: 2px solid rgba(56, 189, 248, 0.2);
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 600px;
+            display: block;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            text-align: center;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .stat-icon.messages {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+
+        .stat-icon.streams {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .stat-icon.rate {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .stat-icon.status {
+            background: linear-gradient(135deg, #ea580c, #dc2626);
+        }
+
+        .stat-header h3 {
+            margin: 0;
+            color: #f8fafc;
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #06b6d4;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .status-paused {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .stream-list {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .stream-list h3 {
+            margin: 0 0 1rem 0;
+            color: #f8fafc;
+            font-size: 1.2rem;
+        }
+
+        .stream-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .stream-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stream-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #059669;
+        }
+
+        .stream-indicator.inactive {
+            background: #6b7280;
+        }
+
+        .stream-details {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .stream-route {
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .stream-rate {
+            color: #06b6d4;
+        }
+
+        .explanation-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .explanation-header h3 {
+            margin: 0 0 1rem 0;
+            color: #f8fafc;
+            font-size: 1.2rem;
+        }
+
+        .explanation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .explanation-item {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .explanation-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        .explanation-item p {
+            margin: 0;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .explanation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation for status indicators */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-active {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Real-time Data Flow</h1>
+            <p>Live streaming data visualization with WebAssembly performance</p>
+        </div>
+
+        <div class="subtitle">
+            "See your data flow in real-time: WebSocket simulation with live graph updates"
+        </div>
+
+        <div class="data-flow-section">
+            <div class="section-header">
+                <h2>🌊 Live Data Stream Simulation</h2>
+                <p>Real-time graph updates simulating WebSocket data streams and live data processing</p>
+            </div>
+            <div class="data-flow-content">
+                <div class="controls-section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="toggle-simulation-btn">&nbsp;</label>
+                            <button id="toggle-simulation-btn" class="btn success">▶️ Start Simulation</button>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="frequency-slider">Update Frequency: <span id="frequency-value">10</span> Hz</label>
+                            <input type="range" id="frequency-slider" class="control-input" min="1" max="30" value="10" step="1">
+                        </div>
+
+                        <div class="control-group">
+                            <label>&nbsp;</label>
+                            <button id="add-stream-btn" class="btn primary">➕ Add Random Stream</button>
+                        </div>
+
+                        <div class="control-group">
+                            <label>&nbsp;</label>
+                            <button id="reset-graph-btn" class="btn danger">🔄 Reset Graph</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon messages">📨</div>
+                            <h3>Total Messages</h3>
+                        </div>
+                        <span class="stat-value" id="total-messages">0</span>
+                        <span class="stat-label">Messages Processed</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon streams">🌊</div>
+                            <h3>Active Streams</h3>
+                        </div>
+                        <span class="stat-value" id="active-streams">0</span>
+                        <span class="stat-label">Data Connections</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon rate">⚡</div>
+                            <h3>Message Rate</h3>
+                        </div>
+                        <span class="stat-value" id="messages-per-second">0.0</span>
+                        <span class="stat-label">Messages/Second</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon status">🔴</div>
+                            <h3>Simulation Status</h3>
+                        </div>
+                        <span class="stat-value" id="simulation-status">🔴 PAUSED</span>
+                        <span class="stat-label">System State</span>
+                    </div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="flow-canvas"></canvas>
+                </div>
+
+                <div class="stream-list">
+                    <h3>Active Data Streams</h3>
+                    <div id="stream-list">
+                        <div class="stream-item">
+                            <div class="stream-info">
+                                <div class="stream-indicator inactive"></div>
+                                <div class="stream-details">
+                                    <div class="stream-route">No active streams</div>
+                                    <div class="stream-rate">Waiting for simulation start...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-section">
+            <div class="explanation-header">
+                <h3>🚀 Real-time Data Flow Features</h3>
+            </div>
+            <div class="explanation-grid">
+                <div class="explanation-item">
+                    <h4>⚡ Live Updates</h4>
+                    <p>Graph nodes and edges update in real-time as data flows through the system, simulating live data processing and state changes.</p>
+                </div>
+                <div class="explanation-item">
+                    <h4>🌐 WebSocket Simulation</h4>
+                    <p>Mimics WebSocket connections with configurable data rates, demonstrating how Flow-RS handles streaming data efficiently.</p>
+                </div>
+                <div class="explanation-item">
+                    <h4>📊 Performance Monitoring</h4>
+                    <p>Real-time statistics show message throughput, active connections, and system performance metrics.</p>
+                </div>
+                <div class="explanation-item">
+                    <h4>🎮 Interactive Controls</h4>
+                    <p>Start/stop simulation, adjust update frequencies, add random streams, and reset the graph state dynamically.</p>
+                </div>
+                <div class="explanation-item">
+                    <h4>🔄 Dynamic Topology</h4>
+                    <p>Graph structure adapts to data flow patterns, showing how connections form and dissolve based on traffic.</p>
+                </div>
+                <div class="explanation-item">
+                    <h4>💎 WebAssembly Benefits</h4>
+                    <p>Demonstrates how WebAssembly enables high-performance real-time applications that would struggle with JavaScript alone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init from './pkg/realtime_data_flow_example.js';
+
+        // Add frequency slider value display
+        const frequencySlider = document.getElementById('frequency-slider');
+        const frequencyValue = document.getElementById('frequency-value');
+
+        frequencySlider.addEventListener('input', function() {
+            frequencyValue.textContent = this.value;
+        });
+
+        try {
+            // Initialize the WASM module
+            await init();
+            console.log('Flow-RS Real-time Data Flow example loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load Flow-RS Real-time Data Flow example:', error);
+        }
+    </script>
+</body>
+</html>

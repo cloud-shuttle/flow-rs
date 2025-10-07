@@ -3,8 +3,9 @@
 //! These tests verify the selection system works correctly with the Leptos reactive system
 
 use crate::signals::ViewportState;
-use flow_core::{Graph, NavigationDirection, Node, Position, SelectionManager, SelectionMode};
+use flow_rs_core::{Graph, NavigationDirection, Node, Position, SelectionManager, SelectionMode};
 use leptos::*;
+use leptos::prelude::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);

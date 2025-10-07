@@ -17,6 +17,12 @@ pub struct Viewport {
     pub offset: Position,
 }
 
+impl Default for Viewport {
+    fn default() -> Self {
+        Self::new(0.0, 0.0, 800.0, 600.0, 1.0)
+    }
+}
+
 impl Viewport {
     /// Create a new viewport
     pub const fn new(x: f64, y: f64, width: f64, height: f64, zoom: f64) -> Self {
@@ -146,6 +152,25 @@ impl Viewport {
             width,
             height,
             self.zoom,
+            self.offset,
+        )
+    }
+
+    /// Zoom to a specific point with zoom factor
+    pub fn zoom_to_point(self, point: Position, zoom_factor: f64) -> Self {
+        let new_zoom = self.zoom * zoom_factor;
+        let zoom_ratio = new_zoom / self.zoom;
+
+        // Calculate new position to keep the point under the mouse at the same screen position
+        let new_x = point.x - (point.x - self.x) * zoom_ratio;
+        let new_y = point.y - (point.y - self.y) * zoom_ratio;
+
+        Self::with_offset(
+            new_x,
+            new_y,
+            self.width,
+            self.height,
+            new_zoom,
             self.offset,
         )
     }

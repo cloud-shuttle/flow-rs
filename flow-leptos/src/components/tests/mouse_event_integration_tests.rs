@@ -7,7 +7,7 @@ use web_sys::{Element, MouseEvent};
 
 use crate::dom_rect::DomRectUtils;
 use crate::mouse_integration::{utils, MouseEventConverter};
-use flow_core::{Position, Viewport};
+use flow_rs_core::{Position, Viewport};
 
 wasm_bindgen_test_configure!(run_in_browser);
 

@@ -1,0 +1,8 @@
+# Flow-RS Custom Styles Example
+#
+# This example demonstrates node styling customization.
+# It uses wasm-pack for building instead of trunk.
+#
+# Build command: wasm-pack build --target web --out-dir pkg --dev
+# Serve command: python3 -m http.server 8000
+# Open: http://localhost:8000

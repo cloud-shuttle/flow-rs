@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Controlled vs Uncontrolled</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .app {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .controlled-section,
+        .uncontrolled-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            padding: 1rem 2rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .btn.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .flow-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .controlled-flow,
+        .uncontrolled-flow {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info {
+            padding: 1.5rem 2rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .info p {
+            margin: 0 0 1rem 0;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .info ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .info li {
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        .explanation {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .explanation h2 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .pattern-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .pattern {
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .pattern h3 {
+            margin: 0 0 1rem 0;
+            color: #2d3748;
+            font-size: 1.2rem;
+        }
+
+        .code-snippet {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+        }
+
+        .code-snippet pre {
+            margin: 0;
+        }
+
+        .code-snippet code {
+            background: none;
+            padding: 0;
+        }
+
+        .pattern p {
+            margin: 0;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4299e1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 1024px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .pattern-comparison {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app {
+                padding: 1rem;
+            }
+
+            .header {
+                margin-bottom: 2rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="leptos-root"></div>
+
+    <script type="module">
+        import init from './pkg/controlled_uncontrolled_example.js';
+
+        try {
+            // Initialize the WASM module
+            await init();
+            console.log('Flow-RS Controlled vs Uncontrolled example loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load Flow-RS example:', error);
+        }
+    </script>
+</body>
+</html>

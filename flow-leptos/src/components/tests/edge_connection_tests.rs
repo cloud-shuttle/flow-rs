@@ -4,8 +4,8 @@
 //! handle detection, edge creation, and connection management.
 
 use crate::edge_connection::ConnectionResult;
-use flow_core::prelude::*;
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size};
+use flow_rs_core::prelude::*;
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size};
 use wasm_bindgen_test::*;
 
 /// Create a test graph with nodes for edge connection testing

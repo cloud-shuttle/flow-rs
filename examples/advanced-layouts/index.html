@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Advanced Layouts</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .canvas-section {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .canvas-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 600px;
+            display: block;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .controls-section {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .control-group:last-child {
+            border-bottom: none;
+        }
+
+        .control-group h3 {
+            color: #f8fafc;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            border-color: #06b6d4;
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-color: #f59e0b;
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: #ef4444;
+        }
+
+        .btn.info {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-color: #8b5cf6;
+        }
+
+        .constraint-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .constraint-input:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+
+        .stats-panel {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #06b6d4;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .performance-panel {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .performance-history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .performance-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background: rgba(56, 189, 248, 0.05);
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            font-size: 0.8rem;
+        }
+
+        .performance-entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .console {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .console-line {
+            margin-bottom: 0.25rem;
+            color: #cbd5e1;
+        }
+
+        .console-line.command {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .console-line.error {
+            color: #ef4444;
+        }
+
+        .console-line.success {
+            color: #06b6d4;
+        }
+
+        .algorithm-descriptions {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .algorithm-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .algorithm-item {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .algorithm-item h4 {
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .algorithm-item p {
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .algorithm-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .badge-advanced { background: #ef4444; color: white; }
+        .badge-experimental { background: #f59e0b; color: white; }
+        .badge-stable { background: #10b981; color: white; }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Advanced Layouts</h1>
+            <p>Explore sophisticated layout algorithms with constraints, performance optimization, and interactive controls</p>
+        </div>
+
+        <div class="algorithm-descriptions">
+            <h2>🎯 Available Layout Algorithms</h2>
+            <div class="algorithm-list">
+                <div class="algorithm-item">
+                    <h4>Constrained Force-Directed <span class="algorithm-badge badge-advanced">Advanced</span></h4>
+                    <p>Traditional force-directed layout with support for pinning, grouping, and spatial constraints.</p>
+                </div>
+                <div class="algorithm-item">
+                    <h4>Circular Layout <span class="algorithm-badge badge-stable">Stable</span></h4>
+                    <p>Arranges nodes in a perfect circle, ideal for symmetric or hierarchical structures.</p>
+                </div>
+                <div class="algorithm-item">
+                    <h4>Radial Layout <span class="algorithm-badge badge-stable">Stable</span></h4>
+                    <p>Positions nodes radially from a central hub, preserving hierarchical relationships.</p>
+                </div>
+                <div class="algorithm-item">
+                    <h4>Layered Layout <span class="algorithm-badge badge-advanced">Advanced</span></h4>
+                    <p>Hierarchical layout with automatic layer assignment based on connectivity patterns.</p>
+                </div>
+                <div class="algorithm-item">
+                    <h4>Custom Spiral <span class="algorithm-badge badge-experimental">Experimental</span></h4>
+                    <p>Artistic spiral arrangement that creates visually appealing node distributions.</p>
+                </div>
+                <div class="algorithm-item">
+                    <h4>Constrained Grid <span class="algorithm-badge badge-stable">Stable</span></h4>
+                    <p>Grid-based layout that respects pinning and grouping constraints.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-section">
+                <h2>🎨 Layout Visualization</h2>
+                <div class="canvas-container">
+                    <canvas id="flow-canvas" width="1000" height="600"></canvas>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="control-group">
+                    <h3>🎯 Layout Algorithms</h3>
+                    <div class="layout-grid">
+                        <button id="run-constrained-force" class="btn primary">🔗 Force Directed</button>
+                        <button id="run-circular" class="btn secondary">⭕ Circular</button>
+                        <button id="run-radial" class="btn success">🎯 Radial</button>
+                        <button id="run-layered" class="btn info">📊 Layered</button>
+                        <button id="run-spiral" class="btn danger">🌀 Spiral</button>
+                        <button id="run-grid" class="btn">⊞ Grid</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>📌 Constraints</h3>
+                    <input type="text" id="constraint-node" class="constraint-input" placeholder="Node ID (e.g., node-1)">
+                    <button id="pin-node" class="btn">📌 Pin Node</button>
+                    <button id="unpin-node" class="btn">📍 Unpin Node</button>
+                    <input type="text" id="group-nodes" class="constraint-input" placeholder="Node IDs (e.g., node-1,node-2)">
+                    <button id="create-group" class="btn">👥 Create Group</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>📊 Analysis</h3>
+                    <button id="compare-layouts" class="btn primary">⚖️ Compare All</button>
+                    <button id="benchmark-layout" class="btn secondary">🏃 Benchmark</button>
+                    <button id="export-data" class="btn info">💾 Export Data</button>
+                    <button id="get-info" class="btn">ℹ️ Get Info</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <h2>📈 Layout Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="stats-nodes">14</span>
+                    <span class="stat-label">Nodes</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stats-edges">24</span>
+                    <span class="stat-label">Edges</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stats-pinned">1</span>
+                    <span class="stat-label">Pinned</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stats-groups">2</span>
+                    <span class="stat-label">Groups</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stats-layouts">0</span>
+                    <span class="stat-label">Layouts Run</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stats-avg-time">0.0</span>
+                    <span class="stat-label">Avg Time (ms)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="performance-panel">
+            <h2>⚡ Performance History</h2>
+            <div id="performance-history" class="performance-history">
+                <div style="color: #94a3b8; text-align: center; padding: 2rem;">
+                    Run some layouts to see performance data
+                </div>
+            </div>
+        </div>
+
+        <div class="console">
+            <div id="console-output">
+                <div class="console-line">🔬 Flow-RS Advanced Layouts Demo</div>
+                <div class="console-line">🎯 Click layout buttons to see different algorithms</div>
+                <div class="console-line">📌 Try pinning nodes and creating groups</div>
+                <div class="console-line">⚡ Run benchmarks to compare performance</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, {
+            run_layout,
+            add_constraint,
+            create_group,
+            compare_layouts,
+            benchmark_layout,
+            get_layout_info,
+            export_layout_data
+        } from './pkg/advanced_layouts_example.js';
+
+        // Initialize the WASM module
+        await init();
+
+        // Layout algorithm buttons
+        document.getElementById('run-constrained-force').addEventListener('click', async () => {
+            const result = run_layout('constrained_force_directed');
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        document.getElementById('run-circular').addEventListener('click', async () => {
+            const result = run_layout('circular');
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        document.getElementById('run-radial').addEventListener('click', async () => {
+            const result = run_layout('radial');
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        document.getElementById('run-layered').addEventListener('click', async () => {
+            const result = run_layout('layered');
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        document.getElementById('run-spiral').addEventListener('click', async () => {
+            const result = run_layout('custom_spiral');
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        document.getElementById('run-grid').addEventListener('click', async () => {
+            const result = run_layout('constrained_grid');
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        // Constraint buttons
+        document.getElementById('pin-node').addEventListener('click', () => {
+            const nodeId = document.getElementById('constraint-node').value.trim();
+            if (nodeId) {
+                const result = add_constraint('pin', nodeId);
+                addConsoleLine(result, 'command');
+                updateStats();
+            } else {
+                addConsoleLine('❌ Please enter a node ID to pin', 'error');
+            }
+        });
+
+        document.getElementById('unpin-node').addEventListener('click', () => {
+            const nodeId = document.getElementById('constraint-node').value.trim();
+            if (nodeId) {
+                const result = add_constraint('unpin', nodeId);
+                addConsoleLine(result, 'command');
+                updateStats();
+            } else {
+                addConsoleLine('❌ Please enter a node ID to unpin', 'error');
+            }
+        });
+
+        document.getElementById('create-group').addEventListener('click', () => {
+            const nodeIds = document.getElementById('group-nodes').value.trim();
+            if (nodeIds) {
+                const result = create_group(nodeIds);
+                addConsoleLine(result, 'command');
+                updateStats();
+            } else {
+                addConsoleLine('❌ Please enter node IDs to group (comma-separated)', 'error');
+            }
+        });
+
+        // Analysis buttons
+        document.getElementById('compare-layouts').addEventListener('click', () => {
+            const result = compare_layouts();
+            addConsoleLine('📊 Layout Comparison:', 'command');
+            console.log(result);
+            updatePerformanceHistory();
+        });
+
+        document.getElementById('benchmark-layout').addEventListener('click', async () => {
+            addConsoleLine('🏃 Running benchmark (100 iterations)...', 'command');
+            const result = benchmark_layout('constrained_force_directed', 100);
+            addConsoleLine(result, 'success');
+            updateStats();
+        });
+
+        document.getElementById('export-data').addEventListener('click', () => {
+            const data = export_layout_data();
+            navigator.clipboard.writeText(data).then(() => {
+                addConsoleLine('📋 Layout data copied to clipboard', 'success');
+            }).catch(() => {
+                addConsoleLine('❌ Failed to copy to clipboard', 'error');
+                console.log('Layout Data:', data);
+            });
+        });
+
+        document.getElementById('get-info').addEventListener('click', () => {
+            const info = get_layout_info();
+            addConsoleLine('ℹ️ Layout Information:', 'command');
+            console.log(info);
+            addConsoleLine(info.replace(/\n/g, ' | '), 'success');
+        });
+
+        function updateStats() {
+            // Get current layout info and update stats
+            const info = get_layout_info();
+            // Parse info to update UI (simplified)
+            updatePerformanceHistory();
+        }
+
+        function updatePerformanceHistory() {
+            // This would ideally be called after layout operations
+            // For now, just refresh the display
+        }
+
+        function addConsoleLine(text, type = '') {
+            const consoleOutput = document.getElementById('console-output');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Make functions available globally for console testing
+        window.flow_layouts = {
+            run_layout,
+            add_constraint,
+            create_group,
+            compare_layouts,
+            benchmark_layout,
+            get_layout_info,
+            export_layout_data,
+            addConsoleLine
+        };
+
+        addConsoleLine('🎯 Advanced Layouts Demo Ready!', 'success');
+        addConsoleLine('💡 Try different layout algorithms and constraints', 'command');
+
+        console.log('Flow-RS Advanced Layouts loaded successfully!');
+        console.log('Available functions:', window.flow_layouts);
+    </script>
+</body>
+</html>

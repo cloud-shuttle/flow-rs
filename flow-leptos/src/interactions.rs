@@ -10,7 +10,7 @@ use web_sys::{MouseEvent, WheelEvent};
 
 use crate::events::{DragTarget, FlowEvent, KeyboardModifiers, MouseButton};
 // use crate::events::{EdgeEvent, NodeEvent}; // Unused imports
-use crate::signals::{FlowState, ViewportState};
+use crate::signals::ViewportState;
 use flow_rs_core::{EdgeId, Graph, NodeId, Position};
 // use flow_rs_core::{Edge, Node}; // Unused imports
 
@@ -59,7 +59,7 @@ impl InteractionManager {
         canvas_pos: Position,
         world_pos: Position,
         graph: &Graph<N, E>,
-        viewport: &ViewportState,
+        _viewport: &ViewportState,
     ) -> Vec<FlowEvent> {
         let mut events = Vec::new();
 
@@ -149,7 +149,7 @@ impl InteractionManager {
     /// Handle mouse move event
     pub fn handle_mouse_move<N: Clone, E: Clone>(
         &mut self,
-        event: &MouseEvent,
+        _event: &MouseEvent,
         canvas_pos: Position,
         world_pos: Position,
         graph: &mut Graph<N, E>,
@@ -210,7 +210,7 @@ impl InteractionManager {
     /// Handle mouse up event
     pub fn handle_mouse_up<N: Clone, E: Clone>(
         &mut self,
-        event: &MouseEvent,
+        _event: &MouseEvent,
         canvas_pos: Position,
         world_pos: Position,
         graph: &mut Graph<N, E>,

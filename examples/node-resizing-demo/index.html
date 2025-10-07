@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS Node Resizing Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        .resizing-demo {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .demo-container {
+            margin: 20px;
+            position: relative;
+        }
+
+        .info-panel {
+            border-top: 1px solid #eee;
+            margin: 0 20px 20px 20px;
+        }
+
+        .info-panel h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+
+        ul {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        li {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        /* Resize handle styles */
+        .resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #007bff;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .resize-handle:hover {
+            background: #0056b3;
+            transform: scale(1.2);
+        }
+
+        .resize-handle.nw-resize { cursor: nw-resize; }
+        .resize-handle.n-resize { cursor: n-resize; }
+        .resize-handle.ne-resize { cursor: ne-resize; }
+        .resize-handle.e-resize { cursor: e-resize; }
+        .resize-handle.se-resize { cursor: se-resize; }
+        .resize-handle.s-resize { cursor: s-resize; }
+        .resize-handle.sw-resize { cursor: sw-resize; }
+        .resize-handle.w-resize { cursor: w-resize; }
+
+        /* Node styling */
+        .flow-node {
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .flow-node:hover {
+            border-color: #0056b3;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .resizing-demo {
+                margin: 0;
+            }
+
+            .demo-container {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="leptos"></div>
+    <script type="module">
+        import init, { NodeResizingDemo } from './pkg/node_resizing_demo.js';
+        init().then(() => {
+            leptos.mount(document.getElementById('leptos'), NodeResizingDemo);
+        });
+    </script>
+</body>
+</html>

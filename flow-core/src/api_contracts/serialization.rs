@@ -51,7 +51,7 @@ mod tests {
         
         // Add nodes with different data types
         graph.add_node(Node::new("node1", Position::new(10.0, 20.0), "string_data")).unwrap();
-        graph.add_node(Node::new("node2", Position::new(30.0, 40.0), 42)).unwrap();
+        graph.add_node(Node::new("node2", Position::new(30.0, 40.0), "numeric_data")).unwrap();
         
         // Add edges
         graph.add_edge(Edge::new("edge1", "node1", "node2", "edge_data")).unwrap();
@@ -69,7 +69,7 @@ mod tests {
         assert_eq!(node1.data, "string_data");
         
         let node2 = deserialized.get_node(&"node2".into()).unwrap();
-        assert_eq!(node2.data, "42"); // JSON deserializes numbers as strings
+        assert_eq!(node2.data, "numeric_data");
         
         // Verify edge data
         let edge1 = deserialized.get_edge(&"edge1".into()).unwrap();

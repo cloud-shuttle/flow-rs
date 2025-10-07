@@ -2,7 +2,7 @@
 //!
 //! Tests for DOM element bounding rectangle access and coordinate conversion utilities.
 
-use flow_core::{Position, Rect, Size};
+use flow_rs_core::{Position, Rect, Size};
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_test::*;
 use web_sys::{Element, HtmlElement};

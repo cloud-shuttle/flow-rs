@@ -3,7 +3,7 @@
 //! Tests that verify drag and drop functionality works correctly for nodes
 
 use crate::signals::FlowState;
-use flow_core::{Graph, Node, NodeId, Position};
+use flow_rs_core::{Graph, Node, NodeId, Position};
 use leptos::*;
 use wasm_bindgen_test::*;
 

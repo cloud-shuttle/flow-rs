@@ -4,7 +4,7 @@
 
 use leptos::prelude::*;
 // use wasm_bindgen::{closure::Closure, JsCast}; // Unused imports
-use web_sys::{EventTarget, KeyboardEvent};
+use web_sys::KeyboardEvent;
 
 use crate::signals::{FlowState, ViewportState};
 use flow_rs_core::{Graph, KeyboardShortcut};
@@ -116,7 +116,7 @@ where
 
 /// Handle mouse click events with keyboard modifiers
 pub fn handle_node_click<N, E>(
-    graph: &Graph<N, E>,
+    _graph: &Graph<N, E>,
     flow_state: &mut FlowState,
     node_id: flow_rs_core::NodeId,
     modifiers: KeyboardModifiers,

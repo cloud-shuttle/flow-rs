@@ -3,8 +3,8 @@
 //! Tests for the minimap functionality including rendering, interaction,
 //! viewport synchronization, and configuration.
 
-use flow_core::prelude::*;
-use flow_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size, Viewport};
+use flow_rs_core::prelude::*;
+use flow_rs_core::{Edge, EdgeId, Graph, Node, NodeId, Position, Size, Viewport};
 use wasm_bindgen_test::*;
 
 /// Create a test graph with nodes for minimap testing

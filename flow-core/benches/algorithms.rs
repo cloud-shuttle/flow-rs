@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use leptos_flow_core::{
+use flow_rs_core::{
     layout::{
         CircularLayout, ForceDirectedLayout, GridLayout, HierarchicalLayout, LayoutAlgorithm,
         LayoutDirection,
@@ -204,7 +204,7 @@ fn benchmark_spatial_index_scaling(c: &mut Criterion) {
                 &(*size, *query_size),
                 |b, &(_, query_size)| {
                     b.iter(|| {
-                        let rect = leptos_flow_core::Rect::new(0.0, 0.0, query_size, query_size);
+                        let rect = flow_rs_core::Rect::new(0.0, 0.0, query_size, query_size);
                         black_box(index.query_rect(&rect))
                     })
                 },

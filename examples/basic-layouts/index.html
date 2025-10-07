@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Basic Layouts</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .demo-content {
+            padding: 2rem;
+        }
+
+        .controls-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        select.control-input {
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .canvas-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 600px;
+            display: block;
+            background: white;
+        }
+
+        .layout-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .layout-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .layout-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .layout-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #a0aec0;
+        }
+
+        .layout-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .layout-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4299e1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-section {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            margin: 0 0 1rem 0;
+            color: #63b3ed;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .layout-showcase {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Basic Layouts</h1>
+            <p>Explore Flow-RS's automatic graph layout algorithms</p>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>🎯 Interactive Layout Algorithms</h2>
+                <p>Switch between different automatic layout algorithms with live preview</p>
+            </div>
+            <div class="demo-content">
+                <div class="controls-section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="layout-select">Layout Algorithm</label>
+                            <select id="layout-select" class="control-input">
+                                <option value="force-directed">Force Directed</option>
+                                <option value="grid">Grid</option>
+                                <option value="hierarchical">Hierarchical</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label>&nbsp;</label>
+                            <button id="relayout-btn" class="btn primary">🔄 Re-Layout</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="flow-canvas"></canvas>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Layout Types</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">9</div>
+                        <div class="stat-label">Sample Nodes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">9</div>
+                        <div class="stat-label">Connections</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">Live</div>
+                        <div class="stat-label">Updates</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>📐 Layout Algorithm Types</h2>
+                <p>Different approaches to automatically positioning graph elements</p>
+            </div>
+            <div class="demo-content">
+                <div class="layout-showcase">
+                    <div class="layout-card">
+                        <div class="layout-preview">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                <div style="display: flex; gap: 15px;">
+                                    <div style="width: 8px; height: 8px; background: #4299e1; border-radius: 50%;"></div>
+                                    <div style="width: 8px; height: 8px; background: #48bb78; border-radius: 50%;"></div>
+                                    <div style="width: 8px; height: 8px; background: #ed8936; border-radius: 50%;"></div>
+                                </div>
+                                <div style="display: flex; gap: 20px;">
+                                    <div style="width: 6px; height: 6px; background: #9f7aea; border-radius: 50%;"></div>
+                                    <div style="width: 6px; height: 6px; background: #f56565; border-radius: 50%;"></div>
+                                </div>
+                                <div style="display: flex; gap: 25px;">
+                                    <div style="width: 10px; height: 10px; background: #38b2ac; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3>🌊 Force Directed</h3>
+                        <p>Physics-based layout using repulsive and attractive forces. Creates organic, aesthetically pleasing arrangements where connected nodes are closer together.</p>
+                    </div>
+
+                    <div class="layout-card">
+                        <div class="layout-preview">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 10px;">
+                                <div style="width: 12px; height: 12px; background: #4299e1; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #48bb78; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #ed8936; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #9f7aea; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #f56565; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #38b2ac; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #d53f8c; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #805ad5; border-radius: 50%;"></div>
+                                <div style="width: 12px; height: 12px; background: #dd6b20; border-radius: 50%;"></div>
+                            </div>
+                        </div>
+                        <h3>📏 Grid Layout</h3>
+                        <p>Regular grid-based positioning with consistent spacing. Perfect for structured diagrams and when precise alignment is required.</p>
+                    </div>
+
+                    <div class="layout-card">
+                        <div class="layout-preview">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 15px;">
+                                <div style="width: 10px; height: 10px; background: #4299e1; border-radius: 50%;"></div>
+                                <div style="display: flex; gap: 40px;">
+                                    <div style="width: 8px; height: 8px; background: #48bb78; border-radius: 50%;"></div>
+                                    <div style="width: 8px; height: 8px; background: #ed8936; border-radius: 50%;"></div>
+                                </div>
+                                <div style="display: flex; gap: 60px;">
+                                    <div style="width: 6px; height: 6px; background: #9f7aea; border-radius: 50%;"></div>
+                                    <div style="width: 6px; height: 6px; background: #f56565; border-radius: 50%;"></div>
+                                </div>
+                                <div style="display: flex; gap: 30px;">
+                                    <div style="width: 8px; height: 8px; background: #38b2ac; border-radius: 50%;"></div>
+                                    <div style="width: 8px; height: 8px; background: #d53f8c; border-radius: 50%;"></div>
+                                </div>
+                                <div style="width: 12px; height: 12px; background: #805ad5; border-radius: 50%;"></div>
+                            </div>
+                        </div>
+                        <h3>🏗️ Hierarchical Layout</h3>
+                        <p>Tree-based layout organizing nodes by hierarchy levels. Ideal for flowcharts, organizational charts, and process diagrams.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>⚡ Automatic Positioning</h3>
+                <p>Algorithms automatically calculate optimal node positions based on connectivity and relationships, eliminating manual layout work.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎯 Algorithm Selection</h3>
+                <p>Choose the right layout algorithm for your use case - organic, structured, or hierarchical organization.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔄 Dynamic Updates</h3>
+                <p>Re-layout graphs instantly when structure changes, maintaining visual clarity and readability.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🚀 Performance Optimized</h3>
+                <p>Efficient algorithms handle hundreds of nodes with smooth, real-time layout calculations.</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>💻 Implementation</h2>
+                <p>How layout algorithms are implemented in Flow-RS</p>
+            </div>
+            <div class="demo-content">
+                <div class="code-section">
+                    <h3>Layout Algorithm Selection</h3>
+                    <pre><code>// Choose layout algorithm based on use case
+enum LayoutAlgorithm {
+    ForceDirected,  // Organic, physics-based
+    Grid,          // Structured, regular spacing
+    Hierarchical,  // Tree-based, level organization
+}
+
+// Apply layout to graph
+match algorithm {
+    LayoutAlgorithm::ForceDirected => {
+        apply_force_directed_layout(&mut graph);
+    }
+    LayoutAlgorithm::Grid => {
+        apply_grid_layout(&mut graph);
+    }
+    LayoutAlgorithm::Hierarchical => {
+        apply_hierarchical_layout(&mut graph);
+    }
+}</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>Force-Directed Layout</h3>
+                    <pre><code>// Simplified physics-based layout
+fn apply_force_directed_layout(graph: &mut Graph<(), ()>) {
+    // Position nodes in initial circle
+    for (i, node) in nodes.iter_mut().enumerate() {
+        let angle = (i as f64 * 2.0 * PI) / node_count as f64;
+        node.position = Position::new(
+            center_x + radius * angle.cos(),
+            center_y + radius * angle.sin()
+        );
+    }
+
+    // Apply repulsive and attractive forces
+    for _ in 0..iterations {
+        apply_repulsive_forces(&mut nodes);
+        apply_attractive_forces(&mut nodes);
+    }
+}</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>Grid Layout Implementation</h3>
+                    <pre><code>// Regular grid positioning
+fn apply_grid_layout(graph: &mut Graph<(), ()>) {
+    let cols = 3;
+    let spacing_x = 250.0;
+    let spacing_y = 200.0;
+
+    for (i, node) in nodes.iter_mut().enumerate() {
+        let row = i / cols;
+        let col = i % cols;
+
+        node.position = Position::new(
+            start_x + (col as f64) * spacing_x,
+            start_y + (row as f64) * spacing_y
+        );
+    }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init from './pkg/basic_layouts_example.js';
+
+        try {
+            // Initialize the WASM module
+            await init();
+            console.log('Flow-RS Basic Layouts example loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load Flow-RS Basic Layouts example:', error);
+        }
+    </script>
+</body>
+</html>

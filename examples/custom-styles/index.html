@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Custom Node Styles</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .demo-content {
+            padding: 2rem;
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-text h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .legend-text p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+
+        .code-section {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            margin: 0 0 1rem 0;
+            color: #63b3ed;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4299e1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Custom Node Styles</h1>
+            <p>Explore Flow-RS's powerful node customization capabilities</p>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>🎨 Interactive Style Gallery</h2>
+                <p>Five different node styles showcasing colors, shapes, and sizes</p>
+            </div>
+            <div class="demo-content">
+                <canvas id="flow-canvas"></canvas>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4299e1;"></div>
+                        <div class="legend-text">
+                            <h4>Input Node</h4>
+                            <p>Blue rounded rectangle, medium size</p>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #48bb78;"></div>
+                        <div class="legend-text">
+                            <h4>Process Node</h4>
+                            <p>Green rectangle, large size</p>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ed8936;"></div>
+                        <div class="legend-text">
+                            <h4>Decision Node</h4>
+                            <p>Orange circle, medium size</p>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #9f7aea;"></div>
+                        <div class="legend-text">
+                            <h4>Output Node</h4>
+                            <p>Purple rounded rectangle, medium size</p>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f56565;"></div>
+                        <div class="legend-text">
+                            <h4>Error Node</h4>
+                            <p>Red rectangle, small size</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Node Styles</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Shape Types</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Size Variants</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Color Schemes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🎯 Shape Variety</h3>
+                <p>Choose from rectangles, rounded rectangles, and circles to match your design requirements.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📏 Size Options</h3>
+                <p>Small, medium, and large sizes provide flexibility for different use cases and screen densities.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎨 Color Customization</h3>
+                <p>Full color control with hex codes, allowing perfect integration with your brand palette.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🏗️ Type Safety</h3>
+                <p>Rust's type system ensures styling properties are validated at compile time.</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>💻 Implementation</h2>
+                <p>How custom styling is implemented in Flow-RS</p>
+            </div>
+            <div class="demo-content">
+                <div class="code-section">
+                    <h3>Custom Node Data Structure</h3>
+                    <pre><code>// Define custom data with styling properties
+#[derive(Clone, Debug)]
+struct StyledNodeData {
+    pub label: String,
+    pub color: String,
+    pub shape: NodeShape,    // Rectangle, Rounded, Circle
+    pub size: NodeSize,      // Small, Medium, Large
+}
+
+// Create styled nodes
+let process_node = Node {
+    id: "process".to_string(),
+    position: Position::new(350.0, 100.0),
+    data: StyledNodeData::new(
+        "Process",
+        "#48bb78",           // Green color
+        NodeShape::Rectangle, // Rectangle shape
+        NodeSize::Large,      // Large size
+    ),
+    ..Default::default()
+};</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>Renderer Integration</h3>
+                    <pre><code>// The renderer automatically uses custom styling
+// No additional configuration needed!
+renderer.render_graph_dyn::<StyledNodeData, ()>(&graph, &viewport)?;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init from './pkg/custom_styles_example.js';
+
+        try {
+            // Initialize the WASM module
+            await init();
+            console.log('Flow-RS Custom Styles example loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load Flow-RS Custom Styles example:', error);
+        }
+    </script>
+</body>
+</html>

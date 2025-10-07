@@ -5,6 +5,7 @@
 
 #![allow(clippy::all)]
 
+pub mod accessibility;
 pub mod components;
 pub mod dom_rect;
 pub mod drag;
@@ -15,7 +16,14 @@ pub mod interactions;
 pub mod keyboard;
 pub mod minimap;
 pub mod mouse_integration;
+pub mod node_resizing;
+pub mod selection;
 pub mod signals;
+pub mod touch;
+pub mod context_menu;
+pub mod history;
+pub mod keyboard_shortcuts;
+pub mod subflow_integration;
 
 // Re-export core types for convenience
 pub use flow_rs_core as core;
@@ -23,19 +31,36 @@ pub use flow_rs_renderer as renderer;
 
 /// Prelude module for convenient imports
 pub mod prelude {
+    // Accessibility exports
+    pub use crate::accessibility::*;
+
+    // Touch and mobile support
+    pub use crate::touch::*;
+
+    // Node resizing and advanced interactions
+    pub use crate::node_resizing::*;
+    pub use crate::selection::*;
+    pub use crate::context_menu::*;
+    pub use crate::history::*;
+    pub use crate::keyboard_shortcuts::*;
+    pub use crate::subflow_integration::*;
+
+    // Component exports (avoiding conflicts)
     pub use crate::components::controls::*;
     pub use crate::components::minimap::*;
-    pub use crate::components::*;
-    pub use crate::dom_rect::*;
-    pub use crate::drag::*;
+
+    // Specific exports to avoid conflicts
+    pub use crate::dom_rect::{ElementRect, DomRectError};
+    pub use crate::drag::{DragHandler, DragConfig, DragResult, DragHandle};
     pub use crate::edge_connection::*;
-    pub use crate::events::*;
+    pub use crate::events::{FlowEvent, MouseButton};
     pub use crate::hooks::*;
-    pub use crate::interactions::*;
+    pub use crate::interactions::InteractionManager;
     pub use crate::keyboard::*;
     pub use crate::minimap::*;
-    pub use crate::mouse_integration::*;
+    pub use crate::mouse_integration::MouseEventConverter;
     pub use crate::signals::*;
+    pub use crate::components::{FlowEditor, FlowCanvas, FlowStats};
 
     // Re-export commonly used Leptos types
     pub use leptos::prelude::*;

@@ -3,7 +3,7 @@
 //! Tests that verify keyboard interactions work correctly for node selection
 
 use crate::signals::FlowState;
-use flow_core::{Graph, KeyboardShortcut, NavigationDirection, Node, NodeId, Position};
+use flow_rs_core::{Graph, KeyboardShortcut, NavigationDirection, Node, NodeId, Position};
 use leptos::*;
 use wasm_bindgen_test::*;
 

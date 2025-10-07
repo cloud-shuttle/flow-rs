@@ -12,7 +12,9 @@ pub mod groups;
 pub mod handle;
 pub mod layout;
 pub mod selection;
+pub mod plugins;
 pub mod spatial;
+pub mod subflows;
 pub mod types;
 
 #[cfg(test)]
@@ -71,6 +73,8 @@ pub mod prelude {
     pub use crate::selection::{
         KeyboardShortcut, NavigationDirection, SelectionManager, SelectionMode, VisualFeedback,
     };
+    pub use crate::plugins::{PluginManager, PluginRegistry, Plugin, PluginMetadata, PluginCapabilities};
     pub use crate::spatial::SpatialIndex;
+    pub use crate::subflows::{HierarchicalGraph, NavigationState};
     pub use crate::types::{EdgeId, GroupId, NodeId, Position, Rect, Size, Viewport};
 }

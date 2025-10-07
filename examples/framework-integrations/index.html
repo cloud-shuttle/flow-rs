@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Framework Integrations</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .framework-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .framework-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .framework-card.selected {
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+        }
+
+        .framework-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .framework-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #f8fafc;
+        }
+
+        .framework-card p {
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .framework-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .badge-leptos { background: #3b82f6; color: white; }
+        .badge-yew { background: #10b981; color: white; }
+        .badge-dioxus { background: #f59e0b; color: white; }
+        .badge-sycamore { background: #ef4444; color: white; }
+        .badge-generic { background: #6b7280; color: white; }
+
+        .integration-panel {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .integration-panel h2 {
+            color: #f8fafc;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .code-example {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .code-example::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .code-example::-webkit-scrollbar-track {
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 4px;
+        }
+
+        .code-example::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.3);
+            border-radius: 4px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            border-color: #06b6d4;
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+        }
+
+        .btn.info {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-color: #8b5cf6;
+        }
+
+        .console {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .console-line {
+            margin-bottom: 0.25rem;
+            color: #cbd5e1;
+        }
+
+        .console-line.command {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .console-line.error {
+            color: #ef4444;
+        }
+
+        .console-line.success {
+            color: #06b6d4;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .comparison-table th {
+            background: rgba(56, 189, 248, 0.1);
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .features-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .feature-tag {
+            background: rgba(56, 189, 248, 0.1);
+            color: #06b6d4;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .framework-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .comparison-table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Framework Integrations</h1>
+            <p>Integrate Flow-RS with popular Rust web frameworks for maximum productivity and performance</p>
+        </div>
+
+        <div class="framework-grid">
+            <div class="framework-card" data-framework="leptos">
+                <span class="framework-icon">⚛️</span>
+                <span class="framework-badge badge-leptos">Leptos</span>
+                <h3>Reactive Signals</h3>
+                <p>Fine-grained reactive components with automatic UI updates and type-safe composition.</p>
+            </div>
+
+            <div class="framework-card" data-framework="yew">
+                <span class="framework-icon">🌳</span>
+                <span class="framework-badge badge-yew">Yew</span>
+                <h3>Component Composition</h3>
+                <p>Mature component framework with strong TypeScript interop and comprehensive ecosystem.</p>
+            </div>
+
+            <div class="framework-card" data-framework="dioxus">
+                <span class="framework-icon">🌀</span>
+                <span class="framework-badge badge-dioxus">Dioxus</span>
+                <h3>Hooks-based Architecture</h3>
+                <p>React-like hooks and components with cross-platform support and excellent performance.</p>
+            </div>
+
+            <div class="framework-card" data-framework="sycamore">
+                <span class="framework-icon">🌿</span>
+                <span class="framework-badge badge-sycamore">Sycamore</span>
+                <h3>Context-based State</h3>
+                <p>Fine-grained reactive system with context-based state management and high performance.</p>
+            </div>
+
+            <div class="framework-card" data-framework="generic">
+                <span class="framework-icon">🎯</span>
+                <span class="framework-badge badge-generic">Generic</span>
+                <h3>Vanilla Integration</h3>
+                <p>Framework-agnostic integration with direct DOM manipulation and minimal overhead.</p>
+            </div>
+        </div>
+
+        <div class="integration-panel">
+            <h2 id="selected-framework">Select a Framework</h2>
+            <p id="framework-description">Click on a framework card above to explore integration patterns and examples.</p>
+
+            <div class="action-buttons">
+                <button id="show-guide" class="btn primary">📖 Show Integration Guide</button>
+                <button id="show-patterns" class="btn secondary">🔍 Show Patterns</button>
+                <button id="generate-code" class="btn info">💻 Generate Code</button>
+                <button id="compare-all" class="btn">⚖️ Compare Frameworks</button>
+            </div>
+
+            <div id="integration-content" style="display: none;">
+                <h3>Integration Example</h3>
+                <div id="code-example" class="code-example">// Select a framework and click "Generate Code" to see an example</div>
+            </div>
+        </div>
+
+        <div class="console">
+            <div id="console-output">
+                <div class="console-line">🔧 Flow-RS Framework Integrations Demo</div>
+                <div class="console-line">🎯 Click on framework cards to explore integration options</div>
+                <div class="console-line">💡 Try the action buttons to see framework-specific examples</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, {
+            show_framework_guide,
+            show_integration_pattern,
+            compare_frameworks,
+            generate_integration_code,
+            get_framework_features,
+            create_sample_integration
+        } from './pkg/framework_integrations_example.js';
+
+        // Initialize the WASM module
+        await init();
+
+        let selectedFramework = null;
+
+        // Framework card interactions
+        document.querySelectorAll('.framework-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const framework = card.dataset.framework;
+
+                // Update selection
+                document.querySelectorAll('.framework-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                selectedFramework = framework;
+
+                // Update integration panel
+                const title = document.getElementById('selected-framework');
+                const description = document.getElementById('framework-description');
+
+                const descriptions = {
+                    leptos: "Fine-grained reactive components with automatic UI updates and type-safe composition.",
+                    yew: "Mature component framework with strong TypeScript interop and comprehensive ecosystem.",
+                    dioxus: "React-like hooks and components with cross-platform support and excellent performance.",
+                    sycamore: "Fine-grained reactive system with context-based state management and high performance.",
+                    generic: "Framework-agnostic integration with direct DOM manipulation and minimal overhead."
+                };
+
+                title.textContent = `${framework.charAt(0).toUpperCase() + framework.slice(1)} Integration`;
+                description.textContent = descriptions[framework];
+
+                // Show content area
+                document.getElementById('integration-content').style.display = 'block';
+
+                addConsoleLine(`🎯 Selected ${framework} framework`, 'success');
+            });
+        });
+
+        // Action button handlers
+        document.getElementById('show-guide').addEventListener('click', () => {
+            if (!selectedFramework) {
+                addConsoleLine('❌ Please select a framework first', 'error');
+                return;
+            }
+            show_framework_guide(selectedFramework);
+        });
+
+        document.getElementById('show-patterns').addEventListener('click', () => {
+            if (!selectedFramework) {
+                addConsoleLine('❌ Please select a framework first', 'error');
+                return;
+            }
+            show_integration_pattern(selectedFramework);
+        });
+
+        document.getElementById('generate-code').addEventListener('click', () => {
+            if (!selectedFramework) {
+                addConsoleLine('❌ Please select a framework first', 'error');
+                return;
+            }
+
+            const code = generate_integration_code(selectedFramework);
+            document.getElementById('code-example').textContent = code;
+            addConsoleLine(`💻 Generated ${selectedFramework} integration code`, 'success');
+        });
+
+        document.getElementById('compare-all').addEventListener('click', () => {
+            compare_frameworks();
+
+            // Show comparison table
+            const comparisonHtml = `
+                <h3>Framework Comparison</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Framework</th>
+                            <th>Pattern</th>
+                            <th>Best For</th>
+                            <th>Complexity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Leptos</td>
+                            <td>Reactive Signals</td>
+                            <td>Complex reactive apps</td>
+                            <td>Medium</td>
+                        </tr>
+                        <tr>
+                            <td>Yew</td>
+                            <td>Component Props</td>
+                            <td>Enterprise apps</td>
+                            <td>Low</td>
+                        </tr>
+                        <tr>
+                            <td>Dioxus</td>
+                            <td>Hooks-based</td>
+                            <td>Modern React-like</td>
+                            <td>Medium</td>
+                        </tr>
+                        <tr>
+                            <td>Sycamore</td>
+                            <td>Context System</td>
+                            <td>High-performance</td>
+                            <td>High</td>
+                        </tr>
+                        <tr>
+                            <td>Generic</td>
+                            <td>Direct DOM</td>
+                            <td>Minimal overhead</td>
+                            <td>Low</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('code-example').innerHTML = comparisonHtml;
+        });
+
+        function addConsoleLine(text, type = '') {
+            const consoleOutput = document.getElementById('console-output');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Make functions available globally for console testing
+        window.flow_integrations = {
+            show_framework_guide,
+            show_integration_pattern,
+            compare_frameworks,
+            generate_integration_code,
+            get_framework_features,
+            create_sample_integration,
+            addConsoleLine
+        };
+
+        addConsoleLine('🎯 Framework Integration Demo Ready!', 'success');
+        addConsoleLine('💡 Select a framework and explore integration options', 'command');
+
+        console.log('Flow-RS Framework Integrations loaded successfully!');
+        console.log('Available functions:', window.flow_integrations);
+    </script>
+</body>
+</html>

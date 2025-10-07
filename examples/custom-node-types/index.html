@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Custom Node Types</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin: 0;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .custom-nodes-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .custom-nodes-content {
+            padding: 2rem;
+        }
+
+        .controls-section {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #f8fafc;
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            padding: 0.75rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            transition: border-color 0.2s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .control-input option {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            border-color: #8b5cf6;
+            color: white;
+        }
+
+        .canvas-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 600px;
+            display: block;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            cursor: crosshair;
+        }
+
+        .node-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .node-type-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .node-type-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .node-type-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .button-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .slider-icon { background: linear-gradient(135deg, #10b981, #059669); }
+        .progress-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .toggle-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .data-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        .node-type-header h3 {
+            margin: 0;
+            color: #f8fafc;
+            font-size: 1.2rem;
+        }
+
+        .node-type-description {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .instructions-section {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .instructions-header h3 {
+            margin: 0 0 1rem 0;
+            color: #f8fafc;
+            font-size: 1.2rem;
+        }
+
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .instructions-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        .instructions-list li:before {
+            content: "🎯";
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .node-types-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .node-types-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Custom cursor for interactive elements */
+        .interactive-cursor {
+            cursor: pointer;
+        }
+
+        /* Animation for interactive elements */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .interactive-element:hover {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Custom Node Types</h1>
+            <p>Interactive Components with Specialized Behaviors</p>
+        </div>
+
+        <div class="subtitle">
+            "Extend Flow-RS with custom node components that have unique rendering and interaction patterns"
+        </div>
+
+        <div class="custom-nodes-section">
+            <div class="section-header">
+                <h2>🎨 Interactive Node Components</h2>
+                <p>Custom node types with specialized rendering, behaviors, and user interactions</p>
+            </div>
+            <div class="custom-nodes-content">
+                <div class="controls-section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="node-type-selector">New Node Type</label>
+                            <select id="node-type-selector" class="control-input">
+                                <option value="button">Button Node</option>
+                                <option value="slider">Slider Node</option>
+                                <option value="progress">Progress Node</option>
+                                <option value="toggle">Toggle Node</option>
+                                <option value="data">Data Display Node</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label>&nbsp;</label>
+                            <button id="add-node-btn" class="btn primary">➕ Add Custom Node</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="flow-canvas"></canvas>
+                </div>
+
+                <div class="node-types-grid">
+                    <div class="node-type-card">
+                        <div class="node-type-header">
+                            <div class="node-type-icon button-icon">🔘</div>
+                            <h3>Button Nodes</h3>
+                        </div>
+                        <p class="node-type-description">
+                            Clickable buttons that trigger actions. The "Click Me!" button randomizes other node values, while "Reset" restores defaults.
+                        </p>
+                    </div>
+
+                    <div class="node-type-card">
+                        <div class="node-type-header">
+                            <div class="node-type-icon slider-icon">🎚️</div>
+                            <h3>Slider Nodes</h3>
+                        </div>
+                        <p class="node-type-description">
+                            Interactive sliders for value control. Drag the handle to adjust values from 0-100%. Shows current percentage.
+                        </p>
+                    </div>
+
+                    <div class="node-type-card">
+                        <div class="node-type-header">
+                            <div class="node-type-icon progress-icon">📊</div>
+                            <h3>Progress Nodes</h3>
+                        </div>
+                        <p class="node-type-description">
+                            Animated progress bars that continuously update. Demonstrates real-time value changes and smooth animations.
+                        </p>
+                    </div>
+
+                    <div class="node-type-card">
+                        <div class="node-type-header">
+                            <div class="node-type-icon toggle-icon">🔄</div>
+                            <h3>Toggle Nodes</h3>
+                        </div>
+                        <p class="node-type-description">
+                            On/off switches with smooth animations. Click to toggle between active/inactive states with visual feedback.
+                        </p>
+                    </div>
+
+                    <div class="node-type-card">
+                        <div class="node-type-header">
+                            <div class="node-type-icon data-icon">📈</div>
+                            <h3>Data Display Nodes</h3>
+                        </div>
+                        <p class="node-type-description">
+                            Information displays that show dynamic data. Updates periodically to simulate real-time monitoring.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions-section">
+            <div class="instructions-header">
+                <h3>🎯 Interaction Guide</h3>
+            </div>
+            <ul class="instructions-list">
+                <li><strong>Hover Effects:</strong> Move your mouse over nodes to see hover states and color changes</li>
+                <li><strong>Button Clicks:</strong> Click buttons to trigger actions - "Click Me!" randomizes values, "Reset" restores defaults</li>
+                <li><strong>Slider Control:</strong> Click and drag slider handles to adjust values in real-time</li>
+                <li><strong>Toggle Switches:</strong> Click toggles to switch between on/off states with smooth animations</li>
+                <li><strong>Add Nodes:</strong> Use the controls above to add new custom nodes of different types</li>
+                <li><strong>Visual Feedback:</strong> Watch for color changes, animations, and value updates as you interact</li>
+                <li><strong>Real-time Updates:</strong> Progress bars and data displays update automatically</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import init from './pkg/custom_node_types_example.js';
+
+        try {
+            // Initialize the WASM module
+            await init();
+            console.log('Flow-RS Custom Node Types example loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load Flow-RS Custom Node Types example:', error);
+        }
+    </script>
+</body>
+</html>

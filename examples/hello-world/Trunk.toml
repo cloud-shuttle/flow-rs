@@ -1,0 +1,8 @@
+# Flow-RS Hello World Example
+#
+# This example demonstrates the simplest possible Flow-RS setup.
+# It uses wasm-pack for building instead of trunk.
+#
+# Build command: wasm-pack build --target web --out-dir pkg
+# Serve command: python3 -m http.server 8000
+# Open: http://localhost:8000

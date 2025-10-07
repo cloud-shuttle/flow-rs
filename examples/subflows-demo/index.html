@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS Subflows Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .subflows-demo {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3em;
+            font-weight: 300;
+            text-align: center;
+            margin: 0;
+            padding: 30px 0;
+        }
+
+        .demo-container {
+            position: relative;
+            margin: 30px;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+        }
+
+        .features-grid {
+            margin: 0 30px;
+        }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .feature-card ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .feature-card li {
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .demo-scenarios {
+            margin: 0 30px 30px 30px;
+        }
+
+        .demo-scenarios h2 {
+            font-size: 2.2em;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .demo-scenarios h4 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .demo-scenarios p {
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .tips-section {
+            margin: 0 30px 30px 30px;
+        }
+
+        .tips-section h3 {
+            margin-bottom: 15px;
+        }
+
+        .tips-section ul {
+            padding-left: 20px;
+        }
+
+        .tips-section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        /* Breadcrumb styling */
+        .breadcrumb-nav {
+            font-size: 14px;
+        }
+
+        .breadcrumb-nav button {
+            transition: all 0.2s ease;
+        }
+
+        .breadcrumb-nav button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Subflow indicators */
+        .subflow-node::after {
+            content: '📁';
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            background: #28a745;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Cross-level edge styling */
+        .cross-level-edge {
+            stroke-dasharray: 8,4;
+            stroke: #28a745;
+            stroke-width: 3;
+            opacity: 0.8;
+            marker-end: none;
+        }
+
+        /* Hierarchy stats */
+        .hierarchy-stats {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            font-size: 12px;
+            color: #155724;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .subflows-demo {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 2em;
+                padding: 20px 0;
+            }
+
+            .demo-container {
+                margin: 20px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                margin: 0 20px;
+            }
+
+            .demo-scenarios {
+                margin: 0 20px 20px 20px;
+            }
+
+            .demo-scenarios div {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            .tips-section {
+                margin: 0 20px 20px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .demo-scenarios div {
+                grid-template-columns: 1fr !important;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .features-grid {
+                margin: 0 10px;
+            }
+
+            .demo-container {
+                margin: 10px;
+            }
+        }
+
+        /* Animation for feature cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+
+        /* Interactive elements */
+        .interactive-hint {
+            position: relative;
+        }
+
+        .interactive-hint::before {
+            content: '💡';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ffc107;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-3px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="leptos"></div>
+    <script type="module">
+        import init, { SubflowsDemo } from './pkg/subflows_demo.js';
+        init().then(() => {
+            leptos.mount(document.getElementById('leptos'), SubflowsDemo);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+/Users/peterhanssens/consulting/Leptos/flow-rs/examples/performance-comparison/target/wasm32-unknown-unknown/debug/deps/foldhash-06c744f6fd143822.d: /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/lib.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/fast.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/quality.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/seed.rs
+
+/Users/peterhanssens/consulting/Leptos/flow-rs/examples/performance-comparison/target/wasm32-unknown-unknown/debug/deps/libfoldhash-06c744f6fd143822.rlib: /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/lib.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/fast.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/quality.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/seed.rs
+
+/Users/peterhanssens/consulting/Leptos/flow-rs/examples/performance-comparison/target/wasm32-unknown-unknown/debug/deps/libfoldhash-06c744f6fd143822.rmeta: /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/lib.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/fast.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/quality.rs /Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/seed.rs
+
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/lib.rs:
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/fast.rs:
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/quality.rs:
+/Users/peterhanssens/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/foldhash-0.1.5/src/seed.rs:

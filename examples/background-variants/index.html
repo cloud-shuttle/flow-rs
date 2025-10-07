@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Background Variants</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .demo-content {
+            padding: 2rem;
+        }
+
+        .controls-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        select.control-input {
+            cursor: pointer;
+        }
+
+        .canvas-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 600px;
+            display: block;
+            background: white;
+        }
+
+        .pattern-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .pattern-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .pattern-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .pattern-preview {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pattern-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .pattern-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4299e1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-section {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            margin: 0 0 1rem 0;
+            color: #63b3ed;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .pattern-showcase {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Background Variants</h1>
+            <p>Explore Flow-RS's customizable background patterns and styling options</p>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>🎨 Interactive Background Editor</h2>
+                <p>Customize background patterns, colors, and properties in real-time</p>
+            </div>
+            <div class="demo-content">
+                <div class="controls-section">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="background-select">Pattern Type</label>
+                            <select id="background-select" class="control-input">
+                                <option value="dots">Dots</option>
+                                <option value="lines">Lines</option>
+                                <option value="crosshatch">Crosshatch</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="background-color">Background Color</label>
+                            <input type="color" id="background-color" class="control-input" value="#f8fafc">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="pattern-color">Pattern Color</label>
+                            <input type="color" id="pattern-color" class="control-input" value="#e2e8f0">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="background-size">Pattern Size: <span id="size-value">20</span>px</label>
+                            <input type="range" id="background-size" class="control-input" min="5" max="50" value="20" step="5">
+                        </div>
+
+                        <div class="control-group">
+                            <label for="background-opacity">Opacity: <span id="opacity-value">50</span>%</label>
+                            <input type="range" id="background-opacity" class="control-input" min="10" max="90" value="50" step="5">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="flow-canvas"></canvas>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Pattern Types</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">Color Options</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">5-50px</div>
+                        <div class="stat-label">Size Range</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">10-90%</div>
+                        <div class="stat-label">Opacity Range</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>📐 Background Pattern Types</h2>
+                <p>Different visual patterns to enhance your flow diagrams</p>
+            </div>
+            <div class="demo-content">
+                <div class="pattern-showcase">
+                    <div class="pattern-card">
+                        <div class="pattern-preview" style="background: linear-gradient(90deg, #f8fafc 0%, #f8fafc 100%), radial-gradient(circle, #e2e8f0 1px, transparent 1px); background-size: 20px 20px;"></div>
+                        <h3>🔵 Dots Pattern</h3>
+                        <p>Subtle circular dots arranged in a grid pattern. Perfect for clean, minimal diagrams that need subtle visual guidance.</p>
+                    </div>
+
+                    <div class="pattern-card">
+                        <div class="pattern-preview" style="background: #f8fafc; background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 20px 20px;"></div>
+                        <h3>📏 Lines Pattern</h3>
+                        <p>Horizontal and vertical lines forming a ruled grid. Excellent for technical diagrams and structured layouts.</p>
+                    </div>
+
+                    <div class="pattern-card">
+                        <div class="pattern-preview" style="background: #f8fafc; background-image: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 1px, #f8fafc 1px, #f8fafc 10px), repeating-linear-gradient(-45deg, #e2e8f0, #e2e8f0 1px, #f8fafc 1px, #f8fafc 10px);"></div>
+                        <h3>🔀 Crosshatch Pattern</h3>
+                        <p>Diagonal lines crossing at 45-degree angles. Creates a professional, technical appearance for complex diagrams.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>🎨 Full Customization</h3>
+                <p>Control every aspect of background appearance including colors, sizes, and opacity levels for perfect integration.</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡ Real-time Updates</h3>
+                <p>Interactive controls allow instant preview of changes, making it easy to find the perfect background style.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📱 Responsive Design</h3>
+                <p>Background patterns scale automatically with canvas size and zoom level for consistent appearance.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🚀 Performance Optimized</h3>
+                <p>Efficient rendering ensures smooth interaction even with complex patterns and large canvas areas.</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="section-header">
+                <h2>💻 Implementation</h2>
+                <p>How background customization is implemented in Flow-RS</p>
+            </div>
+            <div class="demo-content">
+                <div class="code-section">
+                    <h3>Background Configuration</h3>
+                    <pre><code>let background_config = BackgroundConfig {
+    color: "#f8fafc".to_string(),        // Background fill color
+    pattern_color: "#e2e8f0".to_string(), // Pattern element color
+    variant: BackgroundVariant::Dots,    // Pattern type
+    size: 20.0,                          // Pattern spacing/size
+    opacity: 0.5,                        // Pattern transparency
+};
+
+// Render the background
+renderer.render_background(&background_config, &viewport)?;</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>Background Variants</h3>
+                    <pre><code>enum BackgroundVariant {
+    Dots,      // Circular dots in grid pattern
+    Lines,     // Horizontal and vertical lines
+    Crosshatch // Diagonal crossing lines
+}
+
+// Easy to extend with custom patterns
+impl BackgroundVariant {
+    fn render_pattern(&self, renderer: &mut Canvas2DRenderer, config: &BackgroundConfig) {
+        match self {
+            BackgroundVariant::Dots => self.render_dots(renderer, config),
+            BackgroundVariant::Lines => self.render_lines(renderer, config),
+            BackgroundVariant::Crosshatch => self.render_crosshatch(renderer, config),
+        }
+    }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update slider value displays
+        document.getElementById('background-size').addEventListener('input', function(e) {
+            document.getElementById('size-value').textContent = e.target.value;
+        });
+
+        document.getElementById('background-opacity').addEventListener('input', function(e) {
+            document.getElementById('opacity-value').textContent = e.target.value;
+        });
+    </script>
+
+    <script type="module">
+        import init from './pkg/background_variants_example.js';
+
+        try {
+            // Initialize the WASM module
+            await init();
+            console.log('Flow-RS Background Variants example loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load Flow-RS Background Variants example:', error);
+        }
+    </script>
+</body>
+</html>

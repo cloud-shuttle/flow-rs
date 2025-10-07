@@ -8,7 +8,7 @@ use wasm_bindgen_test::*;
 use web_sys::{MouseEvent, HtmlCanvasElement};
 use js_sys::Object;
 
-use flow_core::{Graph, Node, Position, NodeId};
+use flow_rs_core::{Graph, Node, Position, NodeId};
 use crate::signals::{FlowState, ViewportState};
 use crate::events::{FlowEvent, NodeEvent, MouseButton, KeyboardModifiers};
 use crate::drag::DragHandler;
@@ -226,10 +226,7 @@ fn test_mouse_up_ends_drag() {
     let mouse_up_event = create_mock_mouse_event(150, 150, 0);
     let _ = drag_handler.handle_mouse_up(
         &mouse_up_event,
-        &mut graph,
         &mut flow_state,
-        &viewport_state,
-        None,
     );
 
     assert!(!flow_state.is_dragging);

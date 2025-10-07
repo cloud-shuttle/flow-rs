@@ -6,7 +6,7 @@
 // - Connection validation
 // - Visual feedback during connection
 
-use flow_core::{Graph, Node, NodeId, EdgeId, Position, Size};
+use flow_rs_core::{Graph, Node, NodeId, EdgeId, Position, Size};
 use crate::edge_connection::{
     ConnectionValidator, HandleDetector, ConnectionPreview, EdgeCreator, ConnectionVisualizer,
     ConnectionResult, ConnectionHandle, ConnectionFeedback

@@ -209,6 +209,7 @@ pub mod utils {
 mod tests {
     use super::*;
     use js_sys::Object;
+    use wasm_bindgen::{JsCast, JsValue};
     use wasm_bindgen_test::*;
 
     wasm_bindgen_test_configure!(run_in_browser);

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS - Interactive Playground</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .subtitle {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .toolbar {
+            background: rgba(30, 41, 59, 0.8);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tool-group label {
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #3b82f6;
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: #ef4444;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            border-right: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        #flow-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            cursor: crosshair;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(30, 41, 59, 0.9);
+            border-left: 1px solid rgba(56, 189, 248, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .sidebar-section h3 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .sidebar-section h4 {
+            margin: 0.5rem 0 0.25rem 0;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.5rem;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #06b6d4;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .properties-panel {
+            flex: 1;
+        }
+
+        .property-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+            font-size: 0.8rem;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: #06b6d4;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+
+        .node-list, .edge-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .list-item.selected {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .list-item-label {
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+
+        .list-item-type {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .console {
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid rgba(56, 189, 248, 0.1);
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .console-line {
+            margin-bottom: 0.25rem;
+            color: #cbd5e1;
+        }
+
+        .console-line.command {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .console-line.error {
+            color: #ef4444;
+        }
+
+        .console-line.success {
+            color: #06b6d4;
+        }
+
+        .instructions {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+        }
+
+        .instructions h4 {
+            margin: 0 0 0.5rem 0;
+            color: #f8fafc;
+            font-size: 0.9rem;
+        }
+
+        .instructions ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.25rem;
+            color: #cbd5e1;
+            font-size: 0.8rem;
+        }
+
+        .keyboard-shortcuts {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+
+        .keyboard-shortcuts h5 {
+            margin: 0 0 0.5rem 0;
+            color: #cbd5e1;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .shortcut:last-child {
+            margin-bottom: 0;
+        }
+
+        .kbd {
+            background: rgba(56, 189, 248, 0.1);
+            padding: 0.125rem 0.25rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            color: #06b6d4;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 300px;
+                border-left: none;
+                border-top: 1px solid rgba(56, 189, 248, 0.1);
+            }
+
+            .toolbar {
+                flex-wrap: wrap;
+                padding: 0.5rem 1rem;
+            }
+
+            .header {
+                padding: 0.75rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Interactive Playground</h1>
+                <p class="subtitle">Full-featured Flow-RS graph editor</p>
+            </div>
+            <div id="status-display">
+                <span id="node-count">0</span> nodes,
+                <span id="edge-count">0</span> edges |
+                Mode: <span id="current-mode">Select</span>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="tool-group">
+                <label>Mode:</label>
+                <button id="select-mode" class="btn active">👆 Select</button>
+                <button id="create-node-mode" class="btn">➕ Node</button>
+                <button id="create-edge-mode" class="btn">🔗 Edge</button>
+                <button id="delete-mode" class="btn danger">🗑️ Delete</button>
+            </div>
+
+            <div class="tool-group">
+                <label>Actions:</label>
+                <button id="clear-graph" class="btn danger">🧹 Clear</button>
+                <button id="export-graph" class="btn success">💾 Export</button>
+                <button id="stats-btn" class="btn">📊 Stats</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="flow-canvas" width="1200" height="700"></canvas>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3>📊 Graph Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-value" id="stats-nodes">0</span>
+                            <span class="stat-label">Nodes</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stats-edges">0</span>
+                            <span class="stat-label">Edges</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stats-selected-nodes">0</span>
+                            <span class="stat-label">Selected</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stats-selected-edges">0</span>
+                            <span class="stat-label">Edges Sel.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>🎯 Quick Actions</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button id="add-sample-node" class="btn" style="width: 100%;">Add Sample Node</button>
+                        <button id="random-layout" class="btn" style="width: 100%;">Random Layout</button>
+                        <button id="reset-view" class="btn" style="width: 100%;">Reset View</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>📋 Selected Items</h3>
+                    <div id="selected-items">
+                        <div style="color: #94a3b8; font-size: 0.8rem; text-align: center; padding: 1rem;">
+                            Click on nodes/edges to select them
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>⚙️ Properties</h3>
+                    <div id="properties-panel">
+                        <div style="color: #94a3b8; font-size: 0.8rem; text-align: center; padding: 1rem;">
+                            Select an item to edit its properties
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>📖 Instructions</h3>
+                    <div class="instructions">
+                        <h4>🎮 Getting Started</h4>
+                        <ul>
+                            <li>Click toolbar buttons to change editing modes</li>
+                            <li>In Select mode: Click and drag nodes to move them</li>
+                            <li>In Node mode: Click canvas to add new nodes</li>
+                            <li>In Edge mode: Click source node, then target node</li>
+                            <li>In Delete mode: Click items to remove them</li>
+                        </ul>
+
+                        <div class="keyboard-shortcuts">
+                            <h5>⌨️ Keyboard Shortcuts</h5>
+                            <div class="shortcut">
+                                <span>Delete selected items</span>
+                                <span><kbd class="kbd">Del</kbd></span>
+                            </div>
+                            <div class="shortcut">
+                                <span>Clear selection</span>
+                                <span><kbd class="kbd">Esc</kbd></span>
+                            </div>
+                            <div class="shortcut">
+                                <span>Export graph</span>
+                                <span><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">S</kbd></span>
+                            </div>
+                            <div class="shortcut">
+                                <span>Undo</span>
+                                <span><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Z</kbd></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="console">
+            <div id="console-output">
+                <div class="console-line">🎮 Flow-RS Interactive Playground initialized</div>
+                <div class="console-line">💡 Use the toolbar above to change editing modes</div>
+                <div class="console-line">🎯 Try clicking on the canvas to interact with the demo graph</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, {
+            add_node,
+            select_mode,
+            export_graph,
+            import_graph,
+            clear_graph,
+            get_graph_stats
+        } from './pkg/interactive_playground_example.js';
+
+        // Initialize the WASM module
+        await init();
+
+        // Set up UI event handlers
+        document.getElementById('select-mode').addEventListener('click', () => {
+            select_mode('select');
+            updateModeButtons('select-mode');
+        });
+
+        document.getElementById('create-node-mode').addEventListener('click', () => {
+            select_mode('create_node');
+            updateModeButtons('create-node-mode');
+        });
+
+        document.getElementById('create-edge-mode').addEventListener('click', () => {
+            select_mode('create_edge');
+            updateModeButtons('create-edge-mode');
+        });
+
+        document.getElementById('delete-mode').addEventListener('click', () => {
+            select_mode('delete');
+            updateModeButtons('delete-mode');
+        });
+
+        document.getElementById('clear-graph').addEventListener('click', () => {
+            if (confirm('Clear the entire graph? This cannot be undone.')) {
+                clear_graph();
+                addConsoleLine('🧹 Graph cleared', 'command');
+            }
+        });
+
+        document.getElementById('export-graph').addEventListener('click', () => {
+            const json = export_graph();
+            navigator.clipboard.writeText(json).then(() => {
+                addConsoleLine('📋 Graph JSON copied to clipboard', 'success');
+            }).catch(() => {
+                addConsoleLine('❌ Failed to copy to clipboard', 'error');
+                console.log('Graph JSON:', json);
+            });
+        });
+
+        document.getElementById('add-sample-node').addEventListener('click', () => {
+            const canvas = document.getElementById('flow-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.random() * (rect.width - 100) + 50;
+            const y = Math.random() * (rect.height - 60) + 30;
+
+            add_node(`Node ${Date.now()}`, x, y);
+            addConsoleLine(`➕ Added sample node at (${x.toFixed(0)}, ${y.toFixed(0)})`, 'success');
+        });
+
+        document.getElementById('stats-btn').addEventListener('click', () => {
+            const stats = get_graph_stats();
+            addConsoleLine('📊 Graph Statistics:', 'command');
+            console.log(stats);
+            addConsoleLine(stats.replace(/\n/g, ' | '), 'success');
+        });
+
+        document.getElementById('random-layout').addEventListener('click', () => {
+            addConsoleLine('🔄 Random layout not implemented in this demo', 'command');
+        });
+
+        document.getElementById('reset-view').addEventListener('click', () => {
+            addConsoleLine('🔍 View reset not implemented in this demo', 'command');
+        });
+
+        function updateModeButtons(activeId) {
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(activeId).classList.add('active');
+        }
+
+        function addConsoleLine(text, type = '') {
+            const consoleOutput = document.getElementById('console-output');
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Make functions available globally for console testing
+        window.flow_rs = {
+            add_node,
+            select_mode,
+            export_graph,
+            import_graph,
+            clear_graph,
+            get_graph_stats,
+            addConsoleLine
+        };
+
+        addConsoleLine('🎯 Try these commands in the console:', 'command');
+        addConsoleLine('  flow_rs.add_node("My Node", 200, 150)', 'command');
+        addConsoleLine('  flow_rs.select_mode("create_edge")', 'command');
+        addConsoleLine('  flow_rs.export_graph()', 'command');
+        addConsoleLine('  flow_rs.get_graph_stats()', 'command');
+
+        console.log('Flow-RS Interactive Playground loaded successfully!');
+        console.log('Available functions:', window.flow_rs);
+    </script>
+</body>
+</html>

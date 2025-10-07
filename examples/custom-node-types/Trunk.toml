@@ -1,0 +1,8 @@
+# Flow-RS Custom Node Types Example
+#
+# This example demonstrates custom node components with specialized behaviors.
+# It uses wasm-pack for building instead of trunk.
+#
+# Build command: wasm-pack build --target web --out-dir pkg --dev
+# Serve command: python3 -m http.server 8000
+# Open: http://localhost:8000

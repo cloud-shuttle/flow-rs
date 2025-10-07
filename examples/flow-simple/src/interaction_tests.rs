@@ -6,8 +6,8 @@
 //! REFACTOR phase: Enhanced with proper error handling, validation,
 //! and improved code structure for maintainability.
 
-use flow_core::{Edge, Graph, Node, NodeId, Position, Viewport};
-use flow_renderer::{Canvas2DRenderer, Renderer};
+use flow_rs_core::{Edge, Graph, Node, NodeId, Position, Viewport};
+use flow_rs_renderer::{Canvas2DRenderer, Renderer};
 use std::collections::HashSet;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
