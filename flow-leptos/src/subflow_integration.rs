@@ -10,7 +10,8 @@ use leptos::prelude::*;
 use wasm_bindgen::{JsCast, closure::Closure};
 use web_sys::{MouseEvent, Element};
 use std::collections::HashSet;
-use flow_rs_core::{NodeId, Position, HierarchicalGraph, HierarchicalNodeRef};
+use flow_rs_core::{NodeId, Position};
+use flow_rs_core::subflows::{HierarchicalGraph, HierarchicalNodeRef, NavigationState};
 use crate::signals::{FlowState, ViewportState};
 use crate::selection::SelectionMode;
 
@@ -37,7 +38,7 @@ pub fn HierarchicalFlowEditor(
     );
 
     // Navigation state
-    let navigation_state = RwSignal::new(crate::subflows::NavigationState {
+    let navigation_state = RwSignal::new(NavigationState {
         path: Vec::new(),
         viewport_states: std::collections::HashMap::new(),
         zoom_levels: std::collections::HashMap::new(),
@@ -45,7 +46,7 @@ pub fn HierarchicalFlowEditor(
 
     // UI state
     let show_breadcrumbs = RwSignal::new(true);
-    let selected_nodes = RwSignal::new(HashSet::new());
+    let selected_nodes = RwSignal::new(HashSet::<NodeId>::new());
 
     // Get current graph for rendering
     let current_graph = move || hierarchy.get().current_graph().clone();
@@ -111,11 +112,11 @@ pub fn HierarchicalFlowEditor(
             if distance <= 50.0 { // Assuming node radius
                 // Check if node has subflow
                 if hierarchy.get().subflows.contains_key(&node.id) {
-                    enter_subflow(node.id);
+                    enter_subflow(node.id.clone());
                 } else {
                     // Create subflow and enter it
                     create_subflow(node.id.clone());
-                    enter_subflow(node.id);
+                    enter_subflow(node.id.clone());
                 }
                 break;
             }
@@ -176,7 +177,7 @@ pub fn HierarchicalFlowEditor(
                     let is_last = index == breadcrumbs().len() - 1;
                     view! {
                         <>
-                            {if index > 0 { view! { <span style="margin: 0 8px; color: #666;">"▶"</span> } } else { view! { <></> } }}
+                            {if index > 0 { Some(view! { <span style="margin: 0 8px; color: #666;">"▶"</span> }) } else { None }}
                             <button
                                 on:click=move |_| {
                                     if index == 0 {

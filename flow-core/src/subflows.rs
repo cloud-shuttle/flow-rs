@@ -10,7 +10,7 @@
 //! - Cross-level edge connections
 //! - Subflow-specific layouts and behaviors
 
-use crate::graph::Graph;
+use crate::graph::{Graph, Node};
 use crate::types::{NodeId, Position};
 use std::collections::HashMap;
 

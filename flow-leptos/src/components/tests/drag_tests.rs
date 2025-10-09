@@ -241,7 +241,7 @@ fn test_collision_detection_during_drag() {
 
     let config = DragConfig {
         enforce_bounds: true,
-        canvas_bounds: Some(flow_core::Rect::new(0.0, 0.0, 500.0, 400.0)),
+        canvas_bounds: Some(flow_rs_core::Rect::new(0.0, 0.0, 500.0, 400.0)),
         ..Default::default()
     };
     let handler = DragHandler::with_config(config);
@@ -306,7 +306,7 @@ fn test_drag_bounds_enforcement() {
 
     let config = DragConfig {
         enforce_bounds: true,
-        canvas_bounds: Some(flow_core::Rect::new(0.0, 0.0, 300.0, 200.0)),
+        canvas_bounds: Some(flow_rs_core::Rect::new(0.0, 0.0, 300.0, 200.0)),
         ..Default::default()
     };
     let handler = DragHandler::with_config(config);

@@ -12,6 +12,9 @@ pub mod groups;
 pub mod handle;
 pub mod layout;
 pub mod selection;
+pub mod collaboration;
+pub mod documentation;
+pub mod framework_abstractions;
 pub mod plugins;
 pub mod spatial;
 pub mod subflows;
@@ -73,6 +76,9 @@ pub mod prelude {
     pub use crate::selection::{
         KeyboardShortcut, NavigationDirection, SelectionManager, SelectionMode, VisualFeedback,
     };
+    pub use crate::collaboration::{CollaborativeSession, OperationalTransform, Participant, Cursor};
+    pub use crate::documentation::{DocumentationSystem, DocumentationGenerator};
+    pub use crate::framework_abstractions::{FrameworkAdapter, FrameworkRegistry, FrameworkAgnosticFlow};
     pub use crate::plugins::{PluginManager, PluginRegistry, Plugin, PluginMetadata, PluginCapabilities};
     pub use crate::spatial::SpatialIndex;
     pub use crate::subflows::{HierarchicalGraph, NavigationState};

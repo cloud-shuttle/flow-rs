@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow-RS Collaborative Editing Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .collaboration-demo {
+            min-height: 100vh;
+        }
+
+        .demo-instructions {
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+        }
+
+        .user-selection {
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+        }
+
+        .technical-details {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .use-cases {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-notice {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.2) !important;
+        }
+
+        .detail-card {
+            transition: transform 0.3s ease;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .collaboration-demo {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .demo-instructions > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            .user-selection .user-selection > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            .technical-details {
+                grid-template-columns: 1fr !important;
+            }
+
+            .use-cases > div {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Animation for cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-card, .detail-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .user-card:nth-child(1) { animation-delay: 0.1s; }
+        .user-card:nth-child(2) { animation-delay: 0.2s; }
+        .user-card:nth-child(3) { animation-delay: 0.3s; }
+        .user-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .detail-card:nth-child(1) { animation-delay: 0.1s; }
+        .detail-card:nth-child(2) { animation-delay: 0.2s; }
+        .detail-card:nth-child(3) { animation-delay: 0.3s; }
+        .detail-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Selection styles */
+        ::selection {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        /* Focus styles */
+        :focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        /* Mock collaborative elements */
+        .mock-cursor {
+            animation: blink 2s infinite;
+        }
+
+        .mock-cursor-label {
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.7; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="leptos"></div>
+    <script type="module">
+        import init, { CollaborativeEditingDemo } from './pkg/collaborative_editing_demo.js';
+        init().then(() => {
+            leptos.mount(document.getElementById('leptos'), CollaborativeEditingDemo);
+        });
+    </script>
+</body>
+</html>

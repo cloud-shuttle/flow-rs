@@ -24,6 +24,7 @@ pub mod context_menu;
 pub mod history;
 pub mod keyboard_shortcuts;
 pub mod subflow_integration;
+pub mod collaboration;
 
 // Re-export core types for convenience
 pub use flow_rs_core as core;
@@ -42,8 +43,9 @@ pub mod prelude {
     pub use crate::selection::*;
     pub use crate::context_menu::*;
     pub use crate::history::*;
-    pub use crate::keyboard_shortcuts::*;
-    pub use crate::subflow_integration::*;
+pub use crate::keyboard_shortcuts::*;
+pub use crate::subflow_integration::*;
+pub use crate::collaboration::*;
 
     // Component exports (avoiding conflicts)
     pub use crate::components::controls::*;

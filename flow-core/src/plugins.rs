@@ -584,7 +584,7 @@ mod tests {
             from_plugin: "test-plugin".to_string(),
             to_plugin: None,
             message_type: "test".to_string(),
-            payload: serde_json::json!({"test": "data"}),
+            payload: serde_json::json!({"test": "data"}).to_string(),
         };
 
         assert!(manager.registry().write().unwrap().send_message(message).is_ok());

@@ -10,6 +10,7 @@ use leptos::prelude::*;
 use wasm_bindgen::{JsCast, closure::Closure};
 use web_sys::{KeyboardEvent, Element};
 use std::collections::HashSet;
+use std::ops::Deref;
 use flow_rs_core::{NodeId, Position, Graph};
 use crate::signals::{FlowState, ViewportState};
 use crate::selection::SelectionManager;
@@ -34,6 +35,7 @@ pub enum KeyboardAction {
 }
 
 /// Keyboard shortcuts manager
+#[derive(Clone)]
 pub struct KeyboardManager {
     shortcuts: std::collections::HashMap<String, KeyboardShortcut>,
     pressed_keys: HashSet<String>,
@@ -246,7 +248,7 @@ impl KeyboardManager {
 /// Keyboard shortcuts hook for Leptos components
 pub fn use_keyboard_shortcuts(
     canvas_ref: NodeRef<leptos::html::Canvas>,
-    graph: RwSignal<Graph<(), ()>>,
+    graph: RwSignal<Graph<String, String>>,
     flow_state: RwSignal<FlowState>,
     viewport_state: RwSignal<ViewportState>,
     selection_manager: RwSignal<SelectionManager>,
@@ -330,7 +332,7 @@ pub fn use_keyboard_shortcuts(
 /// Execute keyboard action
 fn execute_keyboard_action(
     action: &KeyboardAction,
-    graph: &RwSignal<Graph<(), ()>>,
+    graph: &RwSignal<Graph<String, String>>,
     flow_state: &RwSignal<FlowState>,
     viewport_state: &RwSignal<ViewportState>,
     selection_manager: &RwSignal<SelectionManager>,
@@ -341,8 +343,8 @@ fn execute_keyboard_action(
         KeyboardAction::Undo => {
             history_manager.update(|hm| {
                 if let Some(entry) = hm.undo() {
-                    // Apply inverse operation
-                    let inverse_op = hm.get_inverse(&entry.operation);
+                    let operation = entry.operation.clone();
+                    let inverse_op = hm.get_inverse(&operation);
                     graph.update(|g| {
                         let _ = hm.apply_operation(
                             &inverse_op,
@@ -357,10 +359,11 @@ fn execute_keyboard_action(
         KeyboardAction::Redo => {
             history_manager.update(|hm| {
                 if let Some(entry) = hm.redo() {
-                    // Apply the operation
+                    let operation = entry.operation.clone();
+                    drop(entry); // Release the borrow on entry
                     graph.update(|g| {
                         let _ = hm.apply_operation(
-                            &entry.operation,
+                            &operation,
                             g,
                             |data, pos| data.to_string(),
                             |data, source, target| data.to_string(),
@@ -397,7 +400,7 @@ fn execute_keyboard_action(
             clipboard_manager.update(|cm| {
                 let _ = cm.paste_nodes(
                     center_pos,
-                    &mut graph.write_only().get(),
+                    &mut graph.get_untracked(),
                     |data, pos| data.to_string(),
                     |data, source, target| data.to_string(),
                     || NodeId::new(format!("node-{}", js_sys::Math::random())),

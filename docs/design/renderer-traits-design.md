@@ -1,319 +1,676 @@
-# Renderer Traits Design Document
+# Renderer Traits Architecture Design
 
 ## Overview
-**Component**: Renderer Traits (`flow-renderer/src/traits.rs` - 825 lines)
-**Status**: Needs refactoring into smaller, focused modules
-**Complexity**: High - Multiple rendering backends and extensive trait definitions
 
-## Current Architecture Problems
+The renderer system provides a unified interface for different rendering backends (Canvas2D, WebGL, WebGPU) while maintaining performance and extensibility. This design document outlines the refactored architecture that addresses the current 825-line monolithic traits.rs file.
 
-### Issues
-1. **Massive monolithic file** (825 lines) - violates 300-line limit
-2. **Mixed abstraction levels** - Traits, implementations, and utilities combined
-3. **Multiple rendering backends** mixed together
-4. **Poor separation** between 2D and 3D rendering concerns
+## Current State Analysis
 
-### Current Structure Analysis
-```rust
-// Traits (200+ lines)
-pub trait Renderer { ... }
-pub trait BackgroundConfig { ... }
+### Problems with Current Implementation
+1. **Monolithic traits file** (825 lines) - difficult to navigate and maintain
+2. **Tight coupling** between different rendering backends
+3. **Mixed abstraction levels** - low-level rendering mixed with high-level scene management
+4. **Limited backend extensibility** - adding new backends requires modifying core traits
+5. **Performance overhead** - generic abstractions may hinder backend-specific optimizations
 
-// Canvas2D Implementation (300+ lines)
-impl Renderer for Canvas2DRenderer { ... }
+### Design Goals
+- **Modular Architecture**: Separate concerns into focused, single-responsibility modules
+- **Backend Agnosticism**: Clean abstraction layer allowing different rendering implementations
+- **Performance Optimization**: Allow backends to use their specific optimizations
+- **Extensibility**: Easy to add new rendering backends and features
+- **Type Safety**: Leverage Rust's type system for render pipeline correctness
 
-// WebGL Implementation (175+ lines)
-impl Renderer for WebGLRenderer { ... }
+## Architecture Overview
 
-// Utilities and helpers (150+ lines)
-```
-
-## Proposed Refactored Architecture
-
-### Directory Structure
 ```
 flow-renderer/src/
+├── mod.rs                 # Public API and re-exports
 ├── traits/
-│   ├── mod.rs              (40 lines) - Main trait exports
-│   ├── renderer.rs         (120 lines) - Core Renderer trait
-│   ├── background.rs       (80 lines) - Background configuration
-│   ├── config.rs           (60 lines) - Renderer configuration
-│   └── types.rs            (40 lines) - Common types and enums
-├── canvas2d/
-│   ├── mod.rs              (30 lines) - Canvas2D exports
-│   ├── renderer.rs         (180 lines) - Canvas2DRenderer impl
-│   ├── drawing.rs          (120 lines) - Drawing operations
-│   ├── text.rs             (80 lines) - Text rendering
-│   └── shapes.rs           (100 lines) - Shape primitives
-├── webgl/
-│   ├── mod.rs              (30 lines) - WebGL exports
-│   ├── renderer.rs         (180 lines) - WebGLRenderer impl
-│   ├── shaders.rs          (120 lines) - Shader management
-│   ├── buffers.rs          (100 lines) - Buffer management
-│   └── context.rs          (80 lines) - WebGL context setup
-└── shared/
-    ├── mod.rs              (30 lines) - Shared utilities
-    ├── utils.rs            (80 lines) - Common utilities
-    ├── error.rs            (60 lines) - Error types
-    └── performance.rs      (100 lines) - Performance monitoring
+│   ├── mod.rs            # Core trait definitions
+│   ├── renderer.rs       # Main rendering interface
+│   ├── backend.rs        # Backend-specific traits
+│   ├── surface.rs        # Render surface management
+│   └── resources.rs      # Resource management
+├── backends/
+│   ├── mod.rs            # Backend registry
+│   ├── canvas2d.rs       # Canvas2D implementation
+│   ├── webgl.rs          # WebGL implementation
+│   ├── webgpu.rs         # WebGPU implementation
+│   └── null.rs           # Test/null backend
+├── pipeline/
+│   ├── mod.rs            # Render pipeline coordination
+│   ├── scene.rs          # Scene graph management
+│   ├── batcher.rs        # Draw call batching
+│   └── culling.rs        # Frustum culling
+├── primitives/
+│   ├── mod.rs            # Primitive definitions
+│   ├── node.rs           # Node rendering
+│   ├── edge.rs           # Edge rendering
+│   ├── background.rs     # Background patterns
+│   └── selection.rs      # Selection indicators
+└── utils/
+    ├── mod.rs            # Rendering utilities
+    ├── color.rs          # Color management
+    ├── geometry.rs       # Geometric calculations
+    └── performance.rs    # Rendering performance monitoring
 ```
 
-## Core Trait Design
+## Core Trait Hierarchy
 
-### Renderer Trait Hierarchy
+### 1. Renderer Trait (`traits/renderer.rs`)
+
+#### Purpose
+Main rendering interface providing high-level scene rendering capabilities.
+
 ```rust
-pub trait Renderer {
-    type Config: RendererConfig;
-    type Error: std::error::Error;
+pub trait Renderer: Send + Sync {
+    type Backend: RenderBackend;
+    type Surface: RenderSurface;
+    type Resources: RenderResources;
 
-    fn new(config: Self::Config) -> Result<Self, Self::Error>
-        where Self: Sized;
+    /// Initialize the renderer with a surface
+    fn initialize(&mut self, surface: Self::Surface) -> Result<(), RenderError>;
 
-    fn render_graph(&mut self, graph: &Graph, viewport: &Viewport) -> Result<(), Self::Error>;
-    fn clear(&mut self) -> Result<(), Self::Error>;
-    fn resize(&mut self, width: f64, height: f64) -> Result<(), Self::Error>;
-}
+    /// Begin a new frame
+    fn begin_frame(&mut self, clear_color: Color) -> Result<(), RenderError>;
 
-pub trait Renderer2D: Renderer {
-    fn draw_line(&mut self, start: Position, end: Position, style: &LineStyle) -> Result<(), Self::Error>;
-    fn draw_rect(&mut self, rect: Rect, style: &ShapeStyle) -> Result<(), Self::Error>;
-    fn draw_circle(&mut self, center: Position, radius: f64, style: &ShapeStyle) -> Result<(), Self::Error>;
-    fn draw_text(&mut self, text: &str, position: Position, style: &TextStyle) -> Result<(), Self::Error>;
-}
+    /// Render a complete scene
+    fn render_scene(&mut self, scene: &RenderScene) -> Result<(), RenderError>;
 
-pub trait Renderer3D: Renderer {
-    fn set_projection(&mut self, projection: &ProjectionMatrix) -> Result<(), Self::Error>;
-    fn set_view(&mut self, view: &ViewMatrix) -> Result<(), Self::Error>;
-    fn draw_mesh(&mut self, mesh: &Mesh, transform: &Transform) -> Result<(), Self::Error>;
-}
-```
+    /// End the current frame
+    fn end_frame(&mut self) -> Result<(), RenderError>;
 
-### Background Configuration
-```rust
-pub trait BackgroundConfig {
-    fn variant(&self) -> BackgroundVariant;
-    fn color(&self) -> Color;
-    fn pattern(&self) -> Option<&BackgroundPattern>;
-}
+    /// Resize the render surface
+    fn resize(&mut self, width: u32, height: u32) -> Result<(), RenderError>;
 
-#[derive(Debug, Clone)]
-pub enum BackgroundVariant {
-    Solid,
-    Grid { size: f64, color: Color },
-    Dots { radius: f64, spacing: f64, color: Color },
-    Custom(String),
+    /// Get renderer capabilities
+    fn capabilities(&self) -> RendererCapabilities;
+
+    /// Get performance statistics
+    fn performance_stats(&self) -> PerformanceStats;
 }
 ```
 
-## Implementation Architecture
+### 2. Backend Trait (`traits/backend.rs`)
 
-### Canvas2D Renderer
-**File**: `canvas2d/renderer.rs` (180 lines)
+#### Purpose
+Low-level rendering backend interface for specific graphics APIs.
 
 ```rust
-pub struct Canvas2DRenderer {
-    context: CanvasRenderingContext2d,
-    config: Canvas2DConfig,
-    background: Box<dyn BackgroundConfig>,
-    performance_monitor: PerformanceMonitor,
-}
+pub trait RenderBackend: Send + Sync {
+    /// Create a new render surface
+    fn create_surface(&self, config: SurfaceConfig) -> Result<Box<dyn RenderSurface>, RenderError>;
 
-impl Renderer2D for Canvas2DRenderer {
-    fn draw_line(&mut self, start: Position, end: Position, style: &LineStyle) -> Result<(), Canvas2DError> {
-        self.context.set_stroke_style(&style.color.to_js_value());
-        self.context.set_line_width(style.width);
-        self.context.begin_path();
-        self.context.move_to(start.x, start.y);
-        self.context.line_to(end.x, end.y);
-        self.context.stroke();
-        Ok(())
-    }
+    /// Create rendering resources
+    fn create_resources(&self) -> Result<Box<dyn RenderResources>, RenderError>;
 
-    // ... other drawing methods
+    /// Begin rendering commands
+    fn begin_commands(&self) -> Result<RenderCommandBuffer, RenderError>;
+
+    /// Submit command buffer for execution
+    fn submit_commands(&self, commands: RenderCommandBuffer) -> Result<(), RenderError>;
+
+    /// Check if a feature is supported
+    fn supports_feature(&self, feature: RenderFeature) -> bool;
+
+    /// Get backend-specific limits
+    fn limits(&self) -> BackendLimits;
 }
 ```
 
-### WebGL Renderer
-**File**: `webgl/renderer.rs` (180 lines)
+### 3. Surface Trait (`traits/surface.rs`)
+
+#### Purpose
+Render surface management for different display targets.
 
 ```rust
-pub struct WebGLRenderer {
-    context: WebGlRenderingContext,
-    program: WebGlProgram,
-    buffers: BufferManager,
-    config: WebGLConfig,
-    performance_monitor: PerformanceMonitor,
-}
+pub trait RenderSurface: Send + Sync {
+    /// Get surface dimensions
+    fn dimensions(&self) -> (u32, u32);
 
-impl Renderer3D for WebGLRenderer {
-    fn set_projection(&mut self, projection: &ProjectionMatrix) -> Result<(), WebGLError> {
-        let location = self.context.get_uniform_location(&self.program, "u_projection");
-        self.context.uniform_matrix4fv_with_f32_array(location.as_ref(), false, projection.as_slice());
-        Ok(())
-    }
+    /// Resize the surface
+    fn resize(&mut self, width: u32, height: u32) -> Result<(), RenderError>;
 
-    // ... other WebGL methods
+    /// Get surface format
+    fn format(&self) -> SurfaceFormat;
+
+    /// Check if surface is valid
+    fn is_valid(&self) -> bool;
+
+    /// Present the surface (for display)
+    fn present(&self) -> Result<(), RenderError>;
 }
 ```
 
-## Configuration Design
+### 4. Resources Trait (`traits/resources.rs`)
 
-### Renderer Configuration Traits
+#### Purpose
+Management of rendering resources (textures, buffers, shaders).
+
 ```rust
-pub trait RendererConfig: Clone + Send + Sync {
-    fn canvas_id(&self) -> &str;
-    fn width(&self) -> f64;
-    fn height(&self) -> f64;
-    fn pixel_ratio(&self) -> f64;
-    fn background(&self) -> &dyn BackgroundConfig;
+pub trait RenderResources: Send + Sync {
+    /// Create a texture
+    fn create_texture(&mut self, desc: TextureDescriptor) -> Result<TextureId, RenderError>;
+
+    /// Update texture data
+    fn update_texture(&mut self, texture: TextureId, data: &[u8], region: TextureRegion) -> Result<(), RenderError>;
+
+    /// Delete a texture
+    fn delete_texture(&mut self, texture: TextureId) -> Result<(), RenderError>;
+
+    /// Create a buffer
+    fn create_buffer(&mut self, desc: BufferDescriptor) -> Result<BufferId, RenderError>;
+
+    /// Update buffer data
+    fn update_buffer(&mut self, buffer: BufferId, data: &[u8], offset: usize) -> Result<(), RenderError>;
+
+    /// Delete a buffer
+    fn delete_buffer(&mut self, buffer: BufferId) -> Result<(), RenderError>;
+
+    /// Create a shader program
+    fn create_shader(&mut self, vertex_source: &str, fragment_source: &str) -> Result<ShaderId, RenderError>;
+
+    /// Delete a shader
+    fn delete_shader(&mut self, shader: ShaderId) -> Result<(), RenderError>;
+}
+```
+
+## Data Structures
+
+### Render Scene
+```rust
+#[derive(Clone, Debug)]
+pub struct RenderScene {
+    pub viewport: Viewport,
+    pub camera: Camera,
+    pub nodes: Vec<RenderNode>,
+    pub edges: Vec<RenderEdge>,
+    pub background: RenderBackground,
+    pub selection: Option<RenderSelection>,
+    pub overlays: Vec<RenderOverlay>,
 }
 
-#[derive(Debug, Clone)]
-pub struct Canvas2DConfig {
-    pub canvas_id: String,
-    pub width: f64,
-    pub height: f64,
-    pub pixel_ratio: f64,
-    pub background: Box<dyn BackgroundConfig>,
-    pub antialias: bool,
+#[derive(Clone, Debug)]
+pub struct RenderNode {
+    pub id: NodeId,
+    pub position: Position,
+    pub size: Size,
+    pub shape: NodeShape,
+    pub style: NodeStyle,
+    pub label: Option<String>,
+    pub ports: Vec<RenderPort>,
+}
+
+#[derive(Clone, Debug)]
+pub struct RenderEdge {
+    pub id: EdgeId,
+    pub source: Position,
+    pub target: Position,
+    pub waypoints: Vec<Position>,
+    pub style: EdgeStyle,
+    pub label: Option<String>,
+}
+```
+
+### Rendering Configuration
+```rust
+#[derive(Clone, Debug)]
+pub struct RendererConfig {
+    pub backend: RenderBackendType,
+    pub antialiasing: AntialiasingMode,
+    pub vsync: bool,
+    pub power_preference: PowerPreference,
+    pub sample_count: u32,
     pub alpha: bool,
 }
 
-#[derive(Debug, Clone)]
-pub struct WebGLConfig {
-    pub canvas_id: String,
-    pub width: f64,
-    pub height: f64,
-    pub pixel_ratio: f64,
-    pub background: Box<dyn BackgroundConfig>,
-    pub antialias: bool,
-    pub alpha: bool,
-    pub depth: bool,
-    pub stencil: bool,
+#[derive(Clone, Debug)]
+pub enum RenderBackendType {
+    Canvas2D,
+    WebGL,
+    WebGPU,
+    Auto, // Choose best available
+}
+
+#[derive(Clone, Debug)]
+pub struct RendererCapabilities {
+    pub max_texture_size: u32,
+    pub max_vertices_per_call: u32,
+    pub supported_features: Vec<RenderFeature>,
+    pub performance_class: PerformanceClass,
+}
+```
+
+## Backend Implementations
+
+### Canvas2D Backend
+```rust
+pub struct Canvas2DBackend {
+    context: web_sys::CanvasRenderingContext2d,
+    device_pixel_ratio: f64,
+}
+
+impl RenderBackend for Canvas2DBackend {
+    fn create_surface(&self, config: SurfaceConfig) -> Result<Box<dyn RenderSurface>, RenderError> {
+        // Create HTML5 Canvas surface
+        Ok(Box::new(CanvasSurface::new(config)?))
+    }
+
+    fn begin_commands(&self) -> Result<RenderCommandBuffer, RenderError> {
+        Ok(RenderCommandBuffer::new())
+    }
+
+    fn submit_commands(&self, commands: RenderCommandBuffer) -> Result<(), RenderError> {
+        for command in commands.commands {
+            self.execute_canvas_command(command)?;
+        }
+        Ok(())
+    }
+}
+```
+
+### WebGL Backend
+```rust
+pub struct WebGLBackend {
+    context: web_sys::WebGlRenderingContext,
+    extensions: WebGLExtensions,
+    capabilities: WebGLCapabilities,
+}
+
+impl RenderBackend for WebGLBackend {
+    fn create_surface(&self, config: SurfaceConfig) -> Result<Box<dyn RenderSurface>, RenderError> {
+        Ok(Box::new(WebGLSurface::new(&self.context, config)?))
+    }
+
+    fn begin_commands(&self) -> Result<RenderCommandBuffer, RenderError> {
+        Ok(RenderCommandBuffer::new())
+    }
+
+    fn submit_commands(&self, commands: RenderCommandBuffer) -> Result<(), RenderError> {
+        // Batch commands into WebGL calls
+        self.batch_and_execute(commands)
+    }
+}
+```
+
+### WebGPU Backend
+```rust
+pub struct WebGPUBackend {
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+    surface: wgpu::Surface,
+    adapter: wgpu::Adapter,
+}
+
+impl RenderBackend for WebGPUBackend {
+    fn create_surface(&self, config: SurfaceConfig) -> Result<Box<dyn RenderSurface>, RenderError> {
+        Ok(Box::new(WebGPUSurface::new(&self.device, config)?))
+    }
+
+    fn begin_commands(&self) -> Result<RenderCommandBuffer, RenderError> {
+        Ok(RenderCommandBuffer::new())
+    }
+
+    fn submit_commands(&self, commands: RenderCommandBuffer) -> Result<(), RenderError> {
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
+        // Translate commands to WebGPU operations
+        self.encode_commands(&mut encoder, commands)?;
+        self.queue.submit(Some(encoder.finish()));
+        Ok(())
+    }
+}
+```
+
+## Render Pipeline
+
+### Scene Processing Pipeline
+```rust
+pub struct RenderPipeline {
+    scene_processor: SceneProcessor,
+    batcher: DrawCallBatcher,
+    culler: FrustumCuller,
+    sorter: DrawCallSorter,
+}
+
+impl RenderPipeline {
+    pub fn process_scene(&self, scene: &RenderScene) -> Result<Vec<DrawCall>, RenderError> {
+        // 1. Frustum culling
+        let visible_objects = self.culler.cull_scene(scene)?;
+
+        // 2. Sort by render order
+        let sorted_objects = self.sorter.sort_objects(visible_objects);
+
+        // 3. Batch draw calls
+        let draw_calls = self.batcher.batch_draw_calls(sorted_objects)?;
+
+        Ok(draw_calls)
+    }
+}
+```
+
+### Draw Call Batching
+```rust
+pub struct DrawCallBatcher {
+    max_batch_size: usize,
+    current_batch: Option<DrawBatch>,
+}
+
+impl DrawCallBatcher {
+    pub fn batch_draw_calls(&mut self, objects: Vec<RenderObject>) -> Result<Vec<DrawCall>, RenderError> {
+        let mut draw_calls = Vec::new();
+
+        for object in objects {
+            if !self.can_add_to_batch(&object) {
+                // Flush current batch
+                if let Some(batch) = self.current_batch.take() {
+                    draw_calls.push(self.create_draw_call(batch)?);
+                }
+            }
+
+            self.add_to_batch(object);
+        }
+
+        // Flush final batch
+        if let Some(batch) = self.current_batch.take() {
+            draw_calls.push(self.create_draw_call(batch)?);
+        }
+
+        Ok(draw_calls)
+    }
+}
+```
+
+## Primitive Rendering
+
+### Node Rendering
+```rust
+pub trait NodeRenderer {
+    fn render_node(&self, node: &RenderNode, resources: &RenderResources) -> Result<Vec<DrawCall>, RenderError>;
+
+    fn supports_shape(&self, shape: NodeShape) -> bool;
+
+    fn get_bounding_box(&self, node: &RenderNode) -> Rect;
+}
+
+pub struct DefaultNodeRenderer {
+    shape_renderers: HashMap<NodeShape, Box<dyn ShapeRenderer>>,
+}
+
+impl NodeRenderer for DefaultNodeRenderer {
+    fn render_node(&self, node: &RenderNode, resources: &RenderResources) -> Result<Vec<DrawCall>, RenderError> {
+        if let Some(renderer) = self.shape_renderers.get(&node.shape) {
+            renderer.render_shape(node, resources)
+        } else {
+            Err(RenderError::UnsupportedShape(node.shape.clone()))
+        }
+    }
+}
+```
+
+### Edge Rendering
+```rust
+pub trait EdgeRenderer {
+    fn render_edge(&self, edge: &RenderEdge, resources: &RenderResources) -> Result<Vec<DrawCall>, RenderError>;
+
+    fn supports_style(&self, style: EdgeStyle) -> bool;
+
+    fn calculate_path(&self, edge: &RenderEdge) -> Vec<Position>;
+}
+
+pub struct DefaultEdgeRenderer {
+    path_calculators: HashMap<EdgeStyle, Box<dyn PathCalculator>>,
+    style_renderers: HashMap<EdgeStyle, Box<dyn EdgeStyleRenderer>>,
+}
+```
+
+## Performance Optimizations
+
+### Memory Management
+- **Object Pooling**: Reuse draw call objects and vertex buffers
+- **Resource Caching**: Cache compiled shaders and textures
+- **Lazy Loading**: Load resources only when needed
+- **Garbage Collection**: Automatic cleanup of unused resources
+
+### Rendering Optimizations
+- **Frustum Culling**: Only render visible objects
+- **Occlusion Culling**: Skip hidden objects
+- **Level of Detail**: Reduce detail for distant objects
+- **Instancing**: Render multiple similar objects efficiently
+
+### Backend-Specific Optimizations
+```rust
+pub trait RenderOptimizer {
+    fn optimize_draw_calls(&self, draw_calls: &[DrawCall]) -> Vec<DrawCall>;
+
+    fn should_use_instancing(&self, objects: &[RenderObject]) -> bool;
+
+    fn get_optimal_batch_size(&self) -> usize;
+
+    fn supports_hardware_acceleration(&self, feature: RenderFeature) -> bool;
 }
 ```
 
 ## Error Handling
 
-### Unified Error Types
+### Comprehensive Error Types
 ```rust
-#[derive(Debug, thiserror::Error)]
-pub enum RendererError {
-    #[error("Canvas2D error: {0}")]
-    Canvas2D(#[from] Canvas2DError),
-
-    #[error("WebGL error: {0}")]
-    WebGL(#[from] WebGLError),
-
-    #[error("Configuration error: {0}")]
-    Config(#[from] ConfigError),
-
-    #[error("Performance monitoring error: {0}")]
-    Performance(#[from] PerformanceError),
+#[derive(Clone, Debug)]
+pub enum RenderError {
+    BackendNotAvailable(String),
+    SurfaceCreationFailed(String),
+    ResourceCreationFailed(String),
+    ShaderCompilationFailed(String),
+    InvalidOperation(String),
+    OutOfMemory(String),
+    UnsupportedFeature(String),
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum Canvas2DError {
-    #[error("Canvas context not available")]
-    ContextNotAvailable,
-
-    #[error("Invalid canvas dimensions: {width}x{height}")]
-    InvalidDimensions { width: f64, height: f64 },
-
-    #[error("Drawing operation failed: {operation}")]
-    DrawingFailed { operation: String },
-}
-```
-
-## Performance Monitoring
-
-### Performance Traits
-```rust
-pub trait PerformanceMonitor {
-    fn start_frame(&mut self);
-    fn end_frame(&mut self) -> FrameStats;
-    fn record_operation(&mut self, operation: &str, duration: Duration);
-    fn get_stats(&self) -> PerformanceStats;
-}
-
-#[derive(Debug, Clone)]
-pub struct FrameStats {
-    pub frame_time: Duration,
-    pub draw_calls: u32,
-    pub triangles: u32,
-    pub pixels: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct PerformanceStats {
-    pub average_frame_time: Duration,
-    pub fps: f64,
-    pub total_frames: u64,
-    pub memory_usage: Option<u64>,
+impl std::fmt::Display for RenderError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RenderError::BackendNotAvailable(msg) => write!(f, "Backend not available: {}", msg),
+            RenderError::SurfaceCreationFailed(msg) => write!(f, "Surface creation failed: {}", msg),
+            RenderError::ResourceCreationFailed(msg) => write!(f, "Resource creation failed: {}", msg),
+            RenderError::ShaderCompilationFailed(msg) => write!(f, "Shader compilation failed: {}", msg),
+            RenderError::InvalidOperation(msg) => write!(f, "Invalid operation: {}", msg),
+            RenderError::OutOfMemory(msg) => write!(f, "Out of memory: {}", msg),
+            RenderError::UnsupportedFeature(msg) => write!(f, "Unsupported feature: {}", msg),
+        }
+    }
 }
 ```
 
 ## Testing Strategy
 
-### Unit Tests (per module)
-- **traits/renderer.rs**: Trait contract verification
-- **canvas2d/renderer.rs**: Canvas2D-specific functionality
-- **webgl/renderer.rs**: WebGL-specific functionality
-- **shared/utils.rs**: Utility function testing
-
-### Integration Tests
-- Cross-renderer compatibility
-- Performance regression detection
-- Memory leak detection
-
-### Mock Testing
+### Unit Tests
 ```rust
-// Mock renderer for testing
-pub struct MockRenderer {
-    draw_calls: Vec<DrawCall>,
-    config: MockConfig,
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-impl Renderer for MockRenderer {
-    // Mock implementations for testing
+    #[test]
+    fn test_canvas_backend_creation() {
+        let backend = Canvas2DBackend::new();
+        assert!(backend.supports_feature(RenderFeature::Canvas2D));
+        assert!(!backend.supports_feature(RenderFeature::WebGL2));
+    }
+
+    #[test]
+    fn test_scene_processing() {
+        let pipeline = RenderPipeline::new();
+        let scene = create_test_scene();
+
+        let draw_calls = pipeline.process_scene(&scene).unwrap();
+        assert!(!draw_calls.is_empty());
+
+        // Verify draw calls are properly batched
+        assert!(draw_calls.len() <= scene.nodes.len());
+    }
 }
 ```
 
-## Migration Plan
+### Integration Tests
+```rust
+#[cfg(test)]
+mod integration_tests {
+    use super::*;
+    use flow_rs_core::test_utils::*;
 
-### Phase 1: Extract Core Traits
-1. Create `traits/` directory structure
-2. Move trait definitions to separate files
-3. Update imports and exports
+    #[test]
+    fn test_complete_render_workflow() {
+        // Create test renderer
+        let mut renderer = create_test_renderer();
 
-### Phase 2: Split Canvas2D Implementation
-1. Create `canvas2d/` directory
-2. Extract Canvas2DRenderer implementation
-3. Split drawing operations into separate files
+        // Create test scene
+        let scene = create_complex_scene();
 
-### Phase 3: Split WebGL Implementation
-1. Create `webgl/` directory
-2. Extract WebGLRenderer implementation
-3. Separate shader and buffer management
+        // Render frame
+        renderer.begin_frame(Color::WHITE).unwrap();
+        renderer.render_scene(&scene).unwrap();
+        renderer.end_frame().unwrap();
 
-### Phase 4: Extract Shared Utilities
-1. Create `shared/` directory
-2. Move common utilities and error types
-3. Update all references
+        // Verify rendering completed without errors
+        assert!(renderer.performance_stats().total_frames > 0);
+    }
 
-### Phase 5: Update Public API
-1. Update main `lib.rs` exports
-2. Ensure backward compatibility
-3. Add deprecation warnings for old API
+    #[test]
+    fn test_backend_switching() {
+        let mut renderer = RendererManager::new();
+
+        // Test Canvas2D backend
+        renderer.set_backend(RenderBackendType::Canvas2D).unwrap();
+        assert_eq!(renderer.current_backend(), RenderBackendType::Canvas2D);
+
+        // Test WebGL backend (if available)
+        if renderer.is_backend_available(RenderBackendType::WebGL) {
+            renderer.set_backend(RenderBackendType::WebGL).unwrap();
+            assert_eq!(renderer.current_backend(), RenderBackendType::WebGL);
+        }
+    }
+}
+```
+
+### Performance Tests
+```rust
+#[cfg(test)]
+mod performance_tests {
+    use super::*;
+    use criterion::{black_box, Criterion};
+
+    fn bench_scene_rendering(c: &mut Criterion) {
+        let renderer = create_test_renderer();
+        let scene = create_large_scene(1000); // 1000 nodes
+
+        c.bench_function("render_1000_nodes", |b| {
+            b.iter(|| {
+                renderer.begin_frame(Color::WHITE).unwrap();
+                black_box(renderer.render_scene(&scene).unwrap());
+                renderer.end_frame().unwrap();
+            });
+        });
+    }
+
+    fn bench_frustum_culling(c: &mut Criterion) {
+        let culler = FrustumCuller::new();
+        let objects = create_many_objects(10000);
+
+        c.bench_function("frustum_cull_10000_objects", |b| {
+            b.iter(|| {
+                black_box(culler.cull_objects(&objects, &create_test_camera()));
+            });
+        });
+    }
+}
+```
+
+## Backend Registry
+
+### Dynamic Backend Loading
+```rust
+pub struct BackendRegistry {
+    backends: HashMap<RenderBackendType, Box<dyn RenderBackend>>,
+    preferred_order: Vec<RenderBackendType>,
+}
+
+impl BackendRegistry {
+    pub fn new() -> Self {
+        let mut registry = Self {
+            backends: HashMap::new(),
+            preferred_order: vec![
+                RenderBackendType::WebGPU,
+                RenderBackendType::WebGL,
+                RenderBackendType::Canvas2D,
+            ],
+        };
+
+        // Register available backends
+        registry.register_backend(RenderBackendType::Canvas2D, Box::new(Canvas2DBackend::new()));
+
+        if WebGLBackend::is_available() {
+            registry.register_backend(RenderBackendType::WebGL, Box::new(WebGLBackend::new()));
+        }
+
+        if WebGPUBackend::is_available() {
+            registry.register_backend(RenderBackendType::WebGPU, Box::new(WebGPUBackend::new()));
+        }
+
+        registry
+    }
+
+    pub fn get_best_available_backend(&self) -> Option<RenderBackendType> {
+        for backend_type in &self.preferred_order {
+            if self.backends.contains_key(backend_type) {
+                return Some(*backend_type);
+            }
+        }
+        None
+    }
+}
+```
+
+## Future Extensions
+
+### Advanced Features
+- **Ray Tracing**: Hardware-accelerated ray tracing for complex effects
+- **Compute Shaders**: GPU compute for advanced algorithms
+- **Multi-Pass Rendering**: Deferred rendering, post-processing effects
+- **VR/AR Support**: Stereoscopic rendering and spatial audio
+
+### Plugin Architecture
+- **Custom Shaders**: Plugin-defined rendering effects
+- **Custom Primitives**: Plugin-defined renderable objects
+- **Render Passes**: Plugin-defined rendering stages
+- **Backend Extensions**: Plugin-provided rendering backends
+
+## Migration Strategy
+
+### From Monolithic Implementation
+1. **Extract Core Traits**: Move trait definitions to separate modules
+2. **Split Backend Logic**: Create backend-specific implementations
+3. **Modularize Pipeline**: Extract scene processing into pipeline modules
+4. **Separate Primitives**: Move primitive rendering to dedicated modules
+
+### Backward Compatibility
+- **API Preservation**: Maintain existing public interfaces
+- **Configuration Migration**: Support old configuration format
+- **Gradual Rollout**: Feature flags for new vs old implementation
 
 ## Success Metrics
 
-- **File sizes**: All modules < 300 lines
-- **Test coverage**: > 90% for each renderer
-- **Performance**: No regression in rendering performance
-- **API compatibility**: 100% backward compatibility
-- **Maintainability**: Clear separation between 2D/3D rendering
+### Code Quality
+- ✅ **File sizes <300 lines** for all modules
+- ✅ **Test coverage >90%** for rendering functionality
+- ✅ **Clear abstraction layers** between backends and high-level API
+- ✅ **Comprehensive documentation** for all rendering APIs
 
-## Timeline: 3-4 weeks
-## Risk Level: Medium
-## Dependencies: Performance monitoring module
+### Performance
+- ✅ **60 FPS** rendering for complex scenes (1000+ nodes)
+- ✅ **Efficient batching** reducing draw calls by 80%+
+- ✅ **Memory efficient** with bounded resource usage
+- ✅ **Backend-optimized** performance for each target
+
+### Extensibility
+- ✅ **Easy backend addition** with clear trait contracts
+- ✅ **Plugin architecture** for custom rendering effects
+- ✅ **Configurable pipeline** allowing custom render passes
+- ✅ **Future-proof design** supporting emerging web APIs

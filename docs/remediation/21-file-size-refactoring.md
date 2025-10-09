@@ -1,131 +1,302 @@
-# File Size Refactoring Plan (Priority 2)
+# File Size Refactoring Plan
 
-## Status: HIGH PRIORITY - Large Files Need Splitting
+## Overview
+This document outlines the refactoring of large files (>300 lines) into smaller, more maintainable modules.
 
-### Target: Keep all files under 300 lines (max 500 lines for complex modules)
+## Current File Size Analysis
 
-### Critical Files Requiring Immediate Refactoring
+### Files Requiring Refactoring
 
-#### 1. `flow-leptos/src/drag.rs` - **860 lines** ❌
-**Issue**: Massive drag handling implementation
-**Current Structure**:
-- DragHandler impl (400+ lines)
-- Mouse event handling (200+ lines)
-- Position calculations (150+ lines)
-- State management (100+ lines)
+#### 1. `flow-core/src/collaboration.rs` - 685 lines
+**Status**: 🚨 NEEDS REFACTORING
+**Modules to Extract**:
+- `operational_transform.rs` - OT algorithm implementation
+- `collaborative_session.rs` - Session management
+- `p2p_synchronization.rs` - WebRTC/P2P networking
+- `change_tracking.rs` - Undo/redo across users
+- `conflict_resolution.rs` - CRDT-style conflict resolution
 
-**Refactoring Plan**:
+#### 2. `flow-core/src/framework_abstractions.rs` - 600+ lines
+**Status**: 🚨 NEEDS REFACTORING
+**Modules to Extract**:
+- `reactive_state.rs` - Reactive state traits and implementations
+- `framework_elements.rs` - Element abstraction layer
+- `framework_registry.rs` - Adapter management
+- `framework_events.rs` - Event handling abstractions
+- `optimizations.rs` - Performance optimizations
+
+#### 3. `flow-core/src/plugins.rs` - 592 lines
+**Status**: ⚠️ SHOULD REFACTOR
+**Modules to Extract**:
+- `plugin_manager.rs` - Plugin lifecycle management
+- `plugin_registry.rs` - Plugin discovery and loading
+- `message_passing.rs` - Inter-plugin communication
+- `plugin_traits.rs` - Plugin interface definitions
+
+#### 4. `flow-leptos/src/selection.rs` - 733 lines
+**Status**: 🚨 NEEDS IMMEDIATE REFACTORING
+**Modules to Extract**:
+- `rectangle_selection.rs` - Rectangular selection logic
+- `lasso_selection.rs` - Free-form selection
+- `selection_state.rs` - State management
+- `selection_ui.rs` - Visual feedback
+- `selection_events.rs` - Event handling
+
+#### 5. `flow-leptos/src/hooks.rs` - 716 lines
+**Status**: 🚨 NEEDS REFACTORING
+**Modules to Extract**:
+- `graph_hooks.rs` - Graph state management hooks
+- `viewport_hooks.rs` - Viewport/camera controls
+- `interaction_hooks.rs` - User interaction handling
+- `layout_hooks.rs` - Auto-layout integration
+
+#### 6. `flow-leptos/src/signals.rs` - 705 lines
+**Status**: 🚨 NEEDS REFACTORING
+**Modules to Extract**:
+- `flow_signals.rs` - Main Flow state signals
+- `node_signals.rs` - Node-specific reactive state
+- `edge_signals.rs` - Edge-specific reactive state
+- `selection_signals.rs` - Selection state management
+- `viewport_signals.rs` - Camera/viewport state
+
+## Refactoring Strategy
+
+### Phase 1: Core Infrastructure (Week 1-2)
+
+#### 1.1 Extract Operational Transform (collaboration.rs)
+```rust
+// New file: flow-core/src/collaboration/operational_transform.rs
+pub struct OperationalTransform { ... }
+impl OperationalTransform {
+    pub fn apply_operation(&mut self, operation: Operation) -> Result<(), OTError> { ... }
+    pub fn transform_operation(&self, op1: &GraphOperation, op2: &GraphOperation) -> Result<GraphOperation, OTError> { ... }
+    // ... OT-specific methods
+}
 ```
-flow-leptos/src/drag/
-├── mod.rs (50 lines) - Main exports
-├── handler.rs (250 lines) - DragHandler impl
-├── calculations.rs (200 lines) - Position/delta calculations
-├── events.rs (150 lines) - Mouse event processing
-├── state.rs (100 lines) - Drag state management
-└── types.rs (80 lines) - Drag-specific types
+
+#### 1.2 Extract Reactive State (framework_abstractions.rs)
+```rust
+// New file: flow-core/src/framework_abstractions/reactive_state.rs
+pub trait ReactiveStateRead<T: Clone + 'static>: Send + Sync {
+    fn get(&self) -> T;
+}
+
+pub trait ReactiveStateWrite<T: Clone + 'static>: Send + Sync {
+    fn set(&mut self, value: T);
+    fn update<F>(&mut self, f: F) where F: FnOnce(&mut T);
+    fn subscribe<F>(&self, callback: F) where F: Fn(&T) + Send + Sync + 'static;
+}
+
+pub struct MockReactiveState<T> { ... }
 ```
 
-#### 2. `flow-renderer/src/traits.rs` - **825 lines** ❌
-**Issue**: All renderer traits in one massive file
-**Current Structure**:
-- BackgroundConfig trait (150 lines)
-- Renderer trait (200 lines)
-- Canvas2DRenderer impl (300 lines)
-- WebGLRenderer impl (175 lines)
+#### 1.3 Extract Framework Registry
+```rust
+// New file: flow-core/src/framework_abstractions/registry.rs
+#[derive(Clone, Debug)]
+pub enum FrameworkAdapter {
+    Leptos,
+    Yew,
+    Dioxus,
+}
 
-**Refactoring Plan**:
-```
-flow-renderer/src/
-├── traits/
-│   ├── mod.rs (50 lines)
-│   ├── renderer.rs (150 lines) - Core Renderer trait
-│   ├── background.rs (100 lines) - BackgroundConfig trait
-│   └── canvas.rs (100 lines) - Canvas-specific traits
-├── canvas2d/
-│   ├── mod.rs (50 lines)
-│   ├── renderer.rs (200 lines)
-│   └── impls.rs (150 lines)
-└── webgl/
-    ├── mod.rs (50 lines)
-    ├── renderer.rs (200 lines)
-    └── impls.rs (150 lines)
+pub struct FrameworkRegistry {
+    adapters: HashMap<String, FrameworkAdapter>,
+    default_adapter: Option<String>,
+}
 ```
 
-#### 3. `flow-leptos/src/hooks.rs` - **716 lines** ❌
-**Issue**: All Leptos hooks in single file
-**Current Structure**:
-- use_canvas hook (150 lines)
-- use_mouse_events hook (120 lines)
-- use_keyboard_events hook (100 lines)
-- use_viewport hook (100 lines)
-- use_nodes hook (120 lines)
-- use_edges hook (126 lines)
+### Phase 2: Leptos Integration (Week 3-4)
 
-**Refactoring Plan**:
-```
-flow-leptos/src/hooks/
-├── mod.rs (50 lines)
-├── canvas.rs (150 lines) - use_canvas hook
-├── mouse.rs (120 lines) - use_mouse_events hook
-├── keyboard.rs (100 lines) - use_keyboard_events hook
-├── viewport.rs (100 lines) - use_viewport hook
-├── nodes.rs (120 lines) - use_nodes hook
-└── edges.rs (126 lines) - use_edges hook
+#### 2.1 Refactor Selection System
+```rust
+// New structure:
+flow-leptos/src/selection/
+├── mod.rs
+├── rectangle.rs
+├── lasso.rs
+├── state.rs
+├── ui.rs
+└── events.rs
 ```
 
-#### 4. `flow-leptos/src/signals.rs` - **705 lines** ❌
-**Issue**: All signal management logic
-**Current Structure**:
-- FlowSignalManager impl (300 lines)
-- Signal creation logic (150 lines)
-- State synchronization (150 lines)
-- Update handling (105 lines)
-
-**Refactoring Plan**:
-```
+#### 2.2 Refactor Signal Management
+```rust
+// New structure:
 flow-leptos/src/signals/
-├── mod.rs (50 lines)
-├── manager.rs (200 lines) - FlowSignalManager core
-├── creation.rs (150 lines) - Signal creation logic
-├── sync.rs (150 lines) - State synchronization
-├── updates.rs (105 lines) - Update handling
-└── types.rs (80 lines) - Signal types
+├── mod.rs
+├── flow.rs
+├── nodes.rs
+├── edges.rs
+├── selection.rs
+└── viewport.rs
 ```
 
-### Medium Priority Files (300-500 lines)
+#### 2.3 Refactor Hooks
+```rust
+// New structure:
+flow-leptos/src/hooks/
+├── mod.rs
+├── graph.rs
+├── viewport.rs
+├── interaction.rs
+└── layout.rs
+```
 
-#### 5. `examples/flow-simple/src/interaction_tests.rs` - **597 lines** ⚠️
-**Refactoring Plan**: Split into multiple test files by feature
+### Phase 3: Plugin System (Week 5)
 
-#### 6. `flow-renderer/src/performance.rs` - **596 lines** ⚠️
-**Refactoring Plan**: Split performance monitoring into separate concerns
+#### 3.1 Extract Plugin Components
+```rust
+// New structure:
+flow-core/src/plugins/
+├── mod.rs
+├── manager.rs
+├── registry.rs
+├── messaging.rs
+└── traits.rs
+```
 
-#### 7. `flow-core/src/layout/tests.rs` - **592 lines** ⚠️
-**Refactoring Plan**: Split by layout algorithm type
+## Module Interface Design
 
-### Implementation Strategy
+### Each Module Must Provide:
+1. **Clear Public API**: Well-documented public functions and types
+2. **Minimal Dependencies**: Avoid circular dependencies
+3. **Comprehensive Tests**: Unit tests for all public APIs
+4. **Documentation**: Module-level and function-level docs
 
-1. **Phase 1**: Create directory structures and move files
-2. **Phase 2**: Update all import statements
-3. **Phase 3**: Update module declarations
-4. **Phase 4**: Run tests to verify no breaking changes
-5. **Phase 5**: Update documentation
+### Example Module Structure:
+```rust
+// mod.rs
+//! Module documentation
+pub mod sub_module;
 
-### Benefits
+// Re-exports for convenience
+pub use sub_module::{MainType, MainTrait};
 
-- **Maintainability**: Easier to locate and modify specific functionality
-- **Testing**: Smaller files are easier to test in isolation
-- **Code Reviews**: Smaller diffs and focused changes
-- **LLM Compatibility**: Files under 300 lines work better with AI assistants
-- **Team Collaboration**: Reduced merge conflicts
+// sub_module.rs
+//! Sub-module documentation
 
-### Timeline
+/// Main type documentation
+#[derive(Clone, Debug)]
+pub struct MainType {
+    // ...
+}
 
-- **Week 1**: Critical files (drag.rs, traits.rs)
-- **Week 2**: High priority files (hooks.rs, signals.rs)
-- **Week 3**: Medium priority files and testing
-- **Week 4**: Documentation updates and final verification
+impl MainType {
+    /// Constructor documentation
+    pub fn new() -> Self {
+        // ...
+    }
 
-## Priority: HIGH
-## Estimated Time: 2-3 weeks
-## Risk Level: MEDIUM (structural changes but preserves functionality)
+    /// Method documentation
+    pub fn do_something(&mut self) -> Result<(), Error> {
+        // ...
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_main_type_creation() {
+        let instance = MainType::new();
+        assert!(instance.is_valid());
+    }
+
+    #[test]
+    fn test_do_something() {
+        let mut instance = MainType::new();
+        assert!(instance.do_something().is_ok());
+    }
+}
+```
+
+## Quality Assurance
+
+### Pre-Refactoring Checklist:
+- [ ] All tests pass
+- [ ] Public API documented
+- [ ] No breaking changes to public interfaces
+- [ ] Performance benchmarks established
+
+### Post-Refactoring Checklist:
+- [ ] All tests still pass
+- [ ] No functionality regressions
+- [ ] Performance maintained or improved
+- [ ] All modules under 300 lines
+- [ ] Clear module boundaries
+- [ ] Comprehensive documentation
+
+## Risk Mitigation
+
+### Technical Risks:
+- **API Breaking Changes**: Use feature flags during transition
+- **Circular Dependencies**: Plan module hierarchy carefully
+- **Performance Impact**: Profile before and after refactoring
+- **Test Coverage Gaps**: Maintain 100% coverage during refactoring
+
+### Process Risks:
+- **Timeline Slippage**: Break into smaller, manageable chunks
+- **Integration Issues**: Test integrations continuously
+- **Knowledge Transfer**: Document design decisions
+
+## Success Metrics
+
+### Code Quality:
+- ✅ All files under 300 lines
+- ✅ Clear module separation of concerns
+- ✅ Comprehensive documentation
+- ✅ Zero circular dependencies
+
+### Maintainability:
+- ✅ Easier to understand individual components
+- ✅ Faster compilation times
+- ✅ Reduced merge conflicts
+- ✅ Improved testability
+
+### Developer Experience:
+- ✅ Faster onboarding for new contributors
+- ✅ Easier to locate and fix bugs
+- ✅ Better code navigation
+- ✅ Improved IDE support
+
+## Timeline and Milestones
+
+### Week 1: Planning and Infrastructure
+- [ ] Complete module design documents
+- [ ] Set up new directory structures
+- [ ] Establish coding standards for modules
+- [ ] Create refactoring checklists
+
+### Week 2: Core Refactoring
+- [ ] Refactor collaboration.rs into 5 modules
+- [ ] Refactor framework_abstractions.rs into 4 modules
+- [ ] Update all imports and dependencies
+- [ ] Run full test suite after each module
+
+### Week 3: Leptos Integration Refactoring
+- [ ] Refactor selection.rs into 5 modules
+- [ ] Refactor signals.rs into 5 modules
+- [ ] Refactor hooks.rs into 4 modules
+- [ ] Update Leptos-specific integrations
+
+### Week 4: Plugin System and Testing
+- [ ] Refactor plugins.rs into 4 modules
+- [ ] Add integration tests for all modules
+- [ ] Performance testing and optimization
+- [ ] Documentation updates
+
+### Week 5: Final Integration and Polish
+- [ ] End-to-end testing of refactored codebase
+- [ ] Performance benchmarking
+- [ ] Documentation completion
+- [ ] Final code review and cleanup
+
+## Dependencies and Prerequisites
+
+- [ ] All compilation errors resolved
+- [ ] Core functionality stable
+- [ ] Test suite passing (378+ tests)
+- [ ] API contracts documented
+- [ ] Performance baselines established

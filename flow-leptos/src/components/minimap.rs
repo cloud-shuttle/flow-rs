@@ -286,7 +286,7 @@ struct Bounds {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{EdgeBuilder, NodeBuilder};
+    use flow_rs_core::prelude::{EdgeBuilder, NodeBuilder};
 
     fn create_test_graph() -> Graph<(), ()> {
         let mut graph: Graph<(), ()> = Graph::new();

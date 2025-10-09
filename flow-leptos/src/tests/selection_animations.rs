@@ -8,7 +8,7 @@ use wasm_bindgen_test::*;
 use web_sys::{HtmlCanvasElement, MouseEvent};
 use js_sys::Object;
 
-use leptos_flow_core::{Graph, Node, Position, NodeId, Rect};
+use flow_rs_core::{Graph, Node, Position, NodeId, Rect};
 use leptos_flow_renderer::{
     Canvas2DRenderer,
     traits::{AnimatedSelectionStyle, MultiSelectionStyle, SelectionHoverStyle, SelectionStyle}

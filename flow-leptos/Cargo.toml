@@ -32,6 +32,7 @@ js-sys = { workspace = true }
 
 # Utilities
 serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
 

@@ -689,7 +689,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flow_core::prelude::{NodeBuilder, Size};
+    use flow_rs_core::prelude::{NodeBuilder, Size};
 
     #[test]
     fn test_graph_operations_handle() {

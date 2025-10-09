@@ -25,8 +25,9 @@ spade = { workspace = true }
 uuid = { workspace = true }
 thiserror = { workspace = true }
 
-# Optional serialization
+# Optional serialization (enabled via serde feature)
 serde = { workspace = true, optional = true }
+serde_json = { workspace = true }
 
 # Optional debugging
 tracing = { version = "0.1", optional = true }
